@@ -1,4 +1,6 @@
+import { ObservableMembrane } from "observable-membrane";
 import { Optional } from "typescript-optional";
+
 import {
   Checks,
   Logger,
@@ -17,8 +19,9 @@ import {
  * the `PluginRegistry` class instances.
  */
 export interface IPluginRegistryOptions {
-  logLevel?: LogLevelDesc;
-  plugins?: ICactusPlugin[];
+  readonly plugins?: ICactusPlugin[];
+  readonly membrane?: ObservableMembrane;
+  readonly logLevel?: LogLevelDesc;
 }
 
 /**
@@ -33,25 +36,37 @@ export class PluginRegistry {
   public static readonly CLASS_NAME = "PluginRegistry";
   public readonly plugins: ICactusPlugin[];
   public readonly log: Logger;
+  public readonly membrane: ObservableMembrane;
 
   public get className(): string {
     return PluginRegistry.CLASS_NAME;
   }
 
   constructor(public readonly options: IPluginRegistryOptions = {}) {
-    const fnTag = `PluginRegistry#constructor()`;
+    const fnTag = "PluginRegistry#constructor()";
     if (!options) {
       throw new TypeError(`${fnTag} options falsy`);
     }
     if (options.plugins && !Array.isArray(options.plugins)) {
       throw new TypeError(`${fnTag} options.plugins truthy but non-Array`);
     }
+
     this.plugins = options.plugins || [];
 
     const level = this.options.logLevel || "INFO";
     const label = this.className;
     this.log = LoggerProvider.getOrCreate({ level, label });
     this.log.debug(`Instantiated ${this.className} OK`);
+
+    const log = this.log;
+
+    this.membrane =
+      options.membrane ||
+      new ObservableMembrane({
+        valueMutated(obj: unknown, key: PropertyKey) {
+          log.debug(`ReactiveMembraneMutationCallback %o => %o`, obj, key);
+        },
+      });
   }
 
   public getPlugins(): ICactusPlugin[] {
@@ -100,15 +115,21 @@ export class PluginRegistry {
     const plugin = this.getPlugins().find(
       (p) => p.getPackageName() === packageName,
     );
-    return Optional.ofNullable(plugin as T);
+
+    if (plugin) {
+      const pluginProxy = this.membrane.getReadOnlyProxy(plugin) as T;
+      return Optional.ofNullable(pluginProxy);
+    } else {
+      return Optional.empty();
+    }
   }
 
   public findManyByPackageName<T extends ICactusPlugin>(
     packageName: string,
   ): T[] {
-    return this.getPlugins().filter(
-      (p) => p.getPackageName() === packageName,
-    ) as T[];
+    return this.getPlugins()
+      .filter((p) => p.getPackageName() === packageName)
+      .map((p) => this.membrane.getReadOnlyProxy(p)) as T[];
   }
 
   public findOneByKeychainId<T extends IPluginKeychain>(keychainId: string): T {

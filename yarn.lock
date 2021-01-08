@@ -7858,6 +7858,7 @@ __metadata:
     http-errors: "npm:2.0.0"
     http-errors-enhanced-cjs: "npm:2.0.1"
     node-mocks-http: "npm:1.14.0"
+    observable-membrane: "npm:2.0.0"
     run-time-error-cjs: "npm:1.4.0"
     safe-stable-stringify: "npm:2.4.3"
     typescript-optional: "npm:2.0.1"
@@ -39071,6 +39072,13 @@ __metadata:
   dependencies:
     http-https: "npm:^1.0.0"
   checksum: 10/451d0c28b45f518fc86d4689075cf74c7fea92fb09e2f994dd1208e5c5516a6958f9dc476714b61c62c959a3e7e0db8a69999c59ff63777c7a8af24fbddd0848
+  languageName: node
+  linkType: hard
+
+"observable-membrane@npm:2.0.0":
+  version: 2.0.0
+  resolution: "observable-membrane@npm:2.0.0"
+  checksum: 10/8bafee4c65236d8ccf7f8266b5da975bcfbc1b707fe3f6c48c1cbe773c88a6db09b3f94156c4b504a4c90adf1ab3aeb4f79390805b8e7bd8cb1ee50ea405becb
   languageName: node
   linkType: hard
 

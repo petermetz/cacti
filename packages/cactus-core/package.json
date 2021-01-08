@@ -58,6 +58,7 @@
     "express-openapi-validator": "5.0.4",
     "http-errors": "2.0.0",
     "http-errors-enhanced-cjs": "2.0.1",
+    "observable-membrane": "2.0.0",
     "run-time-error-cjs": "1.4.0",
     "safe-stable-stringify": "2.4.3",
     "typescript-optional": "2.0.1"
