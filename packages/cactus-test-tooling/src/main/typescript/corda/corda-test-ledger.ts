@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 import path from "path";
 
+import sshpk from "sshpk";
 import { NodeSSH, Config as SshConfig } from "node-ssh";
 import Docker, { Container, ContainerInfo } from "dockerode";
 import Joi from "joi";
@@ -363,6 +364,60 @@ export class CordaTestLedger implements ITestLedger {
     sampleCordapp: SampleCordappEnum = SampleCordappEnum.ADVANCED_OBLIGATION,
   ): Promise<string> {
     return SAMPLE_CORDAPP_DATA[sampleCordapp].cordappDirNotary;
+  }
+
+  /**
+   *
+   * @param forHost 192.168.20.11
+   * @returns
+   */
+  public async getOpenSshHostKeyEntry(forHost = "localhost"): Promise<string> {
+    // const fnTag = `${this.className}#getSshHostFingerprint()`;
+    const container = this.getContainer();
+    const pubKeyPath = `/etc/ssh/ssh_host_rsa_key.pub`;
+    // const pubKeyPath = `/etc/ssh/ssh_host_ed25519_key.pub`;
+
+    const pubKeyStr = await Containers.pullFile(container, pubKeyPath);
+    this.log.debug(`pubKeyStr=%o`, pubKeyStr);
+    const parsedKeyMeta = sshpk.parseKey(pubKeyStr, "ssh");
+    this.log.debug(`parsedKeyMeta=%o`, parsedKeyMeta);
+    const fingerprint = parsedKeyMeta.fingerprint();
+    this.log.debug(`fingerprint=%o`, fingerprint);
+    const fingerprintAsString = fingerprint.toString();
+    this.log.debug(`fingerprintAsString=%o`, fingerprintAsString);
+
+    const cmd = ["ssh-keygen", "-l", "-E", "MD5", "-f", pubKeyPath];
+    // '3072 SHA256:357P8XRq70j7Z5CQLl55mG+isGQ8QX/1aVxtYzL3dSg root@397e1a1643da (RSA)\r\n'
+    const sshkeygenOut = await Containers.exec(container, cmd);
+    this.log.debug(`sshkeygenOut=${sshkeygenOut}`);
+
+    /* cspell:disable-next-line */
+    // |1|2TSdXYT4+dJ+cAzHngWX55As/N4=|S/lE6n2DJm+rI9dvywxa+8t0ya4= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNMwU8ow8B6bOkY5oLRltzaAWdTVmJ5TYBPvqqKb5t10nXqYpv6qsAO+BjG52fqYo8Z2ivPh2TzI7HWUP1I0RpM=
+    const [size, hashAlgoAndHash, userAtHost, keyTypeParens] = sshkeygenOut
+      .trim()
+      .split(" ");
+
+    const keyType =
+      "ssh-" + keyTypeParens.slice(1, keyTypeParens.length - 1).toLowerCase();
+
+    const sshPort = await this.getSSHPublicPort();
+    this.log.debug(`SSH hashAlgoAndHash=${hashAlgoAndHash}`);
+    this.log.debug(`SSH size=${size}`);
+    this.log.debug(`SSH userAtHost=${userAtHost}`);
+    this.log.debug(`SSH keyTypeParentheses=${keyTypeParens}`);
+    this.log.debug(`SSH keyType=${keyType}`);
+
+    const fingerprintBase64 = hashAlgoAndHash.split(":")[1];
+    this.log.debug(`fingerprintBase64=${fingerprintBase64}`);
+    const md5Fingerprint = hashAlgoAndHash.replace("MD5:", "");
+    this.log.debug(`md5Fingerprint=${md5Fingerprint}`);
+
+    // "localhost ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPmhSBtMctNa4hsZt8QGlsYSE5/gMkjeand69Vj4ir13"
+    const entry = `[${forHost}]:${sshPort} ${keyType} ${hashAlgoAndHash}`;
+    // const entry = `${forHost} ${keyType} ${fingerprintBase64}`;
+    this.log.debug(`entry=${entry}`);
+    // return entry;
+    return md5Fingerprint;
   }
 
   public async getSshConfig(): Promise<SshConfig> {

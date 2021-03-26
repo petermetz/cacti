@@ -9676,6 +9676,7 @@ __metadata:
     run-time-error-cjs: "npm:1.4.0"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    sshpk: "npm:1.16.1"
     tar-stream: "npm:2.2.0"
     temp: "npm:0.9.4"
     typescript-optional: "npm:2.0.1"
@@ -46951,6 +46952,27 @@ __metadata:
     nan:
       optional: true
   checksum: 10/954acc2e9315774127610c029f9967d07157ab8ba26902b5c9964b3957d2e3d6cfc7a12817c5463056010721408884738314b71470b70f213580d2a0877f595f
+  languageName: node
+  linkType: hard
+
+"sshpk@npm:1.16.1":
+  version: 1.16.1
+  resolution: "sshpk@npm:1.16.1"
+  dependencies:
+    asn1: "npm:~0.2.3"
+    assert-plus: "npm:^1.0.0"
+    bcrypt-pbkdf: "npm:^1.0.0"
+    dashdash: "npm:^1.12.0"
+    ecc-jsbn: "npm:~0.1.1"
+    getpass: "npm:^0.1.1"
+    jsbn: "npm:~0.1.0"
+    safer-buffer: "npm:^2.0.2"
+    tweetnacl: "npm:~0.14.0"
+  bin:
+    sshpk-conv: bin/sshpk-conv
+    sshpk-sign: bin/sshpk-sign
+    sshpk-verify: bin/sshpk-verify
+  checksum: 10/b437fd3fd2777b29b5425b57d3d352b5771d5c61ddb0e000ddc6ff4b8a5b69c2d1d6b188787a0577df2b125045a492d2c9d03452067e87c49b013bd273e1c70a
   languageName: node
   linkType: hard
 
