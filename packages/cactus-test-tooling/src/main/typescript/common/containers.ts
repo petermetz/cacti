@@ -288,7 +288,7 @@ export class Containers {
     Checks.truthy(typeof dir === "string", `${fnTag} path typeof string`);
     Checks.truthy(dir.length > 0, `${fnTag} path non blank`);
 
-    const cmdArgs = ["ls", "-A", "-1", "-q", dir];
+    const cmdArgs = ["ls", "-A", "-1", dir];
     const output = await Containers.exec(container, cmdArgs);
     return output
       .split(`\n`)

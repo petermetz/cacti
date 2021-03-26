@@ -170,6 +170,7 @@
     "SPDX",
     "Splug",
     "Sprintf",
+    "sshpk",
     "stretchr",
     "supervisorctl",
     "supervisord",
