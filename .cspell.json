@@ -19,6 +19,7 @@
         "cccs",
         "ccid",
         "cids",
+        "commenceack",
         "Corda",
         "Cordapp",
         "dclm",
@@ -67,12 +68,16 @@
         "NETWORKSCOPEANYFORTX",
         "NODETXPOOLACK",
         "notok",
+        "odap",
         "Oidc",
         "onsi",
         "OpenAPI",
         "openethereum",
         "organisation",
+        "parameterizable",
+        "pretsc",
         "protos",
+        "qscc",
         "RUSTC",
         "Secp",
         "socketio",
@@ -91,8 +96,7 @@
         "uuidv",
         "vscc",
         "wasm",
-        "Xdai",
-        "parameterizable"
+        "Xdai"
     ],
     "dictionaries": [
         "typescript,node,npm,go,rust"

@@ -188,21 +188,9 @@ test(testCase, async (t: Test) => {
     t.ok(res);
     t.ok(res.data);
     t.equal(res.status, 200);
-    const blockInfo = plugin.getBlockByTxID(
-      {
-        signingCredential,
-        channelName,
-        contractName: "qscc",
-        invocationType: FabricContractInvocationType.Call,
-        methodName: "getBlockByTxID",
-        params: [],
-      } as RunTransactionRequest,
-      res.data.transactionID,
-    );
-    console.log(blockInfo);
   }
 
-  /*{
+  {
     const res = await apiClient.runTransactionV1({
       signingCredential,
       channelName,
@@ -219,19 +207,7 @@ test(testCase, async (t: Test) => {
     t.ok(asset277, "Located Asset record by its ID OK");
     t.ok(asset277.owner, `Asset object has "owner" property OK`);
     t.equal(asset277.owner, assetOwner, `Asset has expected owner OK`);
-    const blockInfo = plugin.getBlockByTxID(
-      {
-        signingCredential,
-        channelName,
-        contractName: "qscc",
-        invocationType: FabricContractInvocationType.Call,
-        methodName: "getBlockByTxID",
-        params: [],
-      } as RunTransactionRequest,
-      res.data.transactionID,
-    );
-    console.log(blockInfo);
-  }*/
+  }
 
   {
     const res = await apiClient.getPrometheusMetricsV1();
