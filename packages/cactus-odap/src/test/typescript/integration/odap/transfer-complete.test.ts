@@ -2,7 +2,11 @@ import test, { Test } from "tape";
 import { randomBytes } from "crypto";
 import secp256k1 from "secp256k1";
 import { OdapGateway } from "../../../../main/typescript/gateway/odap-gateway";
-import { CommitFinalMessage, LockEvidenceMessage, TransferCompleteMessage } from "../../../../main/typescript/generated/openapi/typescript-axios/api";
+import {
+  //CommitFinalMessage,
+  //LockEvidenceMessage,
+  TransferCompleteMessage,
+} from "../../../../main/typescript/generated/openapi/typescript-axios/api";
 import { v4 as uuidV4 } from "uuid";
 import { SHA256 } from "crypto-js";
 

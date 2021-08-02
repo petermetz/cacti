@@ -1,5 +1,5 @@
 import { Express, Request, Response } from "express";
-import { v4 as uuidV4 } from "uuid";
+//import { v4 as uuidV4 } from "uuid";
 
 import {
   IWebServiceEndpoint,
@@ -17,9 +17,9 @@ import {
 import { registerWebServiceEndpoint } from "@hyperledger/cactus-core";
 
 import { OdapGateway } from "../gateway/odap-gateway";
-import { SendClientRequestMessage} from "../generated/openapi/typescript-axios";
+import { SendClientRequestMessage } from "../generated/openapi/typescript-axios";
 import OAS from "../../json/openapi.json";
-import uuid from "uuid";
+//import uuid from "uuid";
 
 export interface ISendClientRequestEndpointOptions {
   logLevel?: LogLevelDesc;

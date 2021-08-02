@@ -18,7 +18,7 @@ import {
   TransferCompleteMessage,
 } from "../../../../main/typescript/public-api";
 import { SHA256 } from "crypto-js";
-import { Logger } from "../../../../../../cactus-common/dist/types/main/typescript";
+//import { Logger } from "../../../../../../cactus-common/dist/types/main/typescript";
 import { v4 as uuidV4 } from "uuid";
 test("dummy test for odap", async (t: Test) => {
   const odapConstructor = {

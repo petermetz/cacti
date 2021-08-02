@@ -9,7 +9,7 @@
     "dist/*"
   ],
   "scripts": {
-    "generate-sdk": "docker run --rm -v \"${PWD}:/local\" openapitools/openapi-generator-cli:v5.1.1 generate -i ./local/src/main/json/openapi.json -g typescript-axios -o ./local/src/main/typescript/generated/openapi/typescript-axios/ --reserved-words-mappings protected=protected",
+    "generate-sdk": "openapi-generator-cli generate -i ./src/main/json/openapi.json -g typescript-axios -o ./src/main/typescript/generated/openapi/typescript-axios/ --reserved-words-mappings protected=protected",
     "pretsc": "npm run generate-sdk",
     "tsc": "tsc --project ./tsconfig.json",
     "watch": "npm-watch",
@@ -67,10 +67,10 @@
     "typescript": "^4.3.2"
   },
   "dependencies": {
-    "@hyperledger/cactus-cmd-api-server": "0.5.0",
-    "@hyperledger/cactus-common": "0.5.0",
-    "@hyperledger/cactus-core": "0.5.0",
-    "@hyperledger/cactus-core-api": "0.5.0",
+    "@hyperledger/cactus-cmd-api-server": "0.6.0",
+    "@hyperledger/cactus-common": "0.6.0",
+    "@hyperledger/cactus-core": "0.6.0",
+    "@hyperledger/cactus-core-api": "0.6.0",
     "@hyperledger/cactus-example-supply-chain-business-logic-plugin": "0.5.0",
     "axios": "0.21.1",
     "crypto-js": "4.0.0",

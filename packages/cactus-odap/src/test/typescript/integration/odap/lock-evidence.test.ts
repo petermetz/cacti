@@ -21,7 +21,7 @@ test("dummy test for lock evidence flow", async (t: Test) => {
   const dummyPrivKeyStr = odapGateWay.bufArray2HexStr(dummyPrivKeyBytes);
   const dummyPubKeyBytes = secp256k1.publicKeyCreate(dummyPrivKeyBytes);
   const dummyPubKey = odapGateWay.bufArray2HexStr(dummyPubKeyBytes);
-  const dummyCommenceAckHash = SHA256("dummyack").toString();
+  const dummyCommenceAckHash = SHA256("dummyAck").toString();
   const sessionData = {
     clientIdentityPubkey: dummyPubKey,
     serverIdentityPubkey: dummyPubKey,

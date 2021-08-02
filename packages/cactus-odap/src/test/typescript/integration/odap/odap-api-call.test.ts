@@ -8,15 +8,15 @@ import { randomBytes } from "crypto";
 import bodyParser from "body-parser";
 import express from "express";
 
-import { PluginRegistry } from "@hyperledger/cactus-core";
-import { SendClientRequestMessage } from "../../../../main/typescript/public-api";
+//import { PluginRegistry } from "@hyperledger/cactus-core";
+import { SendClientRequestMessage } from "../../../../main/typescript/generated/openapi/typescript-axios";
 import {
   IListenOptions,
-  LogLevelDesc,
+  // LogLevelDesc,
   Servers,
 } from "@hyperledger/cactus-common";
 
-import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
+//import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 
 import {
   DefaultApi as OdapApi,
@@ -41,7 +41,7 @@ const testCase = "runs odap gateway tests via openApi";
 test(testCase, async (t: Test) => {
   //const logLevel: LogLevelDesc = "TRACE";
 
-  const pluginRegistry = new PluginRegistry();
+  //const pluginRegistry = new PluginRegistry();
   const expressApp = express();
   expressApp.use(bodyParser.json({ limit: "250mb" }));
   const server = http.createServer(expressApp);
@@ -69,7 +69,7 @@ test(testCase, async (t: Test) => {
   const plugin = new OdapGateway(odapPluginOptions);
   await plugin.getOrCreateWebServices();
   await plugin.registerWebServices(expressApp);
-  pluginRegistry.add(plugin);
+  //pluginRegistry.add(plugin);
   {
     let dummyPrivKeyBytes = randomBytes(32);
     while (!secp256k1.privateKeyVerify(dummyPrivKeyBytes)) {
