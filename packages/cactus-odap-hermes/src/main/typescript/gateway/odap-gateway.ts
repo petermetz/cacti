@@ -9,6 +9,7 @@ import {
   //LogLevelDesc,
   LoggerProvider,
 } from "@hyperledger/cactus-common";
+import { DefaultApi as ObjectStoreIpfsApi } from "@hyperledger/cactus-plugin-object-store-ipfs";
 /*import {
   PluginLedgerConnectorBesu,
   DefaultApi as BesuApi,
@@ -54,11 +55,13 @@ import { TransferCompleteEndpoint } from "../web-services/transfer-complete";
 import { ApiV1Phase1TransferInitiation } from "../web-services/transfer-initiation-endpoint";
 import { SendClientRequestEndpoint } from "../web-services/send-client-request";
 import { PluginRegistry } from "@hyperledger/cactus-core";
+import internal from "stream";
 const log = LoggerProvider.getOrCreate({
   level: "INFO",
   label: "odap-logger",
 });
 interface SessionData {
+  step?: number;
   initializationMsgHash?: string;
   loggingProfile?: string;
   accessControlProfile?: string;
@@ -106,10 +109,17 @@ export interface OdapGatewayConstructorOptions {
   name: string;
   dltIDs: string[];
   instanceId: string;
+  ipfsPath?: string;
 }
 export interface OdapGatewayKeyPairs {
   publicKey: Uint8Array;
   privateKey: Uint8Array;
+}
+interface OdapHermesLog {
+  phase: string;
+  step: string;
+  operation: string;
+  nodes: string;
 }
 export class OdapGateway implements ICactusPlugin, IPluginWebService {
   name: string;
@@ -119,7 +129,7 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
   public static readonly CLASS_NAME = "OdapGateWay";
   private readonly log: Logger;
   private readonly instanceId: string;
-
+  public ipfsApi?: ObjectStoreIpfsApi;
   pluginRegistry: PluginRegistry;
 
   private endpoints: IWebServiceEndpoint[] | undefined;
@@ -144,6 +154,13 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
     this.privKey = this.bufArray2HexStr(keyPairs.privateKey);
 
     this.pluginRegistry = new PluginRegistry();
+    if (options.ipfsPath != undefined) {
+      {
+        const config = new Configuration({ basePath: options.ipfsPath });
+        const apiClient = new ObjectStoreIpfsApi(config);
+        this.ipfsApi = apiClient;
+      }
+    }
   }
 
   public get className(): string {
@@ -228,6 +245,24 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
   public bufArray2HexStr(array: Uint8Array): string {
     return Buffer.from(array).toString("hex");
   }
+  public async odapLog(
+    odapHermesLog: OdapHermesLog,
+    sessionID: string,
+  ): Promise<void> {
+    this.log.info(
+      `<${odapHermesLog.phase}, ${odapHermesLog.phase}, ${odapHermesLog.operation}, ${odapHermesLog.nodes}>`,
+    );
+    if (this.ipfsApi == undefined) return;
+    const res = await this.ipfsApi.setObjectV1({
+      key: sessionID,
+      value:
+        "${odapHermesLog.phase}, ${odapHermesLog.phase}, ${odapHermesLog.operation}, ${odapHermesLog.nodes}",
+    });
+    const resStatusOk = res.status > 199 && res.status < 300;
+    if (!resStatusOk) {
+      throw new Error("${fnTag}, error when logging to ipfs");
+    }
+  }
   public async initiateTransfer(
     req: InitializationRequestMessage,
   ): Promise<InitialMessageAck> {
@@ -236,6 +271,19 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
         req,
       )}`,
     );
+    const sessionID = uuidV4();
+    const sessionData: SessionData = {};
+    sessionData.step = 0;
+    this.sessions.set(sessionID, sessionData);
+    await this.odapLog(
+      {
+        phase: "initiateTransfer",
+        operation: "init",
+        step: sessionData.step.toString(),
+        nodes: `${req.sourceGatewayPubkey}->${this.pubKey}`,
+      },
+      sessionID,
+    );
     const recvTimestamp: string = time.toString();
     const InitializationRequestMessageHash = SHA256(
       JSON.stringify(req),
@@ -243,7 +291,6 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
     this.checkValidInitializationRequest(req);
 
     const processedTimestamp: string = time.toString();
-    const sessionID = uuidV4();
 
     const ack = {
       sessionID: sessionID,
@@ -351,14 +398,14 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
       )}`,
     );
     await this.CheckValidTransferCompleteRequest(req, req.sessionID);
-
+    log.info("transfer is complete");
     return { ok: "true" };
   }
 
   public checkValidInitializationRequest(
     req: InitializationRequestMessage,
   ): void {
-    const fnTag = "${this.className()}#checkValidInitializationRequest()";
+    const fnTag = `${this.className}#checkValidInitializationRequest()`;
     const strSignature = req.initializationRequestMessageSignature;
     const sourceSignature = new Uint8Array(Buffer.from(strSignature, "hex"));
     const sourcePubkey = new Uint8Array(
@@ -393,8 +440,11 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
     ack: InitialMessageAck,
     sessionID: string,
   ): Promise<void> {
-    const sessionData: SessionData = {};
-
+    const sessionData = this.sessions.get(sessionID);
+    const fnTag = "${this.className()}#storeDataAfterInitializationRequest";
+    if (sessionData == undefined) {
+      throw new Error(`${fnTag}, session data is undefined`);
+    }
     sessionData.initializationMsgHash = SHA256(JSON.stringify(msg)).toString();
 
     sessionData.initializationRequestMsgSignature =

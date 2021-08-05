@@ -1,5 +1,5 @@
 {
-  "name": "@hyperledger/cactus-odap",
+  "name": "@hyperledger/cactus-odap-hermes",
   "version": "0.6.0",
   "description": "proof of concept of odap",
   "main": "dist/lib/main/typescript/index.js",
@@ -73,6 +73,7 @@
     "@hyperledger/cactus-common": "0.6.0",
     "@hyperledger/cactus-core": "0.6.0",
     "@hyperledger/cactus-core-api": "0.6.0",
+    "@hyperledger/cactus-plugin-object-store-ipfs": "^0.6.0",
     "axios": "0.21.1",
     "crypto-js": "4.0.0",
     "express": "4.17.1",
