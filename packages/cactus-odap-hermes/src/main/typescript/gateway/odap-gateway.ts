@@ -247,16 +247,15 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
   }
   public async odapLog(
     odapHermesLog: OdapHermesLog,
-    sessionID: string,
+    ID: string,
   ): Promise<void> {
     this.log.info(
       `<${odapHermesLog.phase}, ${odapHermesLog.phase}, ${odapHermesLog.operation}, ${odapHermesLog.nodes}>`,
     );
     if (this.ipfsApi == undefined) return;
     const res = await this.ipfsApi.setObjectV1({
-      key: sessionID,
-      value:
-        "${odapHermesLog.phase}, ${odapHermesLog.phase}, ${odapHermesLog.operation}, ${odapHermesLog.nodes}",
+      key: ID,
+      value: `${odapHermesLog.phase}, ${odapHermesLog.phase}, ${odapHermesLog.operation}, ${odapHermesLog.nodes}`,
     });
     const resStatusOk = res.status > 199 && res.status < 300;
     if (!resStatusOk) {
@@ -282,8 +281,9 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
         step: sessionData.step.toString(),
         nodes: `${req.sourceGatewayPubkey}->${this.pubKey}`,
       },
-      sessionID,
+      `${sessionID}-${sessionData.step.toString()}`,
     );
+    sessionData.step++;
     const recvTimestamp: string = time.toString();
     const InitializationRequestMessageHash = SHA256(
       JSON.stringify(req),
