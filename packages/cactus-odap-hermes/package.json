@@ -10,6 +10,8 @@
   ],
   "scripts": {
     "generate-sdk": "openapi-generator-cli generate -i ./src/main/json/openapi.json -g typescript-axios -o ./src/main/typescript/generated/openapi/typescript-axios/ --reserved-words-mappings protected=protected",
+    "codegen:openapi": "npm run generate-sdk",
+    "codegen": "run-p 'codegen:*'",
     "pretsc": "npm run generate-sdk",
     "tsc": "tsc --project ./tsconfig.json",
     "watch": "npm-watch",
