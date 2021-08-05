@@ -250,7 +250,7 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
     ID: string,
   ): Promise<void> {
     this.log.info(
-      `<${odapHermesLog.phase}, ${odapHermesLog.phase}, ${odapHermesLog.operation}, ${odapHermesLog.nodes}>`,
+      `<${odapHermesLog.phase}, ${odapHermesLog.step}, ${odapHermesLog.operation}, ${odapHermesLog.nodes}>`,
     );
     if (this.ipfsApi == undefined) return;
     const res = await this.ipfsApi.setObjectV1({
