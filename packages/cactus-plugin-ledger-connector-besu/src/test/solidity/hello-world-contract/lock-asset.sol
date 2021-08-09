@@ -13,64 +13,43 @@ struct Assets{
 contract LockAsset {
 
   mapping (address => Assets) assets;
-  function createAsset(uint num) public returns (bool){
-      if(userExist(msg.sender)){
-          return false;
-      }
-      assets[msg.sender].unLockAssetNum = num;
-      return true;
+  function createAsset(uint num) public returns (uint){
+      //default is 0
+      assets[msg.sender].unLockAssetNum += num;
+      return assets[msg.sender].unLockAssetNum;
   }
   function getLockedAsset() public view returns (uint)
   {
-      if(!userExist(msg.sender)){
-          return 0;
-      }
       return assets[msg.sender].lockAssetNum;
   }
   function getUnLockedAsset() public view returns (uint)
   {
-      if(!userExist(msg.sender)){
-          return 0;
-      }
       return assets[msg.sender].unLockAssetNum;
   }
 
-  function lockAsset(uint num) public returns(bool){
-      if(!userExist(msg.sender)){
-          return false;
-      }
+  function lockAsset(uint num) public returns(uint, uint){
       if(assets[msg.sender].unLockAssetNum<num){
-          return false;
+        return (assets[msg.sender].unLockAssetNum, assets[msg.sender].lockAssetNum);
       }
       assets[msg.sender].unLockAssetNum -= num;
       assets[msg.sender].lockAssetNum += num;
-      return true;
+      return (assets[msg.sender].unLockAssetNum, assets[msg.sender].lockAssetNum);
   }
-  function unLockAsset(uint num) public returns(bool){
-      if(!userExist(msg.sender)){
-          return false;
-      }
+  function unLockAsset(uint num) public returns(uint, uint){
       if(assets[msg.sender].lockAssetNum<num){
-          return false;
+        return (assets[msg.sender].unLockAssetNum, assets[msg.sender].lockAssetNum);
       }
       assets[msg.sender].unLockAssetNum += num;
       assets[msg.sender].lockAssetNum -= num;
-      return true;
+      return (assets[msg.sender].unLockAssetNum, assets[msg.sender].lockAssetNum);
   }
-  function deleteAsset(uint num) public returns(bool){
-      if(!userExist(msg.sender)){
-          return false;
-      }
+  function deleteAsset(uint num) public returns(uint){
       //an asset could only be deleted if it is already locked
       if(assets[msg.sender].lockAssetNum<num){
-          return false;
+          return assets[msg.sender].lockAssetNum;
       }
       assets[msg.sender].lockAssetNum -= num;
-      return true;
-  }
-  function userExist(address user) public view returns(bool){
-      bool noAssetForUser = assets[user].lockAssetNum==0 && assets[user].unLockAssetNum==0;
-      return noAssetForUser;
+      return assets[msg.sender].lockAssetNum;
   }
 
 }
