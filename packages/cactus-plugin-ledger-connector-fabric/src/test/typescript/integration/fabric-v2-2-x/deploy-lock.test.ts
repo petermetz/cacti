@@ -65,10 +65,7 @@ test(testCase, async (t: Test) => {
     // imageVersion: "latest",
     imageName: "ghcr.io/hyperledger/cactus-fabric2-all-in-one",
     imageVersion: "2021-04-20-nodejs",
-    envVars: new Map([
-      ["FABRIC_VERSION", "2.2.0"],
-      ["CA_VERSION", "1.4.9"],
-    ]),
+    envVars: new Map([["FABRIC_VERSION", "2.2.0"]]),
     logLevel,
   });
   const tearDown = async () => {
@@ -88,7 +85,7 @@ test(testCase, async (t: Test) => {
   log.warn("ledger has started");
   const connectionProfile = await ledger.getConnectionProfileOrg1();
   t.ok(connectionProfile, "getConnectionProfileOrg1() out truthy OK");
-  log.warn(connectionProfile);
+  log.warn(JSON.stringify(connectionProfile));
   const enrollAdminOut = await ledger.enrollAdmin();
   const adminWallet = enrollAdminOut[1];
   const [userIdentity] = await ledger.enrollUser(adminWallet);
@@ -301,7 +298,7 @@ test(testCase, async (t: Test) => {
   });
 
   log.warn("hi here again");
-  log.warn(res);
+  log.warn(JSON.stringify(res));
   const { packageIds, lifecycle, success } = res.data;
   t.equal(res.status, 200, "res.status === 200 OK");
   t.true(success, "res.data.success === true");

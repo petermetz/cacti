@@ -3,14 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Context, Contract, Returns, Transaction } from "fabric-contract-api";
+import {
+  Context,
+  Contract,
+  Info,
+  Returns,
+  Transaction,
+} from "fabric-contract-api";
 import { Asset } from "./asset";
 import { AssetLockUtils } from "./util";
+
+const util = new AssetLockUtils();
 @Info({
-  title: "lock asset",
+  title: "LockAsset",
   description: "Smart contract for locking assets",
 })
-const util = new AssetLockUtils();
 export class AssetLockContract extends Contract {
   @Transaction()
   public async InitLedger(ctx: Context): Promise<void> {

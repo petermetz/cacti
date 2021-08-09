@@ -55,7 +55,6 @@ import { TransferCompleteEndpoint } from "../web-services/transfer-complete";
 import { ApiV1Phase1TransferInitiation } from "../web-services/transfer-initiation-endpoint";
 import { SendClientRequestEndpoint } from "../web-services/send-client-request";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import internal from "stream";
 const log = LoggerProvider.getOrCreate({
   level: "INFO",
   label: "odap-logger",

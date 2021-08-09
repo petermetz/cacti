@@ -22,7 +22,7 @@ import {
 
 import {
   DefaultApi as OdapApi,
-  InitializationRequestMessage,
+  //InitializationRequestMessage,
 } from "../../../../main/typescript/public-api";
 
 import { Configuration } from "@hyperledger/cactus-core-api";
