@@ -55,6 +55,8 @@ import { TransferCompleteEndpoint } from "../web-services/transfer-complete";
 import { ApiV1Phase1TransferInitiation } from "../web-services/transfer-initiation-endpoint";
 import { SendClientRequestEndpoint } from "../web-services/send-client-request";
 import { PluginRegistry } from "@hyperledger/cactus-core";
+import { DefaultApi as FabricApi } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
+import { DefaultApi as BesuApi } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 const log = LoggerProvider.getOrCreate({
   level: "INFO",
   label: "odap-logger",
@@ -109,6 +111,8 @@ export interface OdapGatewayConstructorOptions {
   dltIDs: string[];
   instanceId: string;
   ipfsPath?: string;
+  fabircPath?: string;
+  besuPath?: string;
 }
 export interface OdapGatewayKeyPairs {
   publicKey: Uint8Array;
@@ -129,7 +133,9 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
   private readonly log: Logger;
   private readonly instanceId: string;
   public ipfsApi?: ObjectStoreIpfsApi;
-  pluginRegistry: PluginRegistry;
+  public fabricApi?: FabricApi;
+  public besuApi?: BesuApi;
+  public pluginRegistry: PluginRegistry;
 
   private endpoints: IWebServiceEndpoint[] | undefined;
   //map[]object, object refer to a state
@@ -158,6 +164,20 @@ export class OdapGateway implements ICactusPlugin, IPluginWebService {
         const config = new Configuration({ basePath: options.ipfsPath });
         const apiClient = new ObjectStoreIpfsApi(config);
         this.ipfsApi = apiClient;
+      }
+    }
+    if (options.fabircPath != undefined) {
+      {
+        const config = new Configuration({ basePath: options.fabricPath });
+        const apiClient = new FabricApi(config);
+        this.fabricApi = apiClient;
+      }
+    }
+    if (options.besuPath != undefined) {
+      {
+        const config = new Configuration({ basePath: options.besuPath });
+        const apiClient = new BesuApi(config);
+        this.besuApi = apiClient;
       }
     }
   }
