@@ -9,6 +9,7 @@
 - [4. Listing Lifecycle](#4-listing-lifecycle)
   - [4.1 Notes (work in progress)](#41-notes-work-in-progress)
   - [4.2 Sequence Diagram](#42-sequence-diagram)
+- [Meeting Notes](#meeting-notes)
 
 # 1. Initial notes/terminology (work in progress)
 
@@ -84,3 +85,14 @@ Green Aluminum Purchase flow:
 
 ![](./diagrams/listing-lifecycle-sequence-diagram.svg)
 
+
+
+# Meeting Notes
+
+Andrea:
+We need ESG scores: include transportation and everything else
+
+Eugenio: we have 3 layers
+- supply chain management layer (shipping) - bills of lading standards(?)
+- invoicing layer (trade finance layer - the finance structure of the deal) - DLPC standard is relevant
+- settlement layer
