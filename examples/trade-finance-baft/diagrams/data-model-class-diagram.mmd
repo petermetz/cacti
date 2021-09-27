@@ -1,0 +1,47 @@
+classDiagram
+
+class PaymentCommitmentState {
+     <<enumeration>>
+    INITIATED
+    CONTINGENT
+    EFFECTIVE
+    DISCHARGED
+}
+
+
+class DischargeState {
+     <<enumeration>>
+    OPEN
+    PAID
+    PAST_DUE
+    CANCELLED
+}
+
+class DistributedLedgerPaymentCommitment {
+    <<entity>>
+    +UUID id
+    +String originatorId
+    +String referenceId
+    +String committer
+    +String committee
+    +String currency
+    +String commitmentDate
+    +String dueDate
+    +PaymentCommitmentState commitmentState
+    +String dischargeDate
+    +DischargeState dischargeState
+    +String dischargeDate
+    +String applicableRules
+}
+
+class GreenCommodityListing {
+    <<entity>>
+    +UUID id
+    +String originatorDid
+    +Int32 itemCount
+    +DistributedLedgerPaymentCommitment dlpc
+}
+
+DistributedLedgerPaymentCommitment --* DischargeState
+DistributedLedgerPaymentCommitment --* PaymentCommitmentState
+GreenCommodityListing --* DistributedLedgerPaymentCommitment

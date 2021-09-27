@@ -1,0 +1,11 @@
+sequenceDiagram
+    autonumber
+
+    participant Buyer;
+    participant Seller;
+    participant DCGEX;
+
+    Buyer->>DCGEX: Create Listing of Green Aluminum Ingot
+    DCGEX-->>Buyer: List Created OK
+
+    Seller->>DCGEX: Query Listings

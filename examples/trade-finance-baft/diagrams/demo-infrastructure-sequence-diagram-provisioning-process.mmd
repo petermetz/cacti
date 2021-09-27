@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber
+
+    participant Admin;
+    participant IT Infrastructure;
+    participant Besu Ledger;
+    participant Corda Ledger;
+    participant Indy Ledger;
+
+    Note right of Admin: Create the IT infrastructure,<br/>apply parallel processing to<br/>steps that do not depend on<br/>each other,such as deploying<br/>the distinct ledgers
+    par Deploy Indy Ledger
+        Admin->>IT Infrastructure: Deploy Indy Ledger
+        IT Infrastructure-->>Admin: Indy Ledger Deployment OK
+    and Deploy Corda Ledger
+        Admin->>IT Infrastructure: Deploy Corda Ledger
+        IT Infrastructure-->>Admin: Corda Ledger Deployment OK
+        Admin->>Corda Ledger: Deploy DGCEX Contract
+        Corda Ledger-->>Admin: DGCEX Contract Deployment OK
+    and Deploy Besu Ledger
+        Admin->>IT Infrastructure: Deploy Besu Ledger
+        IT Infrastructure-->>Admin: Besu Ledger Deployment OK
+
+        Admin->>Besu Ledger: Deploy Carbon Accounting Tool Contract(s)
+        Besu Ledger-->>Admin: Carbon Accounting Tool Contract Deployment OK
+    end
