@@ -1,68 +1,67 @@
-# We need to use the older, more stable v18 here because of
-# https://github.com/docker-library/docker/issues/170
-FROM docker:20.10.3-dind
+FROM ubuntu:20.04
 
-ARG FABRIC_VERSION=2.2.0
-ARG CA_VERSION=1.4.9
+ARG FABRIC_VERSION=2.3.0
+ARG CA_VERSION=1.5.1
 ARG COUCH_VERSION_FABRIC=0.4
 ARG COUCH_VERSION=3.1.1
 
 WORKDIR /
 
-RUN apk update
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies of Docker Compose
-RUN apk add py-pip python3-dev libffi-dev openssl-dev gcc libc-dev make
+RUN apt update
 
-# Install python/pip - We need this because DinD 18.x has Python 2
-# And we cannot upgrade to DinD 19 because of
-# https://github.com/docker-library/docker/issues/170
-ENV PYTHONUNBUFFERED=1
-RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
-RUN python3 -m ensurepip
+# Need NodeJS tooling for the Typescript contracts
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+
+# Need git to clone the sources of the Fabric Samples repository from GitHub
+# Fabric Samples needs bash, sh is not good enough here
+# Need curl to download the Fabric bootstrap script
+# OpenSSH - need to have it so we can shell in and install/instantiate contracts
+# jq is needed by the /download-frozen-image-v2.sh script to pre-fetch docker images without docker.
+# Install supervisord because we need to run the docker daemon and also the fabric network
+# meaning that we have multiple processes to run.
+# uuid-runtime is needed so that we can generate a random root pw with uuidgen
+RUN apt install -y \
+    git \
+    bash \
+    curl \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
+    python3-pip \
+    openssh-server \
+    augeas-tools \
+    jq \
+    supervisor \
+    uuid-runtime \
+    nodejs \ 
+    sudo
+
+RUN curl -fsSL https://get.docker.com -o get-docker.sh
+RUN bash ./get-docker.sh
+
 RUN pip3 install --no-cache --upgrade "pip>=21" setuptools
 
 # Without this the docker-compose installation crashes, complaining about
 # a lack of rust compiler...
 # RUN pip install setuptools_rust
-ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
+# ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
 
 # Install Docker Compose which is a dependency of Fabric Samples
 RUN pip install docker-compose
 
-# Need git to clone the sources of the Fabric Samples repository from GitHub
-RUN apk add --no-cache git
-
-# Fabric Samples needs bash, sh is not good enough here
-RUN apk add --no-cache bash
-
-# Need curl to download the Fabric bootstrap script
-RUN apk add --no-cache curl
-
-# The file binary is used to inspect exectubles when debugging container image issues
-RUN apk add --no-cache file
-
-# Need NodeJS tooling for the Typescript contracts
-RUN apk add --no-cache npm nodejs
-
 # Download and setup path variables for Go
-RUN wget https://golang.org/dl/go1.15.5.linux-amd64.tar.gz
-RUN tar -xvf go1.15.5.linux-amd64.tar.gz
+RUN wget https://golang.org/dl/go1.17.1.linux-amd64.tar.gz
+RUN tar -xvf go1.17.1.linux-amd64.tar.gz
 RUN mv go /usr/local
 ENV GOROOT=/usr/local/go
 ENV GOPATH=/usr/local/go
 ENV PATH=$PATH:$GOPATH/bin
 
-# Needed because the Fabric binaries need the GNU libc dynamic linker to be executed
-# and alpine does not have that by default
-# @see https://askubuntu.com/a/1035037/1008695
-# @see https://github.com/gliderlabs/docker-alpine/issues/219#issuecomment-254741346
-RUN apk add --no-cache libc6-compat
-
 ENV CACTUS_CFG_PATH=/etc/hyperledger/cactus
 RUN mkdir -p $CACTUS_CFG_PATH
-# OpenSSH - need to have it so we can shell in and install/instantiate contracts
-RUN apk add --no-cache openssh augeas
 
 # Configure the OpenSSH server we just installed
 RUN augtool 'set /files/etc/ssh/sshd_config/AuthorizedKeysFile ".ssh/authorized_keys /etc/authorized_keys/%u"'
@@ -78,6 +77,7 @@ RUN ssh-keygen -A
 # Generate an RSA keypair on the fly to avoid having to hardcode one in the image
 # which technically does not pose a security threat since this is only a development
 # image, but we do it like this anyway.
+RUN mkdir /run/sshd
 RUN mkdir ~/.ssh
 RUN chmod 700 ~/.ssh/
 RUN touch ~/.ssh/authorized_keys
@@ -115,16 +115,11 @@ EXPOSE 8054
 # couchdb0, couchdb1, couchdb2, couchdb3
 EXPOSE 5984 6984 7984 8984
 
-RUN apk add --no-cache util-linux
-
 # FIXME - make it so that SSHd does not need this to work
 RUN echo "root:$(uuidgen)" | chpasswd
 
 RUN curl -sSL https://raw.githubusercontent.com/cloudflare/semver_bash/c1133faf0efe17767b654b213f212c326df73fa3/semver.sh > /semver.sh
 RUN chmod +x /semver.sh
-
-# jq is needed by the /download-frozen-image-v2.sh script to pre-fetch docker images without docker.
-RUN apk add --no-cache jq
 
 # Get the utility script that can pre-fetch the Fabric docker images without
 # a functioning Docker daemon available which we do not have at image build
@@ -165,10 +160,6 @@ RUN chmod +x bootstrap.sh
 # faster container startup speed since these steps will not have to be done, only the docker image pulls.
 RUN /bootstrap.sh ${FABRIC_VERSION} ${CA_VERSION} -d
 
-# Install supervisord because we need to run the docker daemon and also the fabric network
-# meaning that we have multiple processes to run.
-RUN apk add --no-cache supervisor
-
 COPY supervisord.conf /etc/supervisord.conf
 COPY run-fabric-network.sh /
 COPY healthcheck.sh /
@@ -184,6 +175,11 @@ ENV FABRIC_VERSION=${FABRIC_VERSION}
 ENV CA_VERSION=${CA_VERSION}
 ENV COUCH_VERSION_FABRIC=${COUCH_VERSION_FABRIC}
 ENV COUCH_VERSION=${COUCH_VERSION}
+
+
+# RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 test 
+# RUN  echo 'test:test' | chpasswd
+# RUN service ssh start
 
 # Extend the parent image's entrypoint
 # https://superuser.com/questions/1459466/can-i-add-an-additional-docker-entrypoint-script

@@ -46,7 +46,6 @@ export interface organizationDefinitionFabricV2 {
  * Contains options for Fabric container
  */
 export interface IFabricTestLedgerV1ConstructorOptions {
-  publishAllPorts: boolean;
   imageVersion?: string;
   imageName?: string;
   envVars?: Map<string, string>;
@@ -83,7 +82,6 @@ export const FABRIC_TEST_LEDGER_DEFAULT_OPTIONS = DEFAULT_OPTS;
  * Provides validations for the Fabric container's options
  */
 const OPTS_JOI_SCHEMA: Joi.Schema = Joi.object().keys({
-  publishAllPorts: Joi.boolean().required(),
   imageVersion: Joi.string().min(5).required(),
   imageName: Joi.string()
     .regex(/[a-z0-9]+(?:[._-]{1,2}[a-z0-9]+)*/)
@@ -102,7 +100,6 @@ export class FabricTestLedgerV1 implements ITestLedger {
 
   public readonly imageVersion: string;
   public readonly imageName: string;
-  public readonly publishAllPorts: boolean;
   public readonly emitContainerLogs: boolean;
   public readonly envVars: Map<string, string>;
   public readonly stateDatabase: STATE_DATABASE;
@@ -129,7 +126,6 @@ export class FabricTestLedgerV1 implements ITestLedger {
 
     this.imageVersion = options.imageVersion || DEFAULT_OPTS.imageVersion;
     this.imageName = options.imageName || DEFAULT_OPTS.imageName;
-    this.publishAllPorts = options.publishAllPorts;
     this.emitContainerLogs = Bools.isBooleanStrict(options.emitContainerLogs)
       ? (options.emitContainerLogs as boolean)
       : true;
@@ -279,12 +275,14 @@ export class FabricTestLedgerV1 implements ITestLedger {
   }
 
   public async getConnectionProfileOrg1(): Promise<any> {
-    const cInfo = await this.getContainerInfo();
     const container = this.getContainer();
+
     const CCP_JSON_PATH_FABRIC_V1 =
       "/fabric-samples/first-network/connection-org1.json";
+
     const CCP_JSON_PATH_FABRIC_V2 =
       "/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.json";
+
     const ccpJsonPath = compareVersions.compare(
       this.getFabricVersion(),
       "2.0",
@@ -292,93 +290,9 @@ export class FabricTestLedgerV1 implements ITestLedger {
     )
       ? CCP_JSON_PATH_FABRIC_V1
       : CCP_JSON_PATH_FABRIC_V2;
+
     const ccpJson = await Containers.pullFile(container, ccpJsonPath);
     const ccp = JSON.parse(ccpJson);
-
-    {
-      // peer0.org1.example.com
-      const privatePort = 7051;
-      const hostPort = await Containers.getPublicPort(privatePort, cInfo);
-      ccp.peers["peer0.org1.example.com"].url = `grpcs://localhost:${hostPort}`;
-    }
-    if (ccp.peers["peer1.org1.example.com"]) {
-      // peer1.org1.example.com
-      const privatePort = 8051;
-      const hostPort = await Containers.getPublicPort(privatePort, cInfo);
-      ccp.peers["peer1.org1.example.com"].url = `grpcs://localhost:${hostPort}`;
-    }
-    {
-      // ca_peerOrg1
-      const privatePort = 7054;
-      const hostPort = await Containers.getPublicPort(privatePort, cInfo);
-      const { certificateAuthorities: cas } = ccp;
-      cas["ca.org1.example.com"].url = `https://localhost:${hostPort}`;
-    }
-
-    // FIXME - this still doesn't work. At this moment the only successful tests
-    // we could run was with host ports bound to the matching ports of the internal
-    // containers and with discovery enabled.
-    // When discovery is disabled, it just doesn't yet work and these changes
-    // below are my attempts so far at making the connection profile work without
-    // discovery being turned on (which we cannot use when the ports are randomized
-    // on the host for the parent container)
-    if (this.publishAllPorts) {
-      // orderer.example.com
-
-      const privatePort = 7050;
-      const hostPort = await Containers.getPublicPort(privatePort, cInfo);
-      const url = `grpcs://localhost:${hostPort}`;
-      const ORDERER_PEM_PATH_FABRIC_V1 =
-        "/fabric-samples/first-network/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem";
-      const ORDERER_PEM_PATH_FABRIC_V2 =
-        "/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem";
-      const ordererPemPath = compareVersions.compare(
-        this.getFabricVersion(),
-        "2.0",
-        "<",
-      )
-        ? ORDERER_PEM_PATH_FABRIC_V1
-        : ORDERER_PEM_PATH_FABRIC_V2;
-      const pem = await Containers.pullFile(container, ordererPemPath);
-
-      ccp.orderers = {
-        "orderer.example.com": {
-          url,
-          grpcOptions: {
-            "ssl-target-name-override": "orderer.example.com",
-          },
-          tlsCACerts: {
-            pem,
-          },
-        },
-      };
-
-      ccp.channels = {
-        mychannel: {
-          orderers: ["orderer.example.com"],
-          peers: {
-            "peer0.org1.example.com": {
-              endorsingPeer: true,
-              chaincodeQuery: true,
-              ledgerQuery: true,
-              eventSource: true,
-              discover: true,
-            },
-          },
-        },
-      };
-
-      // FIXME: Still have no idea if we can use these options to make it work
-      // with discovery
-      // {
-      //   const { grpcOptions } = ccp.peers["peer0.org1.example.com"];
-      //   grpcOptions.hostnameOverride = `localhost`;
-      // }
-      // {
-      //   const { grpcOptions } = ccp.peers["peer1.org1.example.com"];
-      //   grpcOptions.hostnameOverride = `localhost`;
-      // }
-    }
     return ccp;
   }
 
@@ -1257,11 +1171,8 @@ export class FabricTestLedgerV1 implements ITestLedger {
       // to docker container's IP addresses directly...
       // https://stackoverflow.com/a/39217691
 
-      // needed for Docker-in-Docker support
-      // Privileged: true,
       HostConfig: {
-        PublishAllPorts: this.publishAllPorts,
-        Privileged: true,
+        Privileged: false,
         PortBindings: {
           "22/tcp": [{ HostPort: "30022" }],
           "7050/tcp": [{ HostPort: "7050" }],
@@ -1289,16 +1200,6 @@ export class FabricTestLedgerV1 implements ITestLedger {
         }
       });
     }
-    // (createOptions as any).PortBindings = {
-    //   "22/tcp": [{ HostPort: "30022" }],
-    //   "7050/tcp": [{ HostPort: "7050" }],
-    //   "7051/tcp": [{ HostPort: "7051" }],
-    //   "7054/tcp": [{ HostPort: "7054" }],
-    //   "8051/tcp": [{ HostPort: "8051" }],
-    //   "8054/tcp": [{ HostPort: "8054" }],
-    //   "9051/tcp": [{ HostPort: "9051" }],
-    //   "10051/tcp": [{ HostPort: "10051" }],
-    // };
 
     return new Promise<Container>((resolve, reject) => {
       const eventEmitter: EventEmitter = docker.run(
@@ -1424,7 +1325,6 @@ export class FabricTestLedgerV1 implements ITestLedger {
     const result = OPTS_JOI_SCHEMA.validate({
       imageVersion: this.imageVersion,
       imageName: this.imageName,
-      publishAllPorts: this.publishAllPorts,
       envVars: this.envVars,
     });
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Needed so that we have the "peer" binary on our path
 export PATH=/fabric-samples/bin/:$PATH

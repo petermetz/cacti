@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+
 set -e
 
 # Needed so that we have the "peer" binary on our path
@@ -7,7 +8,7 @@ export PATH=/fabric-samples/bin/:$PATH
 # Source the utility that we use to parse semantic version strings in bash
 . /semver.sh
 
-function main()
+main()
 {
 
   local MAJOR=0
@@ -39,9 +40,8 @@ function main()
 
     cd /fabric-samples/test-network/
     echo "[FabricAIO] >>> pulling up test network..."
-    ./network.sh up -ca
+    ./network.sh up createChannel -ca -c mychannel -i ${FABRIC_VERSION} -cai ${CA_VERSION} -verbose
     echo "[FabricAIO] >>> test network pulled up OK."
-    ./network.sh createChannel -c mychannel
     echo "[FabricAIO] >>> channel created OK."
     ./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-go -ccl go
     echo "[FabricAIO] >>> contract deployed OK."

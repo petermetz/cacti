@@ -54,7 +54,30 @@ From the project root:
 
 ```sh
 DOCKER_BUILDKIT=1 docker build ./tools/docker/fabric-all-in-one/ -f ./tools/docker/fabric-all-in-one/Dockerfile_v2.x -t faio2x
-docker run --detach --privileged --publish-all --env FABRIC_VERSION=2.2.0 faio2x
+docker run \
+  --rm \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
+  --publish 22:22 \
+  --publish 9001:9001 \
+  --publish 10051:10051 \
+  --publish 7051:7051 \
+  --publish 9051:9051 \
+  --publish 8051:8051 \
+  --publish 7050:7050 \
+  --publish 7054:7054 \
+  --publish 8054:8054 \
+  --publish 5984:5984 \
+  --publish 6984:6984 \
+  --publish 7984:7984 \
+  --publish 8984:8984 \
+  faio2x
+
+docker run \
+  --rm \
+  --volume /var/run/docker.sock:/var/run/docker.sock \
+  --publish 22:22 \
+  --publish 9001:9001 \
+  faio2x
 
 docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                     PORTS                                                                                                                                                                                                                                                                                                                                                                                  NAMES
