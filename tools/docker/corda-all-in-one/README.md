@@ -36,6 +36,6 @@ docker run --rm --privileged caio48
 ### Build and Run Image Locally
 
 ```sh
-docker build ./tools/docker/corda-all-in-one/ -f ./tools/docker/corda-all-in-one/corda-v5/Dockerfile -t caio5
-docker run --rm --privileged caio5
+docker build ./tools/docker/corda-all-in-one/corda-v5/ -f ./tools/docker/corda-all-in-one/corda-v5/Dockerfile -t caio5
+docker run --privileged caio5
 ```
