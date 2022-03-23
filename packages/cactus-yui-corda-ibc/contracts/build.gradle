@@ -1,0 +1,37 @@
+apply plugin: 'net.corda.plugins.cordapp'
+
+cordapp {
+    targetPlatformVersion corda_platform_version
+    minimumPlatformVersion corda_platform_version
+    contract {
+        name "Template CorDapp"
+        vendor "Corda Open Source"
+        licence "Apache License, Version 2.0"
+        versionId 1
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+    cordaCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.3'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
+    cordaCompile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.11.3'
+    // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util
+    compile group: 'com.google.protobuf', name: 'protobuf-java-util', version: "$protobuf_version"
+
+    compile group: 'io.grpc', name: 'grpc-netty-shaded', version: "$grpc_version"
+
+    // https://mvnrepository.com/artifact/org.bitcoinj/bitcoinj-core
+    compile group: 'org.bitcoinj', name: 'bitcoinj-core', version: "$bitcoinj_version"
+
+    // Corda dependencies.
+    cordaCompile "$corda_core_release_group:corda-core:$corda_core_release_version"
+    cordapp("$corda_release_group:corda-finance-contracts:$corda_release_version")
+
+    // Classes auto-generated from IBC protocol buffer definition
+    compile project(":proto")
+
+    testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
+}

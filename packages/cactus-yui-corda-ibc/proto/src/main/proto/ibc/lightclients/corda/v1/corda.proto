@@ -1,0 +1,17 @@
+syntax = "proto3";
+package ibc.lightclients.corda.v1;
+
+option go_package = "github.com/hyperledger-labs/yui-corda-ibc/go/x/ibc/light-clients/xx-corda/types";
+
+import "ibc/lightclients/corda/v1/corda-types.proto";
+
+message ClientState {
+  string id = 1;
+}
+
+message ConsensusState {
+  StateRef base_id = 1;
+  PublicKey notary_key = 2;
+}
+
+message Header {}

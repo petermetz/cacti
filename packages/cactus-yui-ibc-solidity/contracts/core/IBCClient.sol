@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: Apache-2.0
+pragma solidity ^0.8.9;
+
+import "./IClient.sol";
+import "./IBCHost.sol";
+import "./IBCMsgs.sol";
+
+library IBCClient {
+
+    /**
+     * @dev createClient creates a new client state and populates it with a given consensus state
+     */
+    function createClient(IBCHost host, IBCMsgs.MsgCreateClient calldata msg_) external {
+        host.onlyIBCModule();
+        (, bool found) = getClientByType(host, msg_.clientType);
+        require(found, "unregistered client type");
+
+        string memory clientId = host.generateClientIdentifier(msg_.clientType);
+        host.setClientType(clientId, msg_.clientType);
+        host.setClientState(clientId, msg_.clientStateBytes);
+        host.setConsensusState(clientId, msg_.height, msg_.consensusStateBytes);
+        host.setProcessedTime(clientId, msg_.height, block.timestamp);
+        host.setProcessedHeight(clientId, msg_.height, block.number);
+    }
+
+    /**
+     * @dev updateClient updates the consensus state and the state root from a provided header
+     */
+    function updateClient(IBCHost host, IBCMsgs.MsgUpdateClient calldata msg_) external {
+        host.onlyIBCModule();
+        bytes memory clientStateBytes;
+        bytes memory consensusStateBytes;
+        Height.Data memory height;
+        bool found;
+    
+        (clientStateBytes, found) = host.getClientState(msg_.clientId);
+        require(found, "clientState not found");
+
+        (clientStateBytes, consensusStateBytes, height) = getClient(host, msg_.clientId).checkHeaderAndUpdateState(host, msg_.clientId, clientStateBytes, msg_.header);
+    
+        //// persist states ////
+        host.setClientState(msg_.clientId, clientStateBytes);
+        host.setConsensusState(msg_.clientId, height, consensusStateBytes);
+        host.setProcessedTime(msg_.clientId, height, block.timestamp);
+        host.setProcessedHeight(msg_.clientId, height, block.number);
+    }
+
+    // TODO implements
+    function validateSelfClient(IBCHost, bytes calldata) external view returns (bool) {
+        this; // this is a trick that suppresses "Warning: Function state mutability can be restricted to pure"
+        return true;
+    }
+
+    function registerClient(IBCHost host, string memory clientType, IClient client) public {
+        host.onlyIBCModule();
+        host.setClientImpl(clientType, address(client));
+    }
+
+    function getClient(IBCHost host, string memory clientId) public view returns (IClient) {
+        (IClient clientImpl, bool found) = getClientByType(host, host.getClientType(clientId));
+        require(found, "clientImpl not found");
+        return clientImpl;
+    }
+
+    function getClientByType(IBCHost host, string memory clientType) internal view returns (IClient clientImpl, bool) {
+        (address addr, bool found) = host.getClientImpl(clientType);
+        if (!found) {
+            return (clientImpl, false);
+        }
+        return (IClient(addr), true);
+    }
+}

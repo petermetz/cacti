@@ -1,0 +1,29 @@
+syntax = "proto3";
+package ibc.lightclients.corda.v1;
+
+option go_package = "github.com/hyperledger-labs/yui-corda-ibc/go/x/ibc/light-clients/xx-corda/types";
+
+import "ibc/lightclients/corda/v1/corda-types.proto";
+
+service NodeService {
+  rpc PartyFromName (PartyFromNameRequest) returns (PartyFromNameResponse);
+  rpc AddressFromName (AddressFromNameRequest) returns (AddressFromNameResponse);
+}
+
+message PartyFromNameRequest {
+  string name = 1;
+  bool exact_match = 2;
+}
+
+message PartyFromNameResponse {
+  Party party = 1;
+}
+
+message AddressFromNameRequest {
+  string name = 1;
+  bool exact_match = 2;
+}
+
+message AddressFromNameResponse {
+  string address = 1;
+}
