@@ -1,5 +1,5 @@
 {
-  "name": "ibc-solidity",
+  "name": "@hyperledger/cactus-yui-ibc-solidity",
   "version": "1.0.0",
   "description": "",
   "directories": {

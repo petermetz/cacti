@@ -1,0 +1,6 @@
+{
+    "name": "@hyperledger/cactus-yui-relayer",
+    "scripts": {
+        "codegen": "make build"
+    }
+}
