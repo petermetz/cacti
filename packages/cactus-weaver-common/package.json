@@ -1,0 +1,59 @@
+{
+    "name": "@hyperledger/cactus-weaver-common",
+    "version": "1.0.0",
+    "description": "Various data structures, patterns, templates, and message types, need to be defined and interpreted in a common way globally by various components that are exercised in any instance of interoperation. This folder contains various closed and interdependent sets of such patterns that are used in one or more scenario (i.e., protocol).",
+    "keywords": [
+      "Hyperledger",
+      "Cactus",
+      "Integration",
+      "Blockchain",
+      "Distributed Ledger Technology",
+      "Weaver"
+    ],
+    "homepage": "https://github.com/hyperledger/cactus#readme",
+    "bugs": {
+      "url": "https://github.com/hyperledger/cactus/issues"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/hyperledger/cactus.git"
+    },
+    "license": "Apache-2.0",
+    "author": {
+      "name": "Hyperledger Cactus Contributors",
+      "email": "cactus@lists.hyperledger.org",
+      "url": "https://www.hyperledger.org/use/cactus"
+    },
+    "contributors": [
+      {
+        "name": "Please add yourself to the list of contributors",
+        "email": "your.name@example.com",
+        "url": "https://example.com"
+      }
+    ],
+    "main": "dist/lib/main/typescript/index.js",
+    "module": "dist/lib/main/typescript/index.js",
+    "browser": "dist/cactus-weaver-common.web.umd.js",
+    "types": "dist/lib/main/typescript/index.d.ts",
+    "files": [
+      "dist/*"
+    ],
+    "scripts": {
+      "watch": "npm-watch"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+    },
+    "engines": {
+      "node": ">=10",
+      "npm": ">=6"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "browserMinified": "dist/cactus-weaver-common.web.umd.min.js",
+    "mainMinified": "dist/cactus-weaver-common.node.umd.min.js",
+    "watch": {}
+  }
+  

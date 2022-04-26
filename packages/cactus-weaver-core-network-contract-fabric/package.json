@@ -1,0 +1,59 @@
+{
+    "name": "@hyperledger/cactus-weaver-core-network-contract-fabric",
+    "version": "1.0.0",
+    "description": "",
+    "keywords": [
+      "Hyperledger",
+      "Cactus",
+      "Integration",
+      "Blockchain",
+      "Distributed Ledger Technology",
+      "Weaver"
+    ],
+    "homepage": "https://github.com/hyperledger/cactus#readme",
+    "bugs": {
+      "url": "https://github.com/hyperledger/cactus/issues"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/hyperledger/cactus.git"
+    },
+    "license": "Apache-2.0",
+    "author": {
+      "name": "Hyperledger Cactus Contributors",
+      "email": "cactus@lists.hyperledger.org",
+      "url": "https://www.hyperledger.org/use/cactus"
+    },
+    "contributors": [
+      {
+        "name": "Please add yourself to the list of contributors",
+        "email": "your.name@example.com",
+        "url": "https://example.com"
+      }
+    ],
+    "main": "dist/lib/main/typescript/index.js",
+    "module": "dist/lib/main/typescript/index.js",
+    "browser": "dist/cactus-weaver-core-network-contract-fabric.web.umd.js",
+    "types": "dist/lib/main/typescript/index.d.ts",
+    "files": [
+      "dist/*"
+    ],
+    "scripts": {
+      "watch": "npm-watch"
+    },
+    "dependencies": {
+    },
+    "devDependencies": {
+    },
+    "engines": {
+      "node": ">=10",
+      "npm": ">=6"
+    },
+    "publishConfig": {
+      "access": "public"
+    },
+    "browserMinified": "dist/cactus-weaver-core-network-contract-fabric.web.umd.min.js",
+    "mainMinified": "dist/cactus-weaver-core-network-contract-fabric.node.umd.min.js",
+    "watch": {}
+  }
+  
