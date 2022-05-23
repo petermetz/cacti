@@ -40,7 +40,8 @@
     ],
     "scripts": {
       "watch": "npm-watch",
-      "build": "cd src/main && make build"
+      "fabric-protos": "sh ../../weaver-common/get-fabric-protos.sh ../..",
+      "build": "npm run fabric-protos && cd src/main && ./gradlew clean jar"
     },
     "dependencies": {
     },
