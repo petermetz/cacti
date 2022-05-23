@@ -3,7 +3,7 @@
 WEAVER_ROOT=${1:-".."}
 
 FABRIC_PROTOS_VERSION=${FABRIC_PROTOS_VERSION:-'2.1'}
-FABRIC_PROTOSDIR=${WEAVER_ROOT}/common/fabric-protos
+FABRIC_PROTOSDIR=${WEAVER_ROOT}/weaver-common/fabric-protos
 
 # check if local fabric-protos dir exists
 if [ -d "${FABRIC_PROTOSDIR}" ]
