@@ -1,7 +1,7 @@
 {
-    "name": "@hyperledger/cactus-weaver-core-driver-corda",
-    "version": "1.0.0",
-    "description": "",
+    "name": "@hyperledger/weaver-relay-server",
+    "version": "1.3.1",
+    "description": "Relay Module",
     "keywords": [
       "Hyperledger",
       "Cactus",
@@ -33,14 +33,16 @@
     ],
     "main": "dist/lib/main/typescript/index.js",
     "module": "dist/lib/main/typescript/index.js",
-    "browser": "dist/cactus-weaver-core-driver-corda.web.umd.js",
+    "browser": "dist/cactus-weaver-common.web.umd.js",
     "types": "dist/lib/main/typescript/index.d.ts",
     "files": [
       "dist/*"
     ],
     "scripts": {
       "watch": "npm-watch",
-      "codegen": "(cd src/main && make build-local)"
+      "protos": "cp ../../weaver-common/protos src/main/protos",
+      "build": "(cd src/main && cargo build)",
+      "clean": "(cd src/main && make clean)"
     },
     "dependencies": {
     },
@@ -53,8 +55,8 @@
     "publishConfig": {
       "access": "public"
     },
-    "browserMinified": "dist/cactus-weaver-core-driver-corda.web.umd.min.js",
-    "mainMinified": "dist/cactus-weaver-core-driver-corda.node.umd.min.js",
+    "browserMinified": "dist/cactus-weaver-common.web.umd.min.js",
+    "mainMinified": "dist/cactus-weaver-common.node.umd.min.js",
     "watch": {}
   }
   
