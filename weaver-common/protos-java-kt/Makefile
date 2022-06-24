@@ -4,7 +4,7 @@ build:
 	./gradlew clean jar
 
 .PHONY: publish
-publish:
+publish: build
 	./gradlew publishAllPublicationsToMavenRepository
 
 .PHONY: clean-build
