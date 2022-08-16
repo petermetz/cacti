@@ -24,16 +24,9 @@ use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 
 use openapi_client::models;
 
-type GenericError = Box<dyn Error + Send + Sync>;
-type YoloResult<T> = Result<T, GenericError>;
-
-extern crate hashicorp_vault as vault;
-
 /// Builds an SSL implementation for Simple HTTPS from some hard-coded file names
-pub async fn create(addr: &str, _https: bool, _vault_host: &str, _vault_token: &str) -> YoloResult<()> {
+pub async fn create(addr: &str, https: bool) {
     let addr = addr.parse().expect("Failed to parse bind address");
-
-    // let vaulthost = vaulthost.parse().expect("Failed to parse Vault address");
 
     let server = Server::new();
 
@@ -41,17 +34,52 @@ pub async fn create(addr: &str, _https: bool, _vault_host: &str, _vault_token: &
 
     let service = MakeAllowAllAuthenticator::new(service, "cosmo");
 
-    let service =
+    let mut service =
         openapi_client::server::context::MakeAddContext::<_, EmptyContext>::new(
             service
         );
 
-    eprintln!("Binding server to network interface ...");
+    if https {
+        #[cfg(any(target_os = "macos", target_os = "windows", target_os = "ios"))]
+        {
+            unimplemented!("SSL is not implemented for the examples on MacOS, Windows or iOS");
+        }
 
-    let hyper_server = hyper::server::Server::bind(&addr).serve(service);
-    println!("Listening on http://{}", addr);
-    hyper_server.await?;
-    Ok(())
+        #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "ios")))]
+        {
+            let mut ssl = SslAcceptor::mozilla_intermediate_v5(SslMethod::tls()).expect("Failed to create SSL Acceptor");
+
+            // Server authentication
+            ssl.set_private_key_file("examples/server-key.pem", SslFiletype::PEM).expect("Failed to set private key");
+            ssl.set_certificate_chain_file("examples/server-chain.pem").expect("Failed to set cerificate chain");
+            ssl.check_private_key().expect("Failed to check private key");
+
+            let tls_acceptor = Arc::new(ssl.build());
+            let mut tcp_listener = TcpListener::bind(&addr).await.unwrap();
+            let mut incoming = tcp_listener.incoming();
+
+            while let (Some(tcp), rest) = incoming.into_future().await {
+                if let Ok(tcp) = tcp {
+                    let addr = tcp.peer_addr().expect("Unable to get remote address");
+                    let service = service.call(addr);
+                    let tls_acceptor = Arc::clone(&tls_acceptor);
+
+                    tokio::spawn(async move {
+                        let tls = tokio_openssl::accept(&*tls_acceptor, tcp).await.map_err(|_| ())?;
+
+                        let service = service.await.map_err(|_| ())?;
+
+                        Http::new().serve_connection(tls, service).await.map_err(|_| ())
+                    });
+                }
+
+                incoming = rest;
+            }
+        }
+    } else {
+        // Using HTTP
+        hyper::server::Server::bind(&addr).serve(service).await.unwrap()
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -68,69 +96,71 @@ impl<C> Server<C> {
 
 use openapi_client::{
     Api,
-    GetKeychainEntryResponse,
-    SetKeychainEntryResponse,
+    DeleteKeychainEntryV1Response,
+    GetKeychainEntryV1Response,
+    GetPrometheusMetricsV1Response,
+    HasKeychainEntryV1Response,
+    SetKeychainEntryV1Response,
 };
 use openapi_client::server::MakeService;
 use std::error::Error;
 use swagger::ApiError;
-use std::env;
 
 #[async_trait]
 impl<C> Api<C> for Server<C> where C: Has<XSpanIdString> + Send + Sync
 {
-    /// Retrieves the contents of a keychain entry from the backend.
-    async fn get_keychain_entry(
+    /// Deletes an entry from the keychain stored under the provided key.
+    async fn delete_keychain_entry_v1(
         &self,
-        get_keychain_entry_request: models::GetKeychainEntryRequest,
-        context: &C) -> Result<GetKeychainEntryResponse, ApiError>
+        delete_keychain_entry_request_v1: Option<models::DeleteKeychainEntryRequestV1>,
+        context: &C) -> Result<DeleteKeychainEntryV1Response, ApiError>
     {
         let context = context.clone();
-        info!("get_keychain_entry({:?}) - X-Span-ID: {:?}", get_keychain_entry_request, context.get().0.clone());
+        info!("delete_keychain_entry_v1({:?}) - X-Span-ID: {:?}", delete_keychain_entry_request_v1, context.get().0.clone());
+        Err("Generic failuare".into())
+    }
 
-        // FIXME implement connection pooling
-        // FIXME move configuration parsing logic to main instead
-        let temp_host;
-        let host: &str;
-        if (env::var("VAULT_HOST").is_err()) {
-            host = "http://localhost:8200"
-        } else {
-            temp_host = env::var("VAULT_HOST").unwrap();
-            host = &*temp_host;
-        }
-        let token = env::var("VAULT_TOKEN").unwrap();
-        let client = vault::Client::new(host, token).unwrap();
+    /// Retrieves the contents of a keychain entry from the backend.
+    async fn get_keychain_entry_v1(
+        &self,
+        get_keychain_entry_request: models::GetKeychainEntryRequest,
+        context: &C) -> Result<GetKeychainEntryV1Response, ApiError>
+    {
+        let context = context.clone();
+        info!("get_keychain_entry_v1({:?}) - X-Span-ID: {:?}", get_keychain_entry_request, context.get().0.clone());
+        Err("Generic failuare".into())
+    }
 
-        let secret = client.get_secret(get_keychain_entry_request.key.clone()).unwrap();
+    /// Get the Prometheus Metrics
+    async fn get_prometheus_metrics_v1(
+        &self,
+        context: &C) -> Result<GetPrometheusMetricsV1Response, ApiError>
+    {
+        let context = context.clone();
+        info!("get_prometheus_metrics_v1() - X-Span-ID: {:?}", context.get().0.clone());
+        Err("Generic failuare".into())
+    }
 
-        Ok(GetKeychainEntryResponse::OK(models::GetKeychainEntryResponse::new(get_keychain_entry_request.key.clone(), secret.to_string())))
+    /// Retrieves the information regarding a key being present on the keychain or not.
+    async fn has_keychain_entry_v1(
+        &self,
+        has_keychain_entry_request_v1: Option<models::HasKeychainEntryRequestV1>,
+        context: &C) -> Result<HasKeychainEntryV1Response, ApiError>
+    {
+        let context = context.clone();
+        info!("has_keychain_entry_v1({:?}) - X-Span-ID: {:?}", has_keychain_entry_request_v1, context.get().0.clone());
+        Err("Generic failuare".into())
     }
 
     /// Sets a value under a key on the keychain backend.
-    async fn set_keychain_entry(
+    async fn set_keychain_entry_v1(
         &self,
         set_keychain_entry_request: models::SetKeychainEntryRequest,
-        context: &C) -> Result<SetKeychainEntryResponse, ApiError>
+        context: &C) -> Result<SetKeychainEntryV1Response, ApiError>
     {
         let context = context.clone();
-        info!("set_keychain_entry({:?}) - X-Span-ID: {:?}", set_keychain_entry_request, context.get().0.clone());
-
-        // FIXME implement connection pooling
-        // FIXME move configuration parsing logic to main instead
-        let temp_host;
-        let host: &str;
-        if (env::var("VAULT_HOST").is_err()) {
-            host = "http://localhost:8200"
-        } else {
-            temp_host = env::var("VAULT_HOST").unwrap();
-            host = &*temp_host;
-        }
-        let token = env::var("VAULT_TOKEN").unwrap();
-        let client = vault::Client::new(host, token).unwrap();
-
-        let _ = client.set_secret(set_keychain_entry_request.key.clone(), set_keychain_entry_request.value.clone());
-
-        Ok(SetKeychainEntryResponse::OK(models::SetKeychainEntryResponse::new(set_keychain_entry_request.key.clone())))
+        info!("set_keychain_entry_v1({:?}) - X-Span-ID: {:?}", set_keychain_entry_request, context.get().0.clone());
+        Err("Generic failuare".into())
     }
 
 }

@@ -22,8 +22,11 @@ pub use crate::context;
 type ServiceFuture = BoxFuture<'static, Result<Response<Body>, crate::ServiceError>>;
 
 use crate::{Api,
-     GetKeychainEntryResponse,
-     SetKeychainEntryResponse
+     DeleteKeychainEntryV1Response,
+     GetKeychainEntryV1Response,
+     GetPrometheusMetricsV1Response,
+     HasKeychainEntryV1Response,
+     SetKeychainEntryV1Response
 };
 
 mod paths {
@@ -31,13 +34,19 @@ mod paths {
 
     lazy_static! {
         pub static ref GLOBAL_REGEX_SET: regex::RegexSet = regex::RegexSet::new(vec![
+            r"^/api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/delete-keychain-entry$",
             r"^/api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/get-keychain-entry$",
+            r"^/api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/get-prometheus-exporter-metrics$",
+            r"^/api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/has-keychain-entry$",
             r"^/api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/set-keychain-entry$"
         ])
         .expect("Unable to create global regex set");
     }
-    pub(crate) static ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_KEYCHAIN_ENTRY: usize = 0;
-    pub(crate) static ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_SET_KEYCHAIN_ENTRY: usize = 1;
+    pub(crate) static ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_DELETE_KEYCHAIN_ENTRY: usize = 0;
+    pub(crate) static ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_KEYCHAIN_ENTRY: usize = 1;
+    pub(crate) static ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_PROMETHEUS_EXPORTER_METRICS: usize = 2;
+    pub(crate) static ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_HAS_KEYCHAIN_ENTRY: usize = 3;
+    pub(crate) static ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_SET_KEYCHAIN_ENTRY: usize = 4;
 }
 
 pub struct MakeService<T, C> where
@@ -142,7 +151,77 @@ impl<T, C> hyper::service::Service<(Request<Body>, C)> for Service<T, C> where
 
         match &method {
 
-            // GetKeychainEntry - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/get-keychain-entry
+            // DeleteKeychainEntryV1 - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/delete-keychain-entry
+            &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_DELETE_KEYCHAIN_ENTRY) => {
+                // Body parameters (note that non-required body parameters will ignore garbage
+                // values, rather than causing a 400 response). Produce warning header and logs for
+                // any unused fields.
+                let result = body.into().await;
+                match result {
+                            Ok(body) => {
+                                let mut unused_elements = Vec::new();
+                                let param_delete_keychain_entry_request_v1: Option<models::DeleteKeychainEntryRequestV1> = if !body.is_empty() {
+                                    let deserializer = &mut serde_json::Deserializer::from_slice(&*body);
+                                    match serde_ignored::deserialize(deserializer, |path| {
+                                            warn!("Ignoring unknown field in body: {}", path);
+                                            unused_elements.push(path.to_string());
+                                    }) {
+                                        Ok(param_delete_keychain_entry_request_v1) => param_delete_keychain_entry_request_v1,
+                                        Err(_) => None,
+                                    }
+                                } else {
+                                    None
+                                };
+
+                                let result = api_impl.delete_keychain_entry_v1(
+                                            param_delete_keychain_entry_request_v1,
+                                        &context
+                                    ).await;
+                                let mut response = Response::new(Body::empty());
+                                response.headers_mut().insert(
+                                            HeaderName::from_static("x-span-id"),
+                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().to_string().as_str())
+                                                .expect("Unable to create X-Span-ID header value"));
+
+                                        if !unused_elements.is_empty() {
+                                            response.headers_mut().insert(
+                                                HeaderName::from_static("warning"),
+                                                HeaderValue::from_str(format!("Ignoring unknown fields in body: {:?}", unused_elements).as_str())
+                                                    .expect("Unable to create Warning header value"));
+                                        }
+
+                                        match result {
+                                            Ok(rsp) => match rsp {
+                                                DeleteKeychainEntryV1Response::OK
+                                                    (body)
+                                                => {
+                                                    *response.status_mut() = StatusCode::from_u16(200).expect("Unable to turn 200 into a StatusCode");
+                                                    response.headers_mut().insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_str("application/json")
+                                                            .expect("Unable to create Content-Type header for DELETE_KEYCHAIN_ENTRY_V1_OK"));
+                                                    let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
+                                                    *response.body_mut() = Body::from(body);
+                                                },
+                                            },
+                                            Err(_) => {
+                                                // Application code returned an error. This should not happen, as the implementation should
+                                                // return a valid response.
+                                                *response.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+                                                *response.body_mut() = Body::from("An internal error occurred");
+                                            },
+                                        }
+
+                                        Ok(response)
+                            },
+                            Err(e) => Ok(Response::builder()
+                                                .status(StatusCode::BAD_REQUEST)
+                                                .body(Body::from(format!("Couldn't read body parameter DeleteKeychainEntryRequestV1: {}", e)))
+                                                .expect("Unable to create Bad Request response due to unable to read body parameter DeleteKeychainEntryRequestV1")),
+                        }
+            },
+
+            // GetKeychainEntryV1 - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/get-keychain-entry
             &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_KEYCHAIN_ENTRY) => {
                 // Body parameters (note that non-required body parameters will ignore garbage
                 // values, rather than causing a 400 response). Produce warning header and logs for
@@ -174,7 +253,7 @@ impl<T, C> hyper::service::Service<(Request<Body>, C)> for Service<T, C> where
                                                         .expect("Unable to create Bad Request response for missing body parameter GetKeychainEntryRequest")),
                                 };
 
-                                let result = api_impl.get_keychain_entry(
+                                let result = api_impl.get_keychain_entry_v1(
                                             param_get_keychain_entry_request,
                                         &context
                                     ).await;
@@ -193,30 +272,30 @@ impl<T, C> hyper::service::Service<(Request<Body>, C)> for Service<T, C> where
 
                                         match result {
                                             Ok(rsp) => match rsp {
-                                                GetKeychainEntryResponse::OK
+                                                GetKeychainEntryV1Response::OK
                                                     (body)
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(200).expect("Unable to turn 200 into a StatusCode");
                                                     response.headers_mut().insert(
                                                         CONTENT_TYPE,
                                                         HeaderValue::from_str("application/json")
-                                                            .expect("Unable to create Content-Type header for GET_KEYCHAIN_ENTRY_OK"));
+                                                            .expect("Unable to create Content-Type header for GET_KEYCHAIN_ENTRY_V1_OK"));
                                                     let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
                                                     *response.body_mut() = Body::from(body);
                                                 },
-                                                GetKeychainEntryResponse::BadRequest
+                                                GetKeychainEntryV1Response::BadRequest
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(400).expect("Unable to turn 400 into a StatusCode");
                                                 },
-                                                GetKeychainEntryResponse::AuthorizationInformationIsMissingOrInvalid
+                                                GetKeychainEntryV1Response::AuthorizationInformationIsMissingOrInvalid
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(401).expect("Unable to turn 401 into a StatusCode");
                                                 },
-                                                GetKeychainEntryResponse::AKeychainItemWithTheSpecifiedKeyWasNotFound
+                                                GetKeychainEntryV1Response::AKeychainItemWithTheSpecifiedKeyWasNotFound
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(404).expect("Unable to turn 404 into a StatusCode");
                                                 },
-                                                GetKeychainEntryResponse::UnexpectedError
+                                                GetKeychainEntryV1Response::UnexpectedError
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(500).expect("Unable to turn 500 into a StatusCode");
                                                 },
@@ -238,7 +317,113 @@ impl<T, C> hyper::service::Service<(Request<Body>, C)> for Service<T, C> where
                         }
             },
 
-            // SetKeychainEntry - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/set-keychain-entry
+            // GetPrometheusMetricsV1 - GET /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/get-prometheus-exporter-metrics
+            &hyper::Method::GET if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_PROMETHEUS_EXPORTER_METRICS) => {
+                                let result = api_impl.get_prometheus_metrics_v1(
+                                        &context
+                                    ).await;
+                                let mut response = Response::new(Body::empty());
+                                response.headers_mut().insert(
+                                            HeaderName::from_static("x-span-id"),
+                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().to_string().as_str())
+                                                .expect("Unable to create X-Span-ID header value"));
+
+                                        match result {
+                                            Ok(rsp) => match rsp {
+                                                GetPrometheusMetricsV1Response::OK
+                                                    (body)
+                                                => {
+                                                    *response.status_mut() = StatusCode::from_u16(200).expect("Unable to turn 200 into a StatusCode");
+                                                    response.headers_mut().insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_str("text/plain")
+                                                            .expect("Unable to create Content-Type header for GET_PROMETHEUS_METRICS_V1_OK"));
+                                                    let body = body;
+                                                    *response.body_mut() = Body::from(body);
+                                                },
+                                            },
+                                            Err(_) => {
+                                                // Application code returned an error. This should not happen, as the implementation should
+                                                // return a valid response.
+                                                *response.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+                                                *response.body_mut() = Body::from("An internal error occurred");
+                                            },
+                                        }
+
+                                        Ok(response)
+            },
+
+            // HasKeychainEntryV1 - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/has-keychain-entry
+            &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_HAS_KEYCHAIN_ENTRY) => {
+                // Body parameters (note that non-required body parameters will ignore garbage
+                // values, rather than causing a 400 response). Produce warning header and logs for
+                // any unused fields.
+                let result = body.to_raw().await;
+                match result {
+                            Ok(body) => {
+                                let mut unused_elements = Vec::new();
+                                let param_has_keychain_entry_request_v1: Option<models::HasKeychainEntryRequestV1> = if !body.is_empty() {
+                                    let deserializer = &mut serde_json::Deserializer::from_slice(&*body);
+                                    match serde_ignored::deserialize(deserializer, |path| {
+                                            warn!("Ignoring unknown field in body: {}", path);
+                                            unused_elements.push(path.to_string());
+                                    }) {
+                                        Ok(param_has_keychain_entry_request_v1) => param_has_keychain_entry_request_v1,
+                                        Err(_) => None,
+                                    }
+                                } else {
+                                    None
+                                };
+
+                                let result = api_impl.has_keychain_entry_v1(
+                                            param_has_keychain_entry_request_v1,
+                                        &context
+                                    ).await;
+                                let mut response = Response::new(Body::empty());
+                                response.headers_mut().insert(
+                                            HeaderName::from_static("x-span-id"),
+                                            HeaderValue::from_str((&context as &dyn Has<XSpanIdString>).get().0.clone().to_string().as_str())
+                                                .expect("Unable to create X-Span-ID header value"));
+
+                                        if !unused_elements.is_empty() {
+                                            response.headers_mut().insert(
+                                                HeaderName::from_static("warning"),
+                                                HeaderValue::from_str(format!("Ignoring unknown fields in body: {:?}", unused_elements).as_str())
+                                                    .expect("Unable to create Warning header value"));
+                                        }
+
+                                        match result {
+                                            Ok(rsp) => match rsp {
+                                                HasKeychainEntryV1Response::OK
+                                                    (body)
+                                                => {
+                                                    *response.status_mut() = StatusCode::from_u16(200).expect("Unable to turn 200 into a StatusCode");
+                                                    response.headers_mut().insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_str("application/json")
+                                                            .expect("Unable to create Content-Type header for HAS_KEYCHAIN_ENTRY_V1_OK"));
+                                                    let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
+                                                    *response.body_mut() = Body::from(body);
+                                                },
+                                            },
+                                            Err(_) => {
+                                                // Application code returned an error. This should not happen, as the implementation should
+                                                // return a valid response.
+                                                *response.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+                                                *response.body_mut() = Body::from("An internal error occurred");
+                                            },
+                                        }
+
+                                        Ok(response)
+                            },
+                            Err(e) => Ok(Response::builder()
+                                                .status(StatusCode::BAD_REQUEST)
+                                                .body(Body::from(format!("Couldn't read body parameter HasKeychainEntryRequestV1: {}", e)))
+                                                .expect("Unable to create Bad Request response due to unable to read body parameter HasKeychainEntryRequestV1")),
+                        }
+            },
+
+            // SetKeychainEntryV1 - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/set-keychain-entry
             &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_SET_KEYCHAIN_ENTRY) => {
                 // Body parameters (note that non-required body parameters will ignore garbage
                 // values, rather than causing a 400 response). Produce warning header and logs for
@@ -270,7 +455,7 @@ impl<T, C> hyper::service::Service<(Request<Body>, C)> for Service<T, C> where
                                                         .expect("Unable to create Bad Request response for missing body parameter SetKeychainEntryRequest")),
                                 };
 
-                                let result = api_impl.set_keychain_entry(
+                                let result = api_impl.set_keychain_entry_v1(
                                             param_set_keychain_entry_request,
                                         &context
                                     ).await;
@@ -289,26 +474,26 @@ impl<T, C> hyper::service::Service<(Request<Body>, C)> for Service<T, C> where
 
                                         match result {
                                             Ok(rsp) => match rsp {
-                                                SetKeychainEntryResponse::OK
+                                                SetKeychainEntryV1Response::OK
                                                     (body)
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(200).expect("Unable to turn 200 into a StatusCode");
                                                     response.headers_mut().insert(
                                                         CONTENT_TYPE,
                                                         HeaderValue::from_str("application/json")
-                                                            .expect("Unable to create Content-Type header for SET_KEYCHAIN_ENTRY_OK"));
+                                                            .expect("Unable to create Content-Type header for SET_KEYCHAIN_ENTRY_V1_OK"));
                                                     let body = serde_json::to_string(&body).expect("impossible to fail to serialize");
                                                     *response.body_mut() = Body::from(body);
                                                 },
-                                                SetKeychainEntryResponse::BadRequest
+                                                SetKeychainEntryV1Response::BadRequest
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(400).expect("Unable to turn 400 into a StatusCode");
                                                 },
-                                                SetKeychainEntryResponse::AuthorizationInformationIsMissingOrInvalid
+                                                SetKeychainEntryV1Response::AuthorizationInformationIsMissingOrInvalid
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(401).expect("Unable to turn 401 into a StatusCode");
                                                 },
-                                                SetKeychainEntryResponse::UnexpectedError
+                                                SetKeychainEntryV1Response::UnexpectedError
                                                 => {
                                                     *response.status_mut() = StatusCode::from_u16(500).expect("Unable to turn 500 into a StatusCode");
                                                 },
@@ -330,7 +515,10 @@ impl<T, C> hyper::service::Service<(Request<Body>, C)> for Service<T, C> where
                         }
             },
 
+            _ if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_DELETE_KEYCHAIN_ENTRY) => method_not_allowed(),
             _ if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_KEYCHAIN_ENTRY) => method_not_allowed(),
+            _ if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_PROMETHEUS_EXPORTER_METRICS) => method_not_allowed(),
+            _ if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_HAS_KEYCHAIN_ENTRY) => method_not_allowed(),
             _ if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_SET_KEYCHAIN_ENTRY) => method_not_allowed(),
             _ => Ok(Response::builder().status(StatusCode::NOT_FOUND)
                     .body(Body::empty())
@@ -345,10 +533,16 @@ impl<T> RequestParser<T> for ApiRequestParser {
     fn parse_operation_id(request: &Request<T>) -> Result<&'static str, ()> {
         let path = paths::GLOBAL_REGEX_SET.matches(request.uri().path());
         match request.method() {
-            // GetKeychainEntry - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/get-keychain-entry
-            &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_KEYCHAIN_ENTRY) => Ok("GetKeychainEntry"),
-            // SetKeychainEntry - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/set-keychain-entry
-            &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_SET_KEYCHAIN_ENTRY) => Ok("SetKeychainEntry"),
+            // DeleteKeychainEntryV1 - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/delete-keychain-entry
+            &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_DELETE_KEYCHAIN_ENTRY) => Ok("DeleteKeychainEntryV1"),
+            // GetKeychainEntryV1 - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/get-keychain-entry
+            &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_KEYCHAIN_ENTRY) => Ok("GetKeychainEntryV1"),
+            // GetPrometheusMetricsV1 - GET /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/get-prometheus-exporter-metrics
+            &hyper::Method::GET if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_GET_PROMETHEUS_EXPORTER_METRICS) => Ok("GetPrometheusMetricsV1"),
+            // HasKeychainEntryV1 - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/has-keychain-entry
+            &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_HAS_KEYCHAIN_ENTRY) => Ok("HasKeychainEntryV1"),
+            // SetKeychainEntryV1 - POST /api/v1/plugins/@hyperledger/cactus-plugin-keychain-vault/set-keychain-entry
+            &hyper::Method::POST if path.matched(paths::ID_API_V1_PLUGINS_HYPERLEDGER_CACTUS_PLUGIN_KEYCHAIN_VAULT_SET_KEYCHAIN_ENTRY) => Ok("SetKeychainEntryV1"),
             _ => Err(()),
         }
     }

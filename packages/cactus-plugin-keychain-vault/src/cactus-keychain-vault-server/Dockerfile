@@ -1,4 +1,4 @@
-FROM rust:1.49.0 as builder
+FROM rust:1.62.1 as builder
 
 WORKDIR /
 RUN USER=root cargo new --bin cactus-keychain-vault-server

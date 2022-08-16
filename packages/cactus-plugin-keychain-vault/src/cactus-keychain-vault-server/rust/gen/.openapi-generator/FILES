@@ -1,14 +1,7 @@
 .cargo/config
 .gitignore
-.openapi-generator-ignore
 Cargo.toml
 README.md
-api/openapi.yaml
-docs/GetKeychainEntryRequest.md
-docs/GetKeychainEntryResponse.md
-docs/SetKeychainEntryRequest.md
-docs/SetKeychainEntryResponse.md
-docs/default_api.md
 examples/ca.pem
 examples/client/main.rs
 examples/server-chain.pem
