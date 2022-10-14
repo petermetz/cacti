@@ -19,7 +19,7 @@ repositories {
     if (github_url == "") {
         println("Fetching Locally built Weaver packages.")
         flatDir {
-            dirs '../../../../common/protos-java-kt/build/libs'
+            dirs '../../../../weaver-common/protos-java-kt/build/libs'
         }
     }
 }
@@ -63,6 +63,7 @@ configurations {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation 'com.google.code.gson:gson:2.9.1'
 
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
@@ -73,7 +74,7 @@ dependencies {
     compile "io.arrow-kt:arrow-syntax:$arrow_version"
     
     // weaver-protos
-    implementation "com.weaver:protos-java-kt:$weaver_version"
+    compile "com.weaver:protos-java-kt:$weaver_version"
     
     compile "com.google.protobuf:protobuf-java:$protobuf_version"
     compile "com.google.protobuf:protobuf-java-util:$protobuf_version"
@@ -111,4 +112,8 @@ publishing {
             }
         }
     }
+}
+
+test {
+    maxHeapSize = "4096m"
 }

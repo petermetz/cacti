@@ -40,7 +40,8 @@
     ],
     "scripts": {
       "watch": "npm-watch",
-      "codegen": "(cd src/main && make build-local)"
+      "build": "(cd src/main && make build-local)",
+      "codegen": "npm run build"
     },
     "dependencies": {
     },

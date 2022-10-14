@@ -53,9 +53,9 @@ repositories {
     }
     else {
         flatDir {
-            dirs '../../core/network/corda-interop-app/interop-contracts/build/libs'
-            dirs '../../core/network/corda-interop-app/interop-workflows/build/libs'
-            dirs '../../common/protos-java-kt/build/libs'
+            dirs '../../weaver-core/network-contracts/corda/interop-contracts/build/libs'
+            dirs '../../weaver-core/network-contracts/corda/interop-workflows/build/libs'
+            dirs '../../weaver-common/protos-java-kt/build/libs'
         }
     }
 }

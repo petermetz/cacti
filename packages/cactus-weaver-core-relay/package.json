@@ -40,8 +40,8 @@
     ],
     "scripts": {
       "watch": "npm-watch",
-      "protos": "cp ../../weaver-common/protos src/main/protos",
-      "build": "(cd src/main && cargo build)",
+      "protos": "cp -r ../../weaver-common/protos src/main/protos",
+      "build": "npm run protos && (cd src/main && cargo build)",
       "clean": "(cd src/main && make clean)"
     },
     "dependencies": {

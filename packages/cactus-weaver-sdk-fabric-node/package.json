@@ -1,7 +1,7 @@
 {
-    "name": "@hyperledger/weaver-corda-sdk",
-    "version": "1.2.9",
-    "description": "Weaver Corda SDK",
+    "name": "@hyperledger/cactus-weaver-sdk-fabric-node",
+    "version": "1.3.1",
+    "description": "Weaver Fabric SDK",
     "keywords": [
       "Hyperledger",
       "Cactus",
@@ -40,7 +40,7 @@
     ],
     "scripts": {
       "watch": "npm-watch",
-      "build": "cd src/main && make build"
+      "build": "cd src/main/js && make build-local"
     },
     "dependencies": {
     },

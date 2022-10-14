@@ -9,15 +9,15 @@ build: .npmrc
 
 build-local:
 	mkdir -p protos-js && \
-		cp -r ../../../common/protos-js/common ./protos-js/ && \
-		cp -r ../../../common/protos-js/corda ./protos-js/ && \
-		cp -r ../../../common/protos-js/driver ./protos-js/ && \
-		cp -r ../../../common/protos-js/fabric ./protos-js/ && \
-		cp -r ../../../common/protos-js/msp ./protos-js/ && \
-		cp -r ../../../common/protos-js/networks ./protos-js/ && \
-		cp -r ../../../common/protos-js/peer ./protos-js/ && \
-		cp -r ../../../common/protos-js/relay ./protos-js/ && \
-		cp -r ../../../common/protos-js/package.json ./protos-js/
+		cp -r ../../../weaver-common/protos-js/common ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/corda ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/driver ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/fabric ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/msp ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/networks ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/peer ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/relay ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/package.json ./protos-js/
 	cp package.json package-remote.json && \
 		cp package-local.json package.json && \
 		npm install && \
@@ -27,15 +27,15 @@ build-local:
 	
 build-image-local:
 	mkdir -p protos-js && \
-		cp -r ../../../common/protos-js/common ./protos-js/ && \
-		cp -r ../../../common/protos-js/corda ./protos-js/ && \
-		cp -r ../../../common/protos-js/driver ./protos-js/ && \
-		cp -r ../../../common/protos-js/fabric ./protos-js/ && \
-		cp -r ../../../common/protos-js/msp ./protos-js/ && \
-		cp -r ../../../common/protos-js/networks ./protos-js/ && \
-		cp -r ../../../common/protos-js/peer ./protos-js/ && \
-		cp -r ../../../common/protos-js/relay ./protos-js/ && \
-		cp -r ../../../common/protos-js/package.json ./protos-js/
+		cp -r ../../../weaver-common/protos-js/common ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/corda ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/driver ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/fabric ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/msp ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/networks ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/peer ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/relay ./protos-js/ && \
+		cp -r ../../../weaver-common/protos-js/package.json ./protos-js/
 	cp package.json package-remote.json
 	cp package-local.json package.json
 	docker build --build-arg BUILD_TAG="local" --build-arg GIT_URL=$(GIT_URL) -t ${DOCKER_IMAGE_NAME}:$(DOCKER_TAG) -f fabricDriver.dockerfile.local .

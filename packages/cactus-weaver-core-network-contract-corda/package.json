@@ -39,7 +39,8 @@
       "dist/*"
     ],
     "scripts": {
-      "watch": "npm-watch"
+      "watch": "npm-watch",
+      "build": "cd src/main && make build-local"
     },
     "dependencies": {
     },
