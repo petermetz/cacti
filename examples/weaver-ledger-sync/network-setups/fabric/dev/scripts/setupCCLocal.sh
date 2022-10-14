@@ -1,7 +1,7 @@
 directory=$(dirname $0)
 
 CHAINCODE_PATH=$directory/../../../fabric/shared/chaincode
-INTEROP_CC_PATH=$PWD/../../../../core/network/fabric-interop-cc
+INTEROP_CC_PATH=$PWD/../../../../../weaver-core/network-contracts/fabric
 
 echo "Setting up Interop CC..."
 

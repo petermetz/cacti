@@ -3,8 +3,8 @@
   "version": "1.3.1",
   "description": "An example project demonstrating how Weaver can be used for cross-chain data sharing across smart contracts.",
   "scripts": {
-    "start": "cd network-setups/fabric/dev && make start-network1-local && make start-network2-local",
-    "start-local": "cd network-setups/fabric/dev && make start-network1-local && make start-network2-local"
+    "start": "cd network-setups/fabric/dev && make start-interop",
+    "start-local": "cd network-setups/fabric/dev && make start-interop-local"
   },
   "private": true,
   "publishConfig": {
