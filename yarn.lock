@@ -4642,14 +4642,6 @@
   dependencies:
     "@types/express" "*"
 
-"@types/express-jwt@6.0.2":
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/@types/express-jwt/-/express-jwt-6.0.2.tgz#15938f9a50945ccab35361227e438f98abdb713f"
-  integrity sha512-WDnO/0jeWyhX253TOIJHZzLE/pmXSucslKeztphjZDxim/wYDaDeDcj6/U9YAHcgFfwBu+I3Obfy+xB6/VaRcA==
-  dependencies:
-    "@types/express" "*"
-    "@types/express-unless" "*"
-
 "@types/express-serve-static-core@*", "@types/express-serve-static-core@^4.17.18":
   version "4.17.28"
   resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-4.17.28.tgz#c47def9f34ec81dc6328d0b1b5303d1ec98d86b8"
@@ -4658,13 +4650,6 @@
     "@types/node" "*"
     "@types/qs" "*"
     "@types/range-parser" "*"
-
-"@types/express-unless@*":
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/@types/express-unless/-/express-unless-0.5.3.tgz#271f8603617445568ed0d6efe25a7d2f338544c1"
-  integrity sha512-TyPLQaF6w8UlWdv4gj8i46B+INBVzURBNRahCozCSXfsK2VTlL1wNyTlMKw817VHygBtlcl5jfnPadlydr06Yw==
-  dependencies:
-    "@types/express" "*"
 
 "@types/express@*", "@types/express@4.17.13":
   version "4.17.13"
@@ -4813,6 +4798,13 @@
   version "8.5.4"
   resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-8.5.4.tgz#50ccaf0aa6f5d7b9956e70fe323b76e582991913"
   integrity sha512-4L8msWK31oXwdtC81RmRBAULd0ShnAHjBuKT9MRQpjP0piNrZdXyTRcKY9/UIfhGeKIT4PvF5amOOUbbT/9Wpg==
+  dependencies:
+    "@types/node" "*"
+
+"@types/jsonwebtoken@^9":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-9.0.1.tgz#29b1369c4774200d6d6f63135bf3d1ba3ef997a4"
+  integrity sha512-c5ltxazpWabia/4UzhIoaDcIza4KViOQhdbjRlfcIGVnsE3c3brkz9Z+F/EeJIECOQP7W7US2hNE930cWWkPiw==
   dependencies:
     "@types/node" "*"
 
@@ -6271,7 +6263,7 @@ async-limiter@~1.0.0:
   resolved "https://registry.yarnpkg.com/async-limiter/-/async-limiter-1.0.1.tgz#dd379e94f0db8310b08291f9d64c3209766617fd"
   integrity sha512-csOlWGAcRFJaI6m+F2WKdnMKr4HhdhFVBk0H/QbJFMCr+uO2kwohwXQPxw/9OCxp05r5ghVBFSyioixx3gfkNQ==
 
-async@^1.4.0, async@^1.5.0, async@^1.5.2:
+async@^1.4.0, async@^1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
   integrity sha1-7GphrlZIDAw8skHJVhjiCJL5Zyo=
@@ -10901,15 +10893,14 @@ express-jwt-authz@2.4.1:
   resolved "https://registry.yarnpkg.com/express-jwt-authz/-/express-jwt-authz-2.4.1.tgz#405b303b3479ad3e862878ac0c08be191040c8e5"
   integrity sha512-ruH86e2NvWicG9maStztyAyBJV0E8RsInXUm6Kuc/9pDtVJmJw3qigv1MEVs5bH+aksZuxocYZdz+N1V/9F+Dg==
 
-express-jwt@6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-6.0.0.tgz#20886c730983ffb1c706a4383235df86eff349b8"
-  integrity sha512-C26y9myRjx7CyhZ+BAT3p+gQyRCoDZ7qo8plCvLDaRT6je6ALIAQknT6XLVQGFKwIy/Ux7lvM2MNap5dt0T7gA==
+express-jwt@8.4.1:
+  version "8.4.1"
+  resolved "https://registry.yarnpkg.com/express-jwt/-/express-jwt-8.4.1.tgz#ba817c1ced7c6f1f7017fc2e6deac207011e8acb"
+  integrity sha512-IZoZiDv2yZJAb3QrbaSATVtTCYT11OcqgFGoTN4iKVyN6NBkBkhtVIixww5fmakF0Upt5HfOxJuS6ZmJVeOtTQ==
   dependencies:
-    async "^1.5.0"
-    express-unless "^0.3.0"
-    jsonwebtoken "^8.1.0"
-    lodash.set "^4.0.0"
+    "@types/jsonwebtoken" "^9"
+    express-unless "^2.1.3"
+    jsonwebtoken "^9.0.0"
 
 express-openapi-validator@3.10.0:
   version "3.10.0"
@@ -10953,10 +10944,10 @@ express-rate-limit@6.3.0:
   resolved "https://registry.yarnpkg.com/express-rate-limit/-/express-rate-limit-6.3.0.tgz#253387ce4d36c9c2cc77c7c676068deb36cc0821"
   integrity sha512-932Io1VGKjM3ppi7xW9sb1J5nVkEJSUiOtHw2oE+JyHks1e+AXuOBSXbJKM0mcXwEnW1TibJibQ455Ow1YFjfg==
 
-express-unless@^0.3.0:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/express-unless/-/express-unless-0.3.1.tgz#2557c146e75beb903e2d247f9b5ba01452696e20"
-  integrity sha1-JVfBRudb65A+LSR/m1ugFFJpbiA=
+express-unless@^2.1.3:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/express-unless/-/express-unless-2.1.3.tgz#f951c6cca52a24da3de32d42cfd4db57bc0f9a2e"
+  integrity sha512-wj4tLMyCVYuIIKHGt0FhCtIViBcwzWejX0EjNxveAa6dG+0XBCQhMbx+PnkLkFCxLC69qoFrxds4pIyL88inaQ==
 
 express@4.16.4:
   version "4.16.4"
@@ -15069,7 +15060,7 @@ jsonpath@^1.0.2:
     static-eval "2.0.2"
     underscore "1.12.1"
 
-jsonwebtoken@8.5.1, jsonwebtoken@^8.1.0, jsonwebtoken@^8.5.1:
+jsonwebtoken@8.5.1, jsonwebtoken@^8.5.1:
   version "8.5.1"
   resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-8.5.1.tgz#00e71e0b8df54c2121a1f26137df2280673bcc0d"
   integrity sha512-XjwVfRS6jTMsqYs0EsuJ4LGxXV14zQybNd4L2r0UvbVnSF9Af8x7p5MzbJ90Ioz/9TI41/hTCvznF/loiSzn8w==
@@ -15085,7 +15076,7 @@ jsonwebtoken@8.5.1, jsonwebtoken@^8.1.0, jsonwebtoken@^8.5.1:
     ms "^2.1.1"
     semver "^5.6.0"
 
-jsonwebtoken@9.0.0:
+jsonwebtoken@9.0.0, jsonwebtoken@^9.0.0:
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-9.0.0.tgz#d0faf9ba1cc3a56255fe49c0961a67e520c1926d"
   integrity sha512-tuGfYXxkQGDPnLJ7SibiQgVgeDgfbPq2k2ICcbgqW8WxWLBAxKQM/ZCu/IT8SOSwmaYl4dpTFCW5xZv7YbbWUw==
@@ -15874,11 +15865,6 @@ lodash.once@^4.0.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
   integrity sha1-DdOXEhPHxW34gJd9UEyI+0cal6w=
-
-lodash.set@^4.0.0:
-  version "4.3.2"
-  resolved "https://registry.yarnpkg.com/lodash.set/-/lodash.set-4.3.2.tgz#d8757b1da807dde24816b0d6a84bea1a76230b23"
-  integrity sha1-2HV7HagH3eJIFrDWqEvqGnYjCyM=
 
 lodash.throttle@^4.1.1:
   version "4.1.1"
