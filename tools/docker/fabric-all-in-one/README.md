@@ -54,7 +54,7 @@ From the project root:
 
 ```sh
 DOCKER_BUILDKIT=1 docker build ./tools/docker/fabric-all-in-one/ -f ./tools/docker/fabric-all-in-one/Dockerfile_v2.x -t faio2x
-docker run --detach --privileged --publish-all --env FABRIC_VERSION=2.2.0 faio2x
+docker run --detach --privileged --publish-all --env FABRIC_VERSION=2.2.13 faio2x
 
 docker ps
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                     PORTS                                                                                                                                                                                                                                                                                                                                                                                  NAMES
