@@ -100,7 +100,7 @@
     "@lerna-lite/run": "1.17.0",
     "@openapitools/openapi-generator-cli": "2.4.14",
     "@types/fs-extra": "9.0.12",
-    "@types/jest": "28.1.1",
+    "@types/jest": "29.5.3",
     "@types/node": "15.14.7",
     "@types/node-fetch": "2.5.12",
     "@types/tape": "4.13.2",
@@ -133,8 +133,8 @@
     "grpc_tools_node_protoc_ts": "5.3.1",
     "husky": "7.0.1",
     "inquirer": "8.1.2",
-    "jest": "28.1.0",
-    "jest-extended": "2.0.0",
+    "jest": "29.6.2",
+    "jest-extended": "4.0.1",
     "json5": "2.2.2",
     "license-report": "6.4.0",
     "lint-staged": "11.1.2",
@@ -156,7 +156,7 @@
     "tap": "16.3.7",
     "tape": "5.6.3",
     "tape-promise": "4.0.0",
-    "ts-jest": "28.0.2",
+    "ts-jest": "29.1.1",
     "ts-loader": "9.2.5",
     "ts-node": "10.9.1",
     "typescript": "4.9.5",
@@ -227,6 +227,9 @@
       "built": false
     },
     "nice-napi": {
+      "built": false
+    },
+    "nodemon": {
       "built": false
     },
     "pkcs11js": {
