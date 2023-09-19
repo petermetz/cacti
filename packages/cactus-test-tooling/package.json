@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@hyperledger/cactus-common": "2.0.0-alpha.2",
+    "@hyperledger/cactus-core-api": "2.0.0-alpha.2",
     "axios": "1.6.0",
     "compare-versions": "3.6.0",
     "dockerode": "3.3.0",
@@ -79,6 +80,7 @@
     "node-ssh": "13.1.0",
     "p-retry": "4.6.1",
     "run-time-error-cjs": "1.4.0",
+    "safe-stable-stringify": "2.4.3",
     "socket.io": "4.5.4",
     "socket.io-client-fixed-types": "4.5.4",
     "tar-stream": "2.2.0",

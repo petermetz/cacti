@@ -546,6 +546,12 @@ export interface PluginImport {
      */
     'packageName': string;
     /**
+     * If specified, it overrides the installation source of the package from the npm registry configured to be a folder on the local file-system. This is useful for testing how a plugin package behaves when loaded into the API server without having to publish it to a registry first.
+     * @type {string}
+     * @memberof PluginImport
+     */
+    'pluginPkgInstallSource'?: string;
+    /**
      * 
      * @type {PluginImportType}
      * @memberof PluginImport

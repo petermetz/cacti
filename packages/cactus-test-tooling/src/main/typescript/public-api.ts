@@ -217,3 +217,12 @@ export {
   FABRIC_25_LTS_FABRIC_SAMPLES__ORDERER_TLS_ROOTCERT_FILE_ORG_2,
   IFabricOrgEnvInfo,
 } from "./fabric/fabric-samples-env-constants";
+export { createDummyPluginImport } from "./common/create-dummy-plugin-import";
+
+export {
+  IOpenApiFuzzerContainerOptions,
+  K_DEFAULT_OPENAPI_FUZZER_CONTAINER_WORKDIR,
+  K_DEFAULT_OPENAPI_FUZZER_IMAGE_NAME,
+  K_DEFAULT_OPENAPI_FUZZER_IMAGE_VERSION,
+  OpenApiFuzzerContainer,
+} from "./openapi-fuzzer/openapi-fuzzer-container";

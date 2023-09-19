@@ -154,6 +154,30 @@
           }
         }
       }
+    },
+    "/api/v1/api-server/get-aggregate-openapi-json": {
+      "get": {
+        "summary": "Returns the combined openapi.json document of all plugins currently installed in the API server.",
+        "description": "The various distinct openapi.json documents (formerly called swagger.json) are flattened into a single one.",
+        "x-hyperledger-cactus": {
+          "http": {
+            "verbLowerCase": "get",
+            "path": "/api/v1/api-server/get-aggregate-openapi-json"
+          }
+        },
+        "operationId": "getAggregateOpenapiJsonV1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

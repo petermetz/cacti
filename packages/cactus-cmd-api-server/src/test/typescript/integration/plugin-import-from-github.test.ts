@@ -40,12 +40,12 @@ test("can install plugins at runtime with specified version based on imports", a
       packageName: "@hyperledger/cactus-dummy-package",
       type: PluginImportType.Local,
       action: PluginImportAction.Install,
+      pluginPkgInstallSource:
+        "https://gitpkg.now.sh/hyperledger/cactus/packages/cactus-cmd-api-server/src/test/resources/cactus-dummy-package?main",
       options: {
         instanceId: uuidv4(),
         keychainId: uuidv4(),
         logLevel,
-        packageSrc:
-          "https://gitpkg.now.sh/hyperledger/cactus/packages/cactus-cmd-api-server/src/test/resources/cactus-dummy-package?main",
       },
     },
   ];
