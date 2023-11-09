@@ -22,6 +22,7 @@ import {
   IListenOptions,
   LogLevelDesc,
   LoggerProvider,
+  LoggerProvider,
   Servers,
 } from "@hyperledger/cactus-common";
 import { PluginRegistry } from "@hyperledger/cactus-core";
@@ -95,6 +96,11 @@ describe(testCase, () => {
   });
 
   test(testCase, async () => {
+    const LOG = LoggerProvider.getOrCreate({
+      label: "deploy-cc-from-golang-source-private-data",
+      level: logLevel,
+    });
+
     const LOG = LoggerProvider.getOrCreate({
       label: "deploy-cc-from-golang-source-private-data",
       level: logLevel,

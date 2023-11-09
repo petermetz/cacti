@@ -266,6 +266,7 @@ export class PluginLedgerConnectorFabric
     }
 
     this.signCallback = opts.signCallback;
+    this.opts.sshConfig = this.decorateSshConfigWithLogger(this.opts.sshConfig);
   }
 
   public getOpenApiSpec(): unknown {
@@ -310,6 +311,16 @@ export class PluginLedgerConnectorFabric
   }
 
   private enableSshDebugLogs(cfg: SshConfig): SshConfig {
+    const fnTag = `${this.className}#decorateSshConfigWithLogger()`;
+    Checks.truthy(cfg, `${fnTag} cfg must be truthy.`);
+    return {
+      ...cfg,
+      debug: (msg: unknown) => this.log.debug(`[NodeSSH] %o`, msg),
+    };
+  }
+
+
+  private decorateSshConfigWithLogger(cfg: SshConfig): SshConfig {
     const fnTag = `${this.className}#decorateSshConfigWithLogger()`;
     Checks.truthy(cfg, `${fnTag} cfg must be truthy.`);
     return {
