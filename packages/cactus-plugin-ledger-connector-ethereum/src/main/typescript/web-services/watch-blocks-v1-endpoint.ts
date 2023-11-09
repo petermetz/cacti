@@ -19,6 +19,7 @@ import {
   ConvertWeb3ReturnToString,
   Web3StringReturnFormat,
 } from "../types/util-types";
+import { NewHeadsSubscription } from "web3-eth";
 
 export interface IWatchBlocksV1EndpointConfiguration {
   logLevel?: LogLevelDesc;
@@ -57,13 +58,24 @@ export class WatchBlocksV1Endpoint {
     this.log = LoggerProvider.getOrCreate({ level, label });
   }
 
+  private async unsubscribeReEntrant(sub: NewHeadsSubscription): Promise<void> {
+    if (!sub.args.cactiUnsubscribeCalled) {
+      sub.args.cactiUnsubscribeCalled = true;
+      this.log.debug("unsubscribeReEntrant() - calling unsubscribe()");
+      await sub.unsubscribe();
+      this.log.debug("unsubscribeReEntrant() - unsubscribe() call done OK");
+    } else {
+      this.log.debug("unsubscribeReEntrant() - skipping unsubscribe()");
+    }
+  }
+
   public async subscribe(): Promise<NewHeadsSubscription> {
     const { socket, log, web3, isGetBlockData } = this;
     log.info(`${WatchBlocksV1.Subscribe} => ${socket.id}`);
 
     const newBlocksSubscription = await web3.eth.subscribe(
       "newBlockHeaders",
-      undefined,
+      { cactiUnsubscribeCalled: false },
       Web3StringReturnFormat,
     );
 
@@ -109,19 +121,19 @@ export class WatchBlocksV1Endpoint {
     newBlocksSubscription.on("error", async (error) => {
       console.log("Error when subscribing to New block header: ", error);
       socket.emit(WatchBlocksV1.Error, safeStringifyException(error));
-      newBlocksSubscription.unsubscribe();
+      this.unsubscribeReEntrant(newBlocksSubscription);
     });
 
     log.debug("Subscribing to Web3 new block headers event...");
 
     socket.on("disconnect", async (reason: string) => {
       log.info("WebSocket:disconnect reason=%o", reason);
-      await newBlocksSubscription.unsubscribe();
+      await this.unsubscribeReEntrant(newBlocksSubscription);
     });
 
     socket.on(WatchBlocksV1.Unsubscribe, async () => {
       log.debug(`${WatchBlocksV1.Unsubscribe}: unsubscribing Web3...`);
-      await newBlocksSubscription.unsubscribe();
+      await this.unsubscribeReEntrant(newBlocksSubscription);
       log.debug("Web3 unsubscribe done.");
     });
 

@@ -608,7 +608,7 @@ describe("Verifier integration with ethereum connector tests", () => {
   test("Monitor new blocks data on Ethereum", async () => {
     const ledgerEvent = await monitorAndGetBlock({ getBlockData: true });
     //const ledgerEvent = await monitorAndGetBlock();
-    log.info("ledgerEvent", ledgerEvent);
+    log.debug("ledgerEvent", ledgerEvent);
     // assert well-formed output
     expect(ledgerEvent.id).toEqual("");
     expect(ledgerEvent.verifierId).toEqual(ethereumValidatorId);

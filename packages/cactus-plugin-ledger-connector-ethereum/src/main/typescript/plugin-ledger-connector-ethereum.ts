@@ -11,7 +11,6 @@ import Web3, {
   TransactionReceiptBase,
   WebSocketProvider,
 } from "web3";
-import { NewHeadsSubscription } from "web3-eth";
 import { PayableMethodObject } from "web3-eth-contract";
 
 import OAS from "../json/openapi.json";
@@ -84,10 +83,8 @@ import {
   Web3StringReturnFormat,
   convertWeb3ReceiptStatusToBool,
 } from "./types/util-types";
+import { Web3Subscription } from "web3-core";
 
-// Used when waiting for WS requests to be send correctly before disconnecting
-const waitForWsProviderRequestsTimeout = 5 * 1000; // 5s
-const waitForWsProviderRequestsStep = 500; // 500ms
 type RunContractDeploymentInput = {
   web3SigningCredential:
     | Web3SigningCredentialCactiKeychainRef
@@ -144,8 +141,6 @@ export class PluginLedgerConnectorEthereum
   private readonly web3WatchBlock?: Web3;
   private endpoints: IWebServiceEndpoint[] | undefined;
   public static readonly CLASS_NAME = "PluginLedgerConnectorEthereum";
-  private watchBlocksSubscriptions: Map<string, NewHeadsSubscription> =
-    new Map();
 
   public get className(): string {
     return PluginLedgerConnectorEthereum.CLASS_NAME;
@@ -235,68 +230,37 @@ export class PluginLedgerConnectorEthereum
     return this.instanceId;
   }
 
-  private async removeWatchBlocksSubscriptionForSocket(socketId: string) {
-    try {
-      const subscription = this.watchBlocksSubscriptions.get(socketId);
-      if (subscription) {
-        await subscription.unsubscribe();
-        this.watchBlocksSubscriptions.delete(socketId);
-        this.log.info(`${socketId} ${WatchBlocksV1.Unsubscribe} OK`);
-      }
-    } catch (error) {
-      this.log.debug(
-        `${socketId} ${WatchBlocksV1.Unsubscribe} Failed (possibly already closed)`,
-      );
-    }
-  }
-
-  private async closeWeb3jsConnection(wsProvider?: WebSocketProvider) {
-    try {
-      if (!wsProvider || typeof wsProvider.SocketConnection === "undefined") {
-        this.log.debug("Non-WS provider found - finish");
-        return;
-      }
-
-      // Wait for WS requests to finish
-      const looseWsProvider = wsProvider as any; // Used to access protected fields of WS provider
-      let waitForRequestRemainingSteps =
-        waitForWsProviderRequestsTimeout / waitForWsProviderRequestsStep;
-      while (
-        waitForRequestRemainingSteps > 0 &&
-        (looseWsProvider._pendingRequestsQueue.size > 0 ||
-          looseWsProvider._sentRequestsQueue.size > 0)
-      ) {
-        this.log.debug(
-          `Waiting for pending and sent requests to finish on web3js WS provider (${waitForWsProviderRequestsStep})...`,
-        );
-        await new Promise((resolve) =>
-          setTimeout(resolve, waitForWsProviderRequestsStep),
-        );
-        waitForRequestRemainingSteps--;
-      }
-
-      // Disconnect the socket provider
-      wsProvider.disconnect();
-    } catch (error) {
-      this.log.error("Error when disconnecting web3js provider!", error);
-    }
-  }
-
   public async shutdown(): Promise<void> {
     this.log.info(`Shutting down ${this.className}...`);
 
-    this.log.debug("Remove any remaining web3js subscriptions");
-    for (const socketId of this.watchBlocksSubscriptions.keys()) {
-      this.log.debug(`${WatchBlocksV1.Unsubscribe} shutdown`);
-      await this.removeWatchBlocksSubscriptionForSocket(socketId);
-    }
+    await this.web3.subscriptionManager.unsubscribe(({ id, sub }) => {
+      if (!(sub instanceof Web3Subscription)) {
+        this.log.warn(`Encountered invalid Web3 subscripton instance:`, sub);
+        return false;
+      }
+      const web3Sub = sub as Web3Subscription<never>;
 
-    await this.closeWeb3jsConnection(
-      this.web3.currentProvider as WebSocketProvider,
-    );
-    await this.closeWeb3jsConnection(
-      this.web3WatchBlock?.currentProvider as WebSocketProvider,
-    );
+      const unsubscribed = web3Sub.args.cactiUnsubscribeCalled === true;
+      this.log.debug("Web3Sub ID=%o, unsubscribed=%o", id, unsubscribed);
+
+      if (!unsubscribed) {
+        web3Sub.args.cactiUnsubscribeCalled = true;
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    // Now that we are confident that none of the endpoints are holding onto
+    // any Web3 resources (because we've shut them all down just now), we can
+    // finally call disconnect on the Web3 provider of the connector and not
+    // have it crash due to pending requests in it's queue.
+    const provider = this.web3.currentProvider;
+    try {
+      provider?.disconnect(1000, "shutdown");
+    } catch (ex) {
+      this.log.warn("Web3 provider disconnect fail - may not be supported", ex);
+    }
   }
 
   public async onPluginInit(): Promise<unknown> {
