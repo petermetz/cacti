@@ -14924,6 +14924,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/express@npm:4.17.21":
+  version: 4.17.21
+  resolution: "@types/express@npm:4.17.21"
+  dependencies:
+    "@types/body-parser": "npm:*"
+    "@types/express-serve-static-core": "npm:^4.17.33"
+    "@types/qs": "npm:*"
+    "@types/serve-static": "npm:*"
+  checksum: 10/7a6d26cf6f43d3151caf4fec66ea11c9d23166e4f3102edfe45a94170654a54ea08cf3103d26b3928d7ebcc24162c90488e33986b7e3a5f8941225edd5eb18c7
+  languageName: node
+  linkType: hard
+
 "@types/express@npm:^4.17.13":
   version: 4.17.17
   resolution: "@types/express@npm:4.17.17"
@@ -15922,6 +15934,15 @@ __metadata:
     "@types/node": "npm:*"
     "@types/ssh2-streams": "npm:*"
   checksum: 10/9dea0db5f1dc1fd136c85b973457a6dd3854e4bea9da2b65cb22601cb10367f67307efeb1b24c810afe55a720bcb4e0af09976fde04d90457035d6615529846e
+  languageName: node
+  linkType: hard
+
+"@types/ssh2@npm:1.11.16":
+  version: 1.11.16
+  resolution: "@types/ssh2@npm:1.11.16"
+  dependencies:
+    "@types/node": "npm:^18.11.18"
+  checksum: 10/1129dcfcfb5193158628df89f62967c7e4f763ee227ef4e53e16d6ab597b99d234ebb608f9a115e8048e96b86058aaad48ed2cf1e16bc5bfa3b0f946f0cf4c5d
   languageName: node
   linkType: hard
 
@@ -45837,6 +45858,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"solc@npm:0.8.22":
+  version: 0.8.22
+  resolution: "solc@npm:0.8.22"
+  dependencies:
+    command-exists: "npm:^1.2.8"
+    commander: "npm:^8.1.0"
+    follow-redirects: "npm:^1.12.1"
+    js-sha3: "npm:0.8.0"
+    memorystream: "npm:^0.3.1"
+    semver: "npm:^5.5.0"
+    tmp: "npm:0.0.33"
+  bin:
+    solcjs: solc.js
+  checksum: 10/20200acfd254d5d70a610cc98a86e28512a747b166bed0f38bbfa2f1828e4503b84e34bf9297085e1ac2f3bb487c6268dde4ada9582745cc40d37fd7d89bd2d8
+  languageName: node
+  linkType: hard
+
 "solc@npm:0.8.6":
   version: 0.8.6
   resolution: "solc@npm:0.8.6"
@@ -50985,6 +51023,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web3-eth-accounts@npm:4.1.0, web3-eth-accounts@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "web3-eth-accounts@npm:4.1.0"
+  dependencies:
+    "@ethereumjs/rlp": "npm:^4.0.1"
+    crc-32: "npm:^1.2.2"
+    ethereum-cryptography: "npm:^2.0.0"
+    web3-errors: "npm:^1.1.3"
+    web3-types: "npm:^1.3.0"
+    web3-utils: "npm:^4.0.7"
+    web3-validator: "npm:^2.0.3"
+  checksum: 10/2048b3d1211593a44921a7cf200a2a407d82f832eae5751aa3b193012f4c084038814878c9423988636435f9b41967769a854ab643fb7d3cda8d898ad070be26
+  languageName: node
+  linkType: hard
+
 "web3-eth-accounts@npm:4.1.1, web3-eth-accounts@npm:^4.1.1":
   version: 4.1.1
   resolution: "web3-eth-accounts@npm:4.1.1"
@@ -51012,21 +51065,6 @@ __metadata:
     web3-utils: "npm:^4.0.5"
     web3-validator: "npm:^2.0.1"
   checksum: 10/37e9e2d909544e3d9b8b9bf3168365cd068653b18880cb65835c9b2a3acefc885ecb18de52ead56f7a3663b33a6bb58d19e4e9fc21f2618cd9cb262a355a7dc1
-  languageName: node
-  linkType: hard
-
-"web3-eth-accounts@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "web3-eth-accounts@npm:4.1.0"
-  dependencies:
-    "@ethereumjs/rlp": "npm:^4.0.1"
-    crc-32: "npm:^1.2.2"
-    ethereum-cryptography: "npm:^2.0.0"
-    web3-errors: "npm:^1.1.3"
-    web3-types: "npm:^1.3.0"
-    web3-utils: "npm:^4.0.7"
-    web3-validator: "npm:^2.0.3"
-  checksum: 10/2048b3d1211593a44921a7cf200a2a407d82f832eae5751aa3b193012f4c084038814878c9423988636435f9b41967769a854ab643fb7d3cda8d898ad070be26
   languageName: node
   linkType: hard
 

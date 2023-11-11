@@ -1,0 +1,18 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Hyperledger Cacti Example - Harmonia",
+    "description": "Demonstrates how the Harmonia Lab use-cases can be implemented and extended.",
+    "version": "v2.0.0-alpha.2",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "components": {
+    "schemas": {
+    }
+  },
+  "paths": {
+  }
+}

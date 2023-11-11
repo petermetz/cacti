@@ -1,0 +1,7 @@
+services:
+  backend:
+    build: ./cacti-example-harmonia-backend/
+    ports:
+      - "4000:4000"
+  frontend:
+    build: ./cacti-example-harmonia-frontend/
