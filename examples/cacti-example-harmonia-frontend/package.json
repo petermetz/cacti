@@ -57,8 +57,6 @@
     "@hyperledger/cactus-api-client": "2.0.0-alpha.2",
     "@hyperledger/cactus-common": "2.0.0-alpha.2",
     "@hyperledger/cactus-core-api": "2.0.0-alpha.2",
-    "@hyperledger/cactus-example-supply-chain-business-logic-plugin": "2.0.0-alpha.2",
-    "@hyperledger/cactus-plugin-consortium-manual": "2.0.0-alpha.2",
     "@hyperledger/cactus-plugin-ledger-connector-besu": "2.0.0-alpha.2",
     "@hyperledger/cactus-plugin-ledger-connector-corda": "2.0.0-alpha.2",
     "@ionic-native/core": "5.36.0",

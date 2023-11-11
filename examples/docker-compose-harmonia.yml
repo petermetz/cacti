@@ -1,7 +1,28 @@
 services:
-  backend:
-    build: ./cacti-example-harmonia-backend/
-    ports:
-      - "4000:4000"
-  frontend:
-    build: ./cacti-example-harmonia-frontend/
+  # backend:
+  #   build: ./cacti-example-harmonia-backend/
+  #   ports:
+  #     - "4000:4000"
+  # frontend:
+  #   build: ./cacti-example-harmonia-frontend/
+
+  connector-corda-jvm:
+    image: ghcr.io/hyperledger/cactus-connector-corda-server:2023-08-25-ea5522b
+    network_mode: host
+    depends_on: 
+      - ledger-corda
+    environment:
+      - SPRING_APPLICATION_JSON={"logging":{"level":{"root":"INFO","net.corda":"INFO","org.hyperledger.cactus":"DEBUG"}},"cactus":{"corda":{"node":{"host":"127.0.0.1"},"rpc":{"port":10003,"username":"user1","password":"password"}}}}
+    # ports:
+      # - 8080:8080
+
+  ledger-corda:
+    image: ghcr.io/hyperledger/cactus-corda-4-8-all-in-one-obligation:2023-11-03-86d6b38
+    network_mode: host
+    privileged: true
+    # ports:
+      # - 20022:22 # SSH
+      # - 10003:10003 # RPC - Notary
+      # - 10008:10008 # RPC - Party A
+      # - 10011:10011 # RPC - Party B
+      # - 10014:10014 # RPC - Party C
