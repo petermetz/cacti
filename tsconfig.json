@@ -134,6 +134,15 @@
       "path": "./packages/cactus-test-verifier-client/tsconfig.json"
     },
     {
+      "path": "./examples/cacti-example-harmonia-backend/tsconfig.json"
+    },
+    {
+      "path": "./examples/cacti-example-harmonia-plugin/tsconfig.json"
+    },
+    {
+      "path": "./examples/cacti-example-harmonia-frontend/tsconfig.json"
+    },
+    {
       "path": "./examples/cactus-example-carbon-accounting-backend/tsconfig.json"
     },
     {

@@ -38,4 +38,4 @@ EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/start-app.sh"]
-HEALTHCHECK --interval=1s --timeout=5s --start-period=1s --retries=30 CMD /healthcheck.sh
+HEALTHCHECK --interval=1s --timeout=5s --start-period=1s --retries=90 CMD /healthcheck.sh

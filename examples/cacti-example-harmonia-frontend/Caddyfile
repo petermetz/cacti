@@ -1,0 +1,34 @@
+# {
+#     context: [
+#       "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda",
+#     ],
+#     target: "http://127.0.0.1:8080",
+#     secure: false,
+#     logLevel: "debug",
+#     changeOrigin: true,
+#   },
+#   {
+#     context: [
+#       "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-besu",
+#     ],
+#     target: "http://127.0.0.1:4000",
+#     secure: false,
+#     logLevel: "debug",
+#     changeOrigin: true,
+#   },
+
+http://localhost:7000 {
+    
+    handle_path /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda* {
+        reverse_proxy http://127.0.0.1:8080
+    }
+    handle_path /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-besu* {
+        reverse_proxy http://127.0.0.1:4000
+    }
+
+    handle {
+		root * /srv/
+		file_server
+	}
+}
+

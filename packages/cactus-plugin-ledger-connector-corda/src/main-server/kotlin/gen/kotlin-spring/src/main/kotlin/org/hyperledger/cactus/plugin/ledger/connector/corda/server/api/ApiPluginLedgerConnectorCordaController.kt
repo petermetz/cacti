@@ -162,7 +162,7 @@ open class ApiPluginLedgerConnectorCordaController(@Autowired(required = true) v
         produces = ["application/json"],
         consumes = ["application/json"]
     )
-    fun vaultQueryV1( @Valid @RequestBody(required = false) vaultQueryV1Request: VaultQueryV1Request?): ResponseEntity<kotlin.Any> {
+    open fun vaultQueryV1( @Valid @RequestBody(required = false) vaultQueryV1Request: VaultQueryV1Request?): ResponseEntity<kotlin.Any> {
         return ResponseEntity(service.vaultQueryV1(vaultQueryV1Request), HttpStatus.valueOf(200))
     }
 }
