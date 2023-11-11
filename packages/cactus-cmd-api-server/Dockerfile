@@ -58,8 +58,9 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | b
     && nvm use default \
     nvm install ${NODE_VERSION} && \
     npm install --location=global yarn && \
-    yarn config set nodeLinker node-modules && \
     yarn set version 4.1.0 && \
+    yarn config set nodeLinker node-modules && \
+    yarn add @bufbuild/protobuf@1.8.0 && \
     yarn add @hyperledger/cactus-cmd-api-server@2.0.0-rc.1
 
 COPY ./packages/cactus-cmd-api-server/docker-entrypoint.sh /usr/local/bin/

@@ -1,0 +1,59 @@
+services:
+  # backend:
+  #   build: ./cacti-example-harmonia-backend/
+  #   ports:
+  #     - "4000:4000"
+  # frontend:
+  #   build: ./cacti-example-harmonia-frontend/
+
+  cacti-api-server:
+    build:
+      context: ../
+      dockerfile: ./packages/cactus-cmd-api-server/Dockerfile
+    network_mode: host
+    depends_on:
+      - ledger-besu
+      - ledger-corda
+      - connector-corda-jvm
+    # ports:
+    #   - 3000:3000
+    #   - 3100:3100
+    #   - 4000:4000
+    #   - 4100:4100
+    environment:
+    - 'AUTHORIZATION_PROTOCOL=NONE'
+    - 'AUTHORIZATION_CONFIG_JSON={}'
+    - 'GRPC_TLS_ENABLED=false'
+    - 'PLUGINS=[{"packageName": "@hyperledger/cactus-plugin-ledger-connector-besu", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": {"rpcApiHttpHost": "http://127.0.0.1:8545", "rpcApiWsHost": "ws://127.0.0.1:8546", "instanceId": "some-unique-besu-connector-instance-id"}}, {"packageName": "@hyperledger/cactus-plugin-keychain-memory", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": { "version": "2.0.0-dev.94", "keychainId": "keychain-id-1", "instanceId": "keychain-instance-id-1"}}]'
+
+  connector-corda-jvm:
+    build:
+      context: ../packages/cactus-plugin-ledger-connector-corda/src/main-server/
+      dockerfile: Dockerfile
+    network_mode: host
+    depends_on: 
+      - ledger-corda
+    environment:
+      - SPRING_APPLICATION_JSON={"logging":{"level":{"root":"INFO","net.corda":"INFO","org.hyperledger.cactus":"DEBUG"}},"cactus":{"corda":{"node":{"host":"127.0.0.1"},"rpc":{"port":10006,"username":"user1","password":"test"}}}}
+    # ports:
+      # - 8080:8080
+
+  ledger-besu:
+    image: ghcr.io/hyperledger/cactus-besu-all-in-one:2023-11-14-74f3292
+    # network_mode: host
+    ports:
+      - 8545:8545 # RPC - HTTP
+      - 8546:8546 # RPC - WS
+
+  ledger-corda:
+    build:
+      context: ../tools/docker/corda-all-in-one/corda-v4_12/
+      dockerfile: Dockerfile
+    network_mode: host
+    privileged: true
+    # ports:
+      # - 20022:22 # SSH
+      # - 10003:10003 # RPC - Notary
+      # - 10008:10008 # RPC - Party A
+      # - 10011:10011 # RPC - Party B
+      # - 10014:10014 # RPC - Party C
