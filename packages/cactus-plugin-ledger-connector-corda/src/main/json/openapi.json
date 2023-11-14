@@ -867,32 +867,29 @@
         "type": "string",
         "nullable": false
       },
-      "QueryBySimpleV1Request": {
+      "VaultQueryV1Request": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "contractStateTypes": {
-            "type": "array",
-            "minLength": 1,
-            "items": {
-              "type": "string",
-              "description": "Valid, fully qualified JVM class name which will be fed into Class.forName(...)"
-            }
+          "contractStateType": {
+            "type": "string",
+            "description": "Valid, fully qualified JVM class name which will be fed into Class.forName(...)",
+            "minLength": 1
           }
         }
       },
-      "QueryBySimpleV1Response": {
+      "VaultQueryV1Response": {
         "type": "object"
       }
     }
   },
   "paths": {
-    "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/query-by-simple": {
+    "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/vault-query": {
       "post": {
-        "operationId": "queryBySimpleV1",
+        "operationId": "vaultQueryV1",
         "x-hyperledger-cactus": {
           "http": {
-            "path": "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/query-by-simple",
+            "path": "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/vault-query",
             "verbLowerCase": "post"
           }
         },
@@ -902,7 +899,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QueryBySimpleV1Request"
+                "$ref": "#/components/schemas/VaultQueryV1Request"
               }
             }
           }
@@ -913,7 +910,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/QueryBySimpleV1Response"
+                  "$ref": "#/components/schemas/VaultQueryV1Response"
                 }
               }
             }

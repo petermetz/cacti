@@ -14,11 +14,11 @@ import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.InvokeC
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.ListFlowsV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.ListFlowsV1Response
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.NodeInfo
-import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.QueryBySimpleV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StartMonitorV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StartMonitorV1Response
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StopMonitorV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StopMonitorV1Response
+import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.VaultQueryV1Request
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -136,17 +136,6 @@ open class ApiPluginLedgerConnectorCordaController(@Autowired(required = true) v
 
     @RequestMapping(
         method = [RequestMethod.POST],
-        value = ["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/query-by-simple"],
-        produces = ["application/json"],
-        consumes = ["application/json"]
-    )
-    fun queryBySimpleV1( @Valid @RequestBody(required = false) queryBySimpleV1Request: QueryBySimpleV1Request?): ResponseEntity<kotlin.Any> {
-        return ResponseEntity(service.queryBySimpleV1(queryBySimpleV1Request), HttpStatus.valueOf(200))
-    }
-
-
-    @RequestMapping(
-        method = [RequestMethod.POST],
         value = ["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/start-monitor"],
         produces = ["application/json"],
         consumes = ["application/json"]
@@ -164,5 +153,16 @@ open class ApiPluginLedgerConnectorCordaController(@Autowired(required = true) v
     )
     open fun stopMonitorV1( @Valid @RequestBody(required = false) stopMonitorV1Request: StopMonitorV1Request?): ResponseEntity<StopMonitorV1Response> {
         return ResponseEntity(service.stopMonitorV1(stopMonitorV1Request), HttpStatus.valueOf(200))
+    }
+
+
+    @RequestMapping(
+        method = [RequestMethod.POST],
+        value = ["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/vault-query"],
+        produces = ["application/json"],
+        consumes = ["application/json"]
+    )
+    fun vaultQueryV1( @Valid @RequestBody(required = false) vaultQueryV1Request: VaultQueryV1Request?): ResponseEntity<kotlin.Any> {
+        return ResponseEntity(service.vaultQueryV1(vaultQueryV1Request), HttpStatus.valueOf(200))
     }
 }

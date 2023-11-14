@@ -15,10 +15,12 @@ curl --location 'http://127.0.0.1:8080/api/v1/plugins/@hyperledger/cactus-plugin
     ]
 }'
 
+# Example Response:
+#
 # {
 #     "success": true,
-#     "callOutput": "{\"txhash\":{\"bytes\":\"EKYSfaGtAiaEhgRldkvqv3Wo4iY31D8lbE2y79ytRYo=\",\"offset\":0,\"size\":32},\"index\":0}",
-#     "flowId": "[e8d5a20a-57c6-4193-acc4-10c333ba81dc]",
+#     "callOutput": "{\"txhash\":{\"bytes\":\"f9/laWzziL5emgAXk1q29G3rIJxNg8djm0LFqRE4swA=\",\"offset\":0,\"size\":32},\"index\":0}",
+#     "flowId": "[7f9c8d76-f56a-488c-91ff-58f4b6878b8f]",
 #     "transactionId": null,
 #     "progress": []
 # }

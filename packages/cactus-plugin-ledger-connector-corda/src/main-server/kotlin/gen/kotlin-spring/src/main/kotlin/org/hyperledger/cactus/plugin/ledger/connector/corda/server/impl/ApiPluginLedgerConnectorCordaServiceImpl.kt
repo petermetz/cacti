@@ -23,7 +23,9 @@ import net.schmizz.sshj.userauth.password.PasswordUtils
 import net.schmizz.sshj.xfer.InMemorySourceFile
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.api.ApiPluginLedgerConnectorCordaService
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.*
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.util.HtmlUtils.htmlEscape
 import java.io.IOException
 import java.io.InputStream
@@ -355,6 +357,36 @@ class ApiPluginLedgerConnectorCordaServiceImpl(
         val nodeInfoList = reader.readValue<List<NodeInfo>>(networkMapJson)
         logger.info("Returning {} NodeInfo elements in response.", nodeInfoList.size)
         return nodeInfoList
+    }
+
+    override fun vaultQueryV1(req: VaultQueryV1Request?): Any {
+        if (req == null) {
+            // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cause description here");
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "QueryBySimpleV1Request cannot be null")
+//            throw IllegalArgumentException("QueryBySimpleV1Request cannot be null")
+        }
+        if (req.contractStateType == null) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "QueryBySimpleV1Request.contractStateType cannot be null")
+        }
+
+        val clazz: Class<out ContractState>;
+        try {
+            clazz = jsonJvmObjectDeserializer.getOrInferType(req.contractStateType) as Class<out ContractState>
+        } catch (ex: Throwable) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Could not load ${req.contractStateType} class from classpath:", ex)
+        }
+
+
+//        val clazz = Class.forName(req.contractStateType)
+
+        if(!ContractState::class.java.isAssignableFrom(clazz)) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Provided QueryBySimpleV1Request.contractStateType (${req.contractStateType}) must be assignable from (e.g. a sub-class of) ${ContractState::class.java.name}")
+        }
+
+        val clazzCasted = clazz as Class<out ContractState>
+
+        val results = rpc.proxy.vaultQuery(clazz)
+        return results
     }
 
     /**

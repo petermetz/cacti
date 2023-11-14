@@ -14,11 +14,11 @@ import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.InvokeC
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.ListFlowsV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.ListFlowsV1Response
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.NodeInfo
-import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.QueryBySimpleV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StartMonitorV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StartMonitorV1Response
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StopMonitorV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StopMonitorV1Response
+import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.VaultQueryV1Request
 
 interface ApiPluginLedgerConnectorCordaService {
 
@@ -98,16 +98,6 @@ interface ApiPluginLedgerConnectorCordaService {
     fun networkMapV1(body: kotlin.Any?): List<NodeInfo>
 
     /**
-     * POST /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/query-by-simple
-     * Queryes the vault service for state references based on JVM class names. Custom filters are not supported by this endpoint.
-     *
-     * @param queryBySimpleV1Request  (optional)
-     * @return OK (status code 200)
-     * @see ApiPluginLedgerConnectorCorda#queryBySimpleV1
-     */
-    fun queryBySimpleV1(queryBySimpleV1Request: QueryBySimpleV1Request?): kotlin.Any
-
-    /**
      * POST /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/start-monitor : Start monitoring corda changes (transactions) of given state class
      *
      * @param startMonitorV1Request  (optional)
@@ -124,4 +114,14 @@ interface ApiPluginLedgerConnectorCordaService {
      * @see ApiPluginLedgerConnectorCorda#stopMonitorV1
      */
     fun stopMonitorV1(stopMonitorV1Request: StopMonitorV1Request?): StopMonitorV1Response
+
+    /**
+     * POST /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/vault-query
+     * Queryes the vault service for state references based on JVM class names. Custom filters are not supported by this endpoint.
+     *
+     * @param vaultQueryV1Request  (optional)
+     * @return OK (status code 200)
+     * @see ApiPluginLedgerConnectorCorda#vaultQueryV1
+     */
+    fun vaultQueryV1(vaultQueryV1Request: VaultQueryV1Request?): kotlin.Any
 }

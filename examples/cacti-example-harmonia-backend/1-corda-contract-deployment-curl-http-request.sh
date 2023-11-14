@@ -59,3 +59,13 @@ curl --location 'http://127.0.0.1:8080/api/v1/plugins/@hyperledger/cactus-plugin
     }
   ]
 }'
+
+# Example response:
+#
+# {
+#     "deployedJarFiles": [
+#         "Harmonia_R3_Swap_common-1.0.jar",
+#         "Harmonia_R3_Swap_contracts-1.0.jar",
+#         "Harmonia_R3_Swap_workflows-1.0.jar"
+#     ]
+# }
