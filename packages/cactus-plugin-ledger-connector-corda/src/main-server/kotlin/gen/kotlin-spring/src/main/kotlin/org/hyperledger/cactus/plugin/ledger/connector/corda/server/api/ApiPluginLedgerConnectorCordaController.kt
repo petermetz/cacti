@@ -14,6 +14,7 @@ import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.InvokeC
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.ListFlowsV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.ListFlowsV1Response
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.NodeInfo
+import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.QueryBySimpleV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StartMonitorV1Request
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StartMonitorV1Response
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.StopMonitorV1Request
@@ -130,6 +131,17 @@ open class ApiPluginLedgerConnectorCordaController(@Autowired(required = true) v
     )
     open fun networkMapV1( @Valid @RequestBody(required = false) body: kotlin.Any?): ResponseEntity<List<NodeInfo>> {
         return ResponseEntity(service.networkMapV1(body), HttpStatus.valueOf(200))
+    }
+
+
+    @RequestMapping(
+        method = [RequestMethod.POST],
+        value = ["/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-corda/query-by-simple"],
+        produces = ["application/json"],
+        consumes = ["application/json"]
+    )
+    fun queryBySimpleV1( @Valid @RequestBody(required = false) queryBySimpleV1Request: QueryBySimpleV1Request?): ResponseEntity<kotlin.Any> {
+        return ResponseEntity(service.queryBySimpleV1(queryBySimpleV1Request), HttpStatus.valueOf(200))
     }
 
 
