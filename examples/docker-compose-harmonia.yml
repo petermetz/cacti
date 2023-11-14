@@ -7,12 +7,12 @@ services:
   #   build: ./cacti-example-harmonia-frontend/
 
   connector-corda-jvm:
-    image: ghcr.io/hyperledger/cactus-connector-corda-server:2023-08-25-ea5522b
+    image: cccs
     network_mode: host
     depends_on: 
       - ledger-corda
     environment:
-      - SPRING_APPLICATION_JSON={"logging":{"level":{"root":"INFO","net.corda":"INFO","org.hyperledger.cactus":"DEBUG"}},"cactus":{"corda":{"node":{"host":"127.0.0.1"},"rpc":{"port":10003,"username":"user1","password":"password"}}}}
+      - SPRING_APPLICATION_JSON={"logging":{"level":{"root":"INFO","net.corda":"INFO","org.hyperledger.cactus":"DEBUG"}},"cactus":{"corda":{"node":{"host":"127.0.0.1"},"rpc":{"port":10008,"username":"user1","password":"password"}}}}
     # ports:
       # - 8080:8080
 

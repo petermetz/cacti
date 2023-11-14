@@ -256,7 +256,7 @@ class ApiPluginLedgerConnectorCordaServiceImpl(
                                 logger.debug("${it.filename} has db migrations declared, executing those now...")
                                 val session = ssh.startSession()
                                 session.allocateDefaultPTY()
-                                val migrateCmd = "java -jar ${cdc.cordaJarPath} run-migration-scripts --app-schemas --base-directory=${cdc.nodeBaseDirPath}"
+                                val migrateCmd = "java -jar ${cdc.cordaJarPath} run-migration-scripts --verbose --app-schemas --base-directory=${cdc.nodeBaseDirPath}"
                                 logger.debug("migrateCmd=$migrateCmd")
                                 val migrateCmdRes = session.exec(migrateCmd)
                                 val migrateCmdOut = net.schmizz.sshj.common.IOUtils.readFully(migrateCmdRes.inputStream).toString()
