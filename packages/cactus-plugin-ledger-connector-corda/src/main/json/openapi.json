@@ -866,6 +866,23 @@
       "PrometheusExporterMetricsResponse": {
         "type": "string",
         "nullable": false
+      },
+      "QueryByV1Request": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "contractStateTypes": {
+            "type": "array",
+            "minLength": 1,
+            "items": {
+              "type": "string",
+              "description": "Valid, fully qualified JVM class name which will be fed into Class.forName(...)"
+            }
+          }
+        }
+      },
+      "QueryByV1Response": {
+        "type": "object"
       }
     }
   },

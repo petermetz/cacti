@@ -32,6 +32,7 @@ src/main/kotlin/org/hyperledger/cactus/plugin/ledger/connector/corda/server/mode
 src/main/kotlin/org/hyperledger/cactus/plugin/ledger/connector/corda/server/model/NodeInfo.kt
 src/main/kotlin/org/hyperledger/cactus/plugin/ledger/connector/corda/server/model/Party.kt
 src/main/kotlin/org/hyperledger/cactus/plugin/ledger/connector/corda/server/model/PublicKey.kt
+src/main/kotlin/org/hyperledger/cactus/plugin/ledger/connector/corda/server/model/QueryByV1Request.kt
 src/main/kotlin/org/hyperledger/cactus/plugin/ledger/connector/corda/server/model/SHA256.kt
 src/main/kotlin/org/hyperledger/cactus/plugin/ledger/connector/corda/server/model/StartMonitorV1Request.kt
 src/main/kotlin/org/hyperledger/cactus/plugin/ledger/connector/corda/server/model/StartMonitorV1Response.kt

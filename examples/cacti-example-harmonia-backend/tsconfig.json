@@ -38,6 +38,9 @@
     },
     {
       "path": "../../packages/cactus-test-tooling/tsconfig.json"
-    }
+    },
+    {
+      "path": "../cacti-example-harmonia-plugin/tsconfig.json"
+    },
   ]
 }

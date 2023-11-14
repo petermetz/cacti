@@ -1,0 +1,82 @@
+{
+    "timeoutMs": 60000,
+    "flowFullClassName": "com.r3.corda.evminterop.workflows.swap.BuildAndProposeDraftTransactionFlow",
+    "flowInvocationType": "FLOW_DYNAMIC",
+    "params": [
+        {
+            "jvmTypeKind": "REFERENCE",
+            "jvmType": {
+                "fqClassName": "com.r3.corda.evminterop.states.swap.SwapTransactionDetails"
+            },
+            "jvmCtorArgs": [
+                
+            ]
+        },
+        {
+            "jvmTypeKind": "REFERENCE",
+            "jvmType": {
+                "fqClassName": "net.corda.core.identity.Party"
+            },
+            "jvmCtorArgs": [
+                {
+                    "jvmTypeKind": "REFERENCE",
+                    "jvmType": {
+                        "fqClassName": "net.corda.core.identity.CordaX500Name"
+                    },
+                    "jvmCtorArgs": [
+                        {
+                            "jvmTypeKind": "PRIMITIVE",
+                            "jvmType": {
+                                "fqClassName": "java.lang.String"
+                            },
+                            "primitiveValue": "PartyB"
+                        },
+                        {
+                            "jvmTypeKind": "PRIMITIVE",
+                            "jvmType": {
+                                "fqClassName": "java.lang.String"
+                            },
+                            "primitiveValue": "New York"
+                        },
+                        {
+                            "jvmTypeKind": "PRIMITIVE",
+                            "jvmType": {
+                                "fqClassName": "java.lang.String"
+                            },
+                            "primitiveValue": "US"
+                        }
+                    ]
+                },
+                {
+                    "jvmTypeKind": "REFERENCE",
+                    "jvmType": {
+                        "fqClassName": "org.hyperledger.cactus.plugin.ledger.connector.corda.server.impl.PublicKeyImpl"
+                    },
+                    "jvmCtorArgs": [
+                        {
+                            "jvmTypeKind": "PRIMITIVE",
+                            "jvmType": {
+                                "fqClassName": "java.lang.String"
+                            },
+                            "primitiveValue": "EdDSA"
+                        },
+                        {
+                            "jvmTypeKind": "PRIMITIVE",
+                            "jvmType": {
+                                "fqClassName": "java.lang.String"
+                            },
+                            "primitiveValue": "X.509"
+                        },
+                        {
+                            "jvmTypeKind": "PRIMITIVE",
+                            "jvmType": {
+                                "fqClassName": "java.lang.String"
+                            },
+                            "primitiveValue": "MCowBQYDK2VwAyEAinYNJ+NfISuIZnnCRJ/MRxC/3cDZo/XI91RwhsCKkVo="
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
