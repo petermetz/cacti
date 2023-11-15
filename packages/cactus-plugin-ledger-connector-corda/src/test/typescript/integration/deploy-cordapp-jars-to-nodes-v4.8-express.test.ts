@@ -230,10 +230,6 @@ test("Tests are passing on the JVM side", async (t: Test) => {
     "Deployed jar file count equals count in request OK",
   );
 
-  const str = JSON.stringify(depReq, null, 2);
-  const fs = await import("fs-extra");
-  await fs.writeFile("./corda-contract-deployment-http-request-body.json", str);
-
   const flowsRes2 = await apiClient.listFlowsV1();
   t.ok(flowsRes2.status === 200, "flowsRes2.status === 200 OK");
   t.comment(`apiClient.listFlowsV1() => ${JSON.stringify(flowsRes2.data)}`);

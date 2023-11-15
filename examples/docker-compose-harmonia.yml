@@ -16,6 +16,13 @@ services:
     # ports:
       # - 8080:8080
 
+  ledger-besu:
+    image: ghcr.io/hyperledger/cactus-besu-all-in-one:2023-11-14-74f3292
+    # network_mode: host
+    ports:
+      - 8545:8545 # RPC - HTTP
+      - 8546:8546 # RPC - WS
+
   ledger-corda:
     image: ghcr.io/hyperledger/cactus-corda-4-8-all-in-one-obligation:2023-11-03-86d6b38
     network_mode: host
