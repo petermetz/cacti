@@ -22,7 +22,7 @@ services:
     - 'AUTHORIZATION_PROTOCOL=NONE'
     - 'AUTHORIZATION_CONFIG_JSON={}'
     - 'GRPC_TLS_ENABLED=false'
-    - 'PLUGINS=[{"packageName": "@hyperledger/cactus-plugin-ledger-connector-besu", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": {"rpcApiHttpHost": "http://127.0.0.1:8545", "rpcApiWsHost": "ws://127.0.0.1:8546", "instanceId": "some-unique-besu-connector-instance-id"}}, {"packageName": "@hyperledger/cactus-plugin-keychain-memory", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": { "keychainId": "keychain-id-1", "instanceId": "keychain-instance-id-1"}}]'
+    - 'PLUGINS=[{"packageName": "@hyperledger/cactus-plugin-ledger-connector-besu", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": {"rpcApiHttpHost": "http://127.0.0.1:8545", "rpcApiWsHost": "ws://127.0.0.1:8546", "instanceId": "some-unique-besu-connector-instance-id"}}, {"packageName": "@hyperledger/cactus-plugin-keychain-memory", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": { "version": "2.0.0-dev.94", "keychainId": "keychain-id-1", "instanceId": "keychain-instance-id-1"}}]'
 
   connector-corda-jvm:
     image: cccs
