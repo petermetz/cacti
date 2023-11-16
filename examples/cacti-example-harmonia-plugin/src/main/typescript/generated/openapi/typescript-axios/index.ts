@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Hyperledger Cactus Example - Supply Chain App
- * Demonstrates how a business use case can be satisfied with Cactus when multiple distinct ledgers are involved.
+ * Hyperledger Cacti Example - Harmonia
+ * Demonstrates how the Harmonia Lab use-cases can be implemented and extended.
  *
  * The version of the OpenAPI document: v2.0.0-alpha.2
  * 

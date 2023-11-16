@@ -13,19 +13,9 @@ export class AppComponent {
   public selectedIndex = 0;
   public appPages = [
     {
-      title: "Bamboo Harvests",
-      url: "/bamboo-harvest-list",
-      icon: "leaf",
-    },
-    {
-      title: "Bookshelves",
-      url: "/bookshelf-list",
-      icon: "book",
-    },
-    {
-      title: "Shipment",
-      url: "/shipment-list",
-      icon: "cube",
+      title: "Atomic Swaps",
+      url: "/atomic-swaps-list",
+      icon: "swap-horizontal",
     },
   ];
 

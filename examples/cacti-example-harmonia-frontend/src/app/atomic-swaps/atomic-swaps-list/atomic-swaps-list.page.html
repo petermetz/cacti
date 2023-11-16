@@ -1,0 +1,51 @@
+<app-page-heading pageTitle="Atomic Swaps Demo"></app-page-heading>
+
+<ion-content>
+  <ion-list>
+    <ion-item-divider>
+      <ion-label>Corda</ion-label>
+    </ion-item-divider>
+    <ion-item button (click)="clickStep1()" class="ion-text-wrap">
+      <ion-text color="primary">Step 1 - List Flows</ion-text>
+    </ion-item>
+    <ion-item button (click)="clickStep2()" class="ion-text-wrap">
+      <ion-text color="primary">Step 2 - Deploy Contracts</ion-text>
+    </ion-item>
+    <ion-item button (click)="clickStep3()" class="ion-text-wrap">
+      <ion-text color="primary">Step 3 - List Flows</ion-text>
+    </ion-item>
+    <ion-item button (click)="clickStep4()" class="ion-text-wrap">
+      <ion-text color="primary">Step 4 - Issue Generic Asset</ion-text>
+    </ion-item>
+    <ion-item button (click)="clickStep5()" class="ion-text-wrap">
+      <ion-text color="primary">Step 5 - Create Draft Asset Swap (TODO)</ion-text>
+    </ion-item>
+
+    <ion-item-divider>
+      <ion-label>Besu</ion-label>
+    </ion-item-divider>
+
+    
+  </ion-list>
+
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>REST API Response:</ion-card-title>
+      <ion-card-subtitle></ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-item>
+        <pre>{{lastResponse | json}}</pre>
+      </ion-item>
+
+    </ion-card-content>
+  </ion-card>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon (click)="clickAddNew()" name="add"> </ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

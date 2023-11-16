@@ -21,7 +21,8 @@
     "rootDir": "./src",
     "skipLibCheck": true,
     "tsBuildInfoFile": "../../.build-cache/cacti-example-harmonia-frontend.tsbuildinfo",
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "emitDecoratorMetadata": true,
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

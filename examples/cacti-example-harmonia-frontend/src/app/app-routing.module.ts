@@ -4,27 +4,16 @@ import { PreloadAllModules, RouterModule, Routes } from "@angular/router";
 const routes: Routes = [
   {
     path: "",
-    redirectTo: "bamboo-harvest-list",
+    redirectTo: "atomic-swaps-list",
     pathMatch: "full",
   },
-  // FIXME
-  // {
-  //   path: "bamboo-harvest-list",
-  //   loadChildren: () =>
-  //     import("./bamboo-harvest/bamboo-harvest.module").then(
-  //       (m) => m.BambooHarvestPageModule,
-  //     ),
-  // },
-  // {
-  //   path: "bookshelf-list",
-  //   loadChildren: () =>
-  //     import("./bookshelf/bookshelf.module").then((m) => m.BookshelfPageModule),
-  // },
-  // {
-  //   path: "shipment-list",
-  //   loadChildren: () =>
-  //     import("./shipment/shipment.module").then((m) => m.ShipmentPageModule),
-  // },
+  {
+    path: "atomic-swaps-list",
+    loadChildren: () =>
+      import("./atomic-swaps/atomic-swaps.module").then(
+        (m) => m.AtomicSwapsPageModule,
+      ),
+  },
 ];
 
 @NgModule({

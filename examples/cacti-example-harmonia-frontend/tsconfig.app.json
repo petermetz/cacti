@@ -4,7 +4,8 @@
     "outDir": "./out-tsc/app",
     "types": [],
     "composite": false,
-    "incremental": true
+    "incremental": true,
+    "emitDecoratorMetadata": true,
   },
   "files": [
     "src/main.ts",

@@ -7,7 +7,7 @@ services:
   #   build: ./cacti-example-harmonia-frontend/
 
   cacti-api-server:
-    image: ghcr.io/hyperledger/cactus-cmd-api-server:2023-11-16-89d9b93
+    image: ghcr.io/hyperledger/cactus-cmd-api-server:2023-11-16-issue2894
     network_mode: host
     depends_on:
       - ledger-besu

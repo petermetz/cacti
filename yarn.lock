@@ -7432,6 +7432,7 @@ __metadata:
     "@ionic/angular": "npm:7.3.3"
     "@ionic/angular-toolkit": "npm:10.0.0"
     "@types/uuid": "npm:9.0.7"
+    axios: "npm:1.6.2"
     browserify-fs: "npm:1.0.0"
     https-browserify: "npm:1.0.0"
     net-browserify: "npm:0.2.4"
