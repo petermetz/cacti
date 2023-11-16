@@ -6,6 +6,24 @@ services:
   # frontend:
   #   build: ./cacti-example-harmonia-frontend/
 
+  cacti-api-server:
+    image: ghcr.io/hyperledger/cactus-cmd-api-server:2023-11-16-89d9b93
+    network_mode: host
+    depends_on:
+      - ledger-besu
+      - ledger-corda
+      - connector-corda-jvm
+    # ports:
+    #   - 3000:3000
+    #   - 3100:3100
+    #   - 4000:4000
+    #   - 4100:4100
+    environment:
+    - 'AUTHORIZATION_PROTOCOL=NONE'
+    - 'AUTHORIZATION_CONFIG_JSON={}'
+    - 'GRPC_TLS_ENABLED=false'
+    - 'PLUGINS=[{"packageName": "@hyperledger/cactus-plugin-ledger-connector-besu", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": {"rpcApiHttpHost": "http://127.0.0.1:8545", "rpcApiWsHost": "ws://127.0.0.1:8546", "instanceId": "some-unique-besu-connector-instance-id"}}, {"packageName": "@hyperledger/cactus-plugin-keychain-memory", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": { "keychainId": "keychain-id-1", "instanceId": "keychain-instance-id-1"}}]'
+
   connector-corda-jvm:
     image: cccs
     network_mode: host
