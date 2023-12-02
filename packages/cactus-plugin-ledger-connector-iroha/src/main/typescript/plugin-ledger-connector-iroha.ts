@@ -1,5 +1,5 @@
-import { Transaction } from "iroha-helpers/lib/proto/transaction_pb";
-import { TxBuilder } from "iroha-helpers/lib/chain";
+import { Transaction } from "iroha-helpers-new-grpc/lib/proto/transaction_pb";
+import { TxBuilder } from "iroha-helpers-new-grpc/lib/chain";
 import type { Server as SocketIoServer } from "socket.io";
 import type { Socket as SocketIoSocket } from "socket.io";
 import type { Express } from "express";

@@ -34,7 +34,7 @@ import {
   IrohaQuery,
   KeyPair,
 } from "../../../main/typescript/generated/openapi/typescript-axios";
-import cryptoHelper from "iroha-helpers/lib/cryptoHelper";
+import cryptoHelper from "iroha-helpers-new-grpc/lib/cryptoHelper";
 import { Constants } from "@hyperledger/cactus-core-api";
 
 const testCase = "runs tx on an Iroha v1.4.0-patch-3 ledger";
@@ -1161,6 +1161,7 @@ test(testCase, async (t: Test) => {
         address: internalAddr,
         peerKey: nodePubA,
         tlsCertificate: "",
+        syncingPeer: false,
       },
     ]);
   }
@@ -1219,6 +1220,7 @@ test(testCase, async (t: Test) => {
         address: internalAddr,
         peerKey: nodePubA,
         tlsCertificate: "",
+        syncingPeer: false,
       },
     );
   }

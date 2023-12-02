@@ -6193,6 +6193,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@grpc/grpc-js@npm:1.9.12":
+  version: 1.9.12
+  resolution: "@grpc/grpc-js@npm:1.9.12"
+  dependencies:
+    "@grpc/proto-loader": ^0.7.8
+    "@types/node": ">=12.12.47"
+  checksum: 1788bdc7256b003261d5cfd6858fe21c06043742a5f512b9855df66998239d645e6eda1612d17dbffa19a7fcce950cd2ff661e9818ce67ca36198501020da06d
+  languageName: node
+  linkType: hard
+
 "@grpc/grpc-js@npm:1.9.5":
   version: 1.9.5
   resolution: "@grpc/grpc-js@npm:1.9.5"
@@ -7733,7 +7743,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hyperledger/cactus-plugin-ledger-connector-iroha@workspace:packages/cactus-plugin-ledger-connector-iroha"
   dependencies:
-    "@grpc/grpc-js": 1.9.5
+    "@grpc/grpc-js": 1.9.12
     "@hyperledger/cactus-common": 2.0.0-alpha.2
     "@hyperledger/cactus-core": 2.0.0-alpha.2
     "@hyperledger/cactus-core-api": 2.0.0-alpha.2
@@ -7749,7 +7759,7 @@ __metadata:
     express: 4.18.2
     fast-safe-stringify: 2.1.1
     internal-ip: 6.2.0
-    iroha-helpers: 1.5.0
+    iroha-helpers-new-grpc: 1.5.0
     key-encoder: 2.0.3
     openapi-types: 7.0.1
     prom-client: 13.1.0
@@ -29024,10 +29034,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iroha-helpers@npm:1.5.0":
+"iroha-helpers-new-grpc@npm:1.5.0":
   version: 1.5.0
-  resolution: "iroha-helpers@npm:1.5.0"
+  resolution: "iroha-helpers-new-grpc@npm:1.5.0"
   dependencies:
+    "@grpc/grpc-js": 1.9.12
     "@improbable-eng/grpc-web": ^0.12.0
     babel-preset-minify: ^0.5.1
     buffer: ^5.4.0
@@ -29041,7 +29052,7 @@ __metadata:
     ts-protoc-gen: ^0.12.0
     tslib: ^1.10.0
     tweetnacl: ^1.0.3
-  checksum: 578335d1917260b47580b3562f693dbf4473a2dd62c4fda215cf07a2f6012baa06bff0921c3ea449a518ce6e24af0e8ebf0d8a5617f71b2d82b52c889bc46b6d
+  checksum: 6922f400b9b80fa56f53c255f4509870b7d442ff92e4fd7d8490805deb6ff311db5313b880194d1ad5f6bb29c993a2dd2fed2dee19c551e2ee9001d1f1469c35
   languageName: node
   linkType: hard
 

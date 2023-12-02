@@ -54,7 +54,7 @@ Foundry uses ``forge-std``and ``ds-test``modules for testing purposes. Given tha
 
 ``
     "nohoist": [
-      "**/iroha-helpers",
+      "**/iroha-helpers-new-grpc",
       "**/forge-std",
       "**/forge-std/**"
     ]

@@ -45,7 +45,7 @@ import { v4 as uuidv4 } from "uuid";
 import { v4 as internalIpV4 } from "internal-ip";
 import "jest-extended";
 
-import cryptoHelper from "iroha-helpers/lib/cryptoHelper";
+import cryptoHelper from "iroha-helpers-new-grpc/lib/cryptoHelper";
 
 import {
   PluginLedgerConnectorIroha,

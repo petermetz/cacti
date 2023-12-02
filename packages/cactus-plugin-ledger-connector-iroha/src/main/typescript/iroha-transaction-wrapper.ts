@@ -18,13 +18,13 @@ import * as grpc from "@grpc/grpc-js";
 import {
   GrantablePermission,
   GrantablePermissionMap,
-} from "iroha-helpers/lib/proto/primitive_pb";
+} from "iroha-helpers-new-grpc/lib/proto/primitive_pb";
 
-import { CommandService_v1Client as CommandService } from "iroha-helpers/lib/proto/endpoint_grpc_pb";
-import { QueryService_v1Client as QueryService } from "iroha-helpers/lib/proto/endpoint_grpc_pb";
+import { CommandService_v1Client as CommandService } from "iroha-helpers-new-grpc/lib/proto/endpoint_grpc_pb";
+import { QueryService_v1Client as QueryService } from "iroha-helpers-new-grpc/lib/proto/endpoint_grpc_pb";
 
-import commands from "iroha-helpers/lib/commands/index";
-import queries from "iroha-helpers/lib/queries";
+import commands from "iroha-helpers-new-grpc/lib/commands/index";
+import queries from "iroha-helpers-new-grpc/lib/queries";
 
 export interface IIrohaTransactionWrapperOptions {
   logLevel?: LogLevelDesc;
