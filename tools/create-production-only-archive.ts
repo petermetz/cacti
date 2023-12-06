@@ -23,6 +23,7 @@ export interface IFileDeletionV1 {
 
 export interface ICreateProductionOnlyArchiveV1Request {
   readonly PROJECT_DIR: string;
+  readonly cloneUrl: string;
   readonly includeGlobs: string[];
   readonly excludeGlobs: string[];
   readonly fileSystemCleanUpEnabled: boolean;
@@ -34,7 +35,37 @@ export interface ICreateProductionOnlyArchiveV1Response {
   readonly zipIsDone: boolean;
 }
 
+export const DEFAULT_CLONE_URL = "https://github.com/hyperledger/cacti.git";
+
 export const DEFAULT_DELETE_INCLUDE_GLOBS = [
+  "./packages/cacti-plugin-weaver-driver-fabric/**",
+  "./packages/cactus-verifier-client/**",
+  "./packages/cactus-plugin-odap-hermes/**",
+  "./packages/cactus-plugin-ledger-connector-ubiquity/**",
+  "./packages/cactus-plugin-persistence-ethereum/**",
+  "./packages/cactus-plugin-persistence-fabric/**",
+  "./packages/cacti-ledger-browser/**",
+  "./packages/cactus-test-**",
+  "./packages/cacti-test-**",
+  "./weaver/**",
+  "./examples/cactus-check-connection-ethereum-validator/**",
+  "./examples/cactus-example-discounted-asset-trade/**",
+  "./examples/cactus-example-electricity-trade/**",
+  "./examples/cactus-example-tcs-huawei/**",
+  "./examples/**",
+  "./docs/**",
+  "./docs-cactus/**",
+  "./tools/**",
+  "./packages/cactus-cmd-socketio-server/**",
+  "./packages/cactus-plugin-ledger-connector-cdl-socketio/**",
+  "./packages/cactus-plugin-ledger-connector-fabric-socketio/**",
+  "./packages/cactus-plugin-ledger-connector-go-ethereum-socketio/**",
+  "./packages/cactus-plugin-ledger-connector-sawtooth-socketio/**",
+  "./packages/cactus-plugin-ledger-connector-tcs-huawei-socketio/**",
+  "./packages/cactus-test-plugin-ledger-connector-ethereum/**",
+  "./packages/cactus-plugin-ledger-connector-sawtooth/**",
+  "./packages-python/**",
+  // DEFAULT DEFAULTS
   "**/node_modules/",
   "**/dist/",
   "**/build/",
@@ -145,8 +176,10 @@ async function createProductionOnlyArchive(
   }
 
   const osTmpRootPath = tmpdir();
-  const cloneUrl = "https://github.com/hyperledger/cacti.git";
-  const tmpCloneRes = await createTemporaryClone({ cloneUrl, osTmpRootPath });
+  const tmpCloneRes = await createTemporaryClone({
+    cloneUrl: req.cloneUrl,
+    osTmpRootPath,
+  });
   const { clonePath, gitCommitHash } = tmpCloneRes;
 
   console.log("%s Clone OK: %s, git hash=%s", fnTag, clonePath, gitCommitHash);
@@ -208,6 +241,9 @@ async function createRequest(
   console.log(`SCRIPT_DIR=${SCRIPT_DIR}`);
   console.log(`PROJECT_DIR=${PROJECT_DIR}`);
 
+  const OPT_DESC_CLONE_URL =
+    "The URL where the git clone command will be directed." as const;
+
   const OPT_DESC_INCLUDE_GLOBS =
     "List of include globs to use when locating files and folders for deletion." as const;
 
@@ -219,6 +255,13 @@ async function createRequest(
 
   const parsedCfg = await yargs(hideBin(argv))
     .env("CACTI_")
+    .option("cloneUrl", {
+      alias: "u",
+      type: "string",
+      string: true,
+      default: DEFAULT_CLONE_URL,
+      description: OPT_DESC_CLONE_URL,
+    })
     .option("includeGlobs", {
       alias: "i",
       type: "array",
@@ -243,6 +286,7 @@ async function createRequest(
 
   const req: ICreateProductionOnlyArchiveV1Request = {
     PROJECT_DIR,
+    cloneUrl: parsedCfg.cloneUrl,
     includeGlobs: parsedCfg.includeGlobs,
     excludeGlobs: parsedCfg.excludeGlobs,
     fileSystemCleanUpEnabled: parsedCfg.fileSystemCleanUpEnabled,
