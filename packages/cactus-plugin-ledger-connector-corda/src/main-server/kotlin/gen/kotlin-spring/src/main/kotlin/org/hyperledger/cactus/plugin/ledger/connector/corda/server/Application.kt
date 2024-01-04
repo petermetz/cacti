@@ -21,7 +21,7 @@ private const val ThreadPoolCountDefault = "3"
 @SpringBootApplication
 @ComponentScan(basePackages = ["org.hyperledger.cactus.plugin.ledger.connector.corda.server", "org.hyperledger.cactus.plugin.ledger.connector.corda.server.api", "org.hyperledger.cactus.plugin.ledger.connector.corda.server.model"])
 @EnableScheduling
-class Application(@Value("\${$ThreadPoolCount:$ThreadPoolCountDefault}") val threadCount: Int) {
+open class Application(@Value("\${$ThreadPoolCount:$ThreadPoolCountDefault}") val threadCount: Int) {
     /**
      * Spring Bean that binds a Corda Jackson object-mapper to HTTP message types used in Spring.
      */
@@ -36,7 +36,7 @@ class Application(@Value("\${$ThreadPoolCount:$ThreadPoolCountDefault}") val thr
     }
 
     @Bean
-    fun taskScheduler(): TaskScheduler? {
+    open fun taskScheduler(): TaskScheduler? {
         val taskScheduler = ThreadPoolTaskScheduler()
         taskScheduler.poolSize = this.threadCount
         return taskScheduler

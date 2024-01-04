@@ -1,0 +1,18 @@
+{
+  "overrides": {
+    "@hyperledger/cactus-plugin-ledger-connector-fabric": {
+      "fabric-ca-client": {
+        "jsrsasign": ">=11.0.0"
+      },
+      "fabric-common": {
+        "jsrsasign": ">=11.0.0"
+      },
+      "fabric-network": {
+        "jsrsasign": ">=11.0.0"
+      },
+      "fabric-protos": {
+        "jsrsasign": ">=11.0.0"
+      }
+    }
+  }
+}

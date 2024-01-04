@@ -90,8 +90,14 @@ test(testCase, async (t: Test) => {
     logLevel,
     imageName: "ghcr.io/hyperledger/cactus-connector-corda-server",
     imageVersion: "2021-11-23--feat-1493",
+    // imageName: "cactus-connector-corda-server",
+    // imageVersion: "latest",
     envVars: [envVarSpringAppJson],
   });
+  // Set to true if you are testing an image that you've built locally and have not
+  // yet uploaded to the container registry where it would be publicly available.
+  // Do not forget to set it back to `false` afterwards!
+  const skipContainerImagePull = false;
   t.ok(CordaConnectorContainer, "CordaConnectorContainer instantiated OK");
 
   test.onFinish(async () => {
@@ -102,7 +108,7 @@ test(testCase, async (t: Test) => {
     }
   });
 
-  const connectorContainer = await connector.start();
+  const connectorContainer = await connector.start(skipContainerImagePull);
   t.ok(connectorContainer, "CordaConnectorContainer started OK");
 
   await connector.logDebugPorts();
