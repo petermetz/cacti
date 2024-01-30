@@ -88,6 +88,10 @@ beforeAll(async () => {
 
     pluginRecipientGateway = new BesuSATPGateway(serverGatewayPluginOptions);
 
+    expect(
+      pluginRecipientGateway.localRepository?.database,
+    ).not.toBeUndefined();
+
     expect(pluginRecipientGateway.localRepository?.database).not.toBeUndefined();
     expect(pluginRecipientGateway.remoteRepository?.database).not.toBeUndefined();
   

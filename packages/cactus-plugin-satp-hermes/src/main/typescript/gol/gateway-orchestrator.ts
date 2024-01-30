@@ -1,4 +1,4 @@
-// a helper class to manage connections to counterparty gateways
+// a helper class to manage connections to counteryparty gateways
 
 import { Logger } from "@hyperledger/cactus-common";
 import { GatewayIdentity, GatewayChannel } from "../core/types";
@@ -18,6 +18,7 @@ export class GatewayOrchestrator {
     public readonly identities: GatewayIdentity[],
     options: GatewayOrchestratorOptions,
   ) {
+    const fnTag = `${this.label}#constructor()`;
     // add checks
     this.logger = options.logger;
     this.logger.info("Initializing Gateway Connection Manager");
@@ -33,9 +34,7 @@ export class GatewayOrchestrator {
   async connectToCounterPartyGateways(): Promise<number> {
     const fnTag = `${this.label}#connectToCounterPartyGateways()`;
     // add checks
-    this.logger.info(
-      `${fnTag}, Connecting to ${this.gatewayIDs.length} gateways`,
-    );
+    this.logger.info(`Connecting to ${this.gatewayIDs.length} gateways`);
     let connected = 0;
     try {
       for (const id of this.gatewayIDs) {
@@ -48,7 +47,7 @@ export class GatewayOrchestrator {
         }
       }
     } catch (ex) {
-      this.logger.error(`${fnTag}, Failed to connect to gateway`);
+      this.logger.error(`Failed to connect to gateway`);
       this.logger.error(ex);
     }
     return connected;
@@ -57,19 +56,17 @@ export class GatewayOrchestrator {
   async addGateways(gateways: GatewayIdentity[]): Promise<number> {
     const fnTag = `${this.label}#addGateways()`;
     // add checks
-    this.logger.info(`${fnTag}, Adding ${gateways.length} gateways`);
+    this.logger.info(`Adding ${gateways.length} gateways`);
     for (const gateway of gateways) {
       const id = gateway.id;
       if (this.gatewayIDs.includes(id)) {
-        this.logger.info(
-          `${fnTag}, ${fnTag}, Gateway with id ${id} already exists, ignoring`,
-        );
+        this.logger.info(`Gateway with id ${id} already exists, igonoring`);
         continue;
       }
       this.gatewayIDs.push(id);
       this.gateways.set(id, gateway);
     }
-    return this.connectToCounterPartyGateways();
+      return this.connectToCounterPartyGateways();
   }
 
   alreadyConnected(ID: string): boolean {
@@ -77,6 +74,7 @@ export class GatewayOrchestrator {
   }
   // make singleton
   async createChannels(): Promise<void> {
+    const fnTag = `${this.label}#boostrapChannels()`;
     // Add checks and the rest of your logic here
     const channels: GatewayChannel[] = [];
     this.gateways.forEach(async (identity) => {
@@ -85,6 +83,7 @@ export class GatewayOrchestrator {
   }
 
   async createChannel(identity: GatewayIdentity): Promise<GatewayChannel> {
+    const fnTag = `${this.label}#createChannel()`;
     // add checks
     const channel: GatewayChannel = {
       id: identity.id,
@@ -92,13 +91,11 @@ export class GatewayOrchestrator {
     return channel;
   }
 
-  async disconnectAll(): Promise<number> {
-    const fnTag = `${this.label}#disconnectAll()`;
-
+  async disconnectAll(): Promise<number>  {
     let counter = 0;
     this.channels.forEach(async (channel) => {
-      this.logger.info(`${fnTag}, Disconnecting from ${channel.id}`);
-      this.logger.error("Not implemented");
+      this.logger.info(`Disconnecting from ${channel.id}`);
+      this.logger.error("Not implemented")
       counter++;
     });
     return counter;
