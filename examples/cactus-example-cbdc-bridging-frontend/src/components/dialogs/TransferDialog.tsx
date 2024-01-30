@@ -12,18 +12,20 @@ import Alert from "@mui/material/Alert";
 import { transferTokensFabric } from "../../api-calls/fabric-api";
 import { transferTokensBesu } from "../../api-calls/besu-api";
 
-const recipients = ["Alice", "Charlie", "Bridge"];
+const recipients = ["Alice", "Charlie"];
+
 export interface ITransferDialogOptions {
-  open: boolean
-  ledger: string
-  user: string
-  onClose: () => any
+  open: boolean;
+  ledger: string;
+  user: string;
+  balance: number;
+  onClose: () => any;
 }
 
 export default function TransferDialog(props: ITransferDialogOptions) {
+  const [errorMessage, setErrorMessage] = useState("");
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState(0);
-  const [errorMessage, setErrorMessage] = useState("");
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -34,12 +36,22 @@ export default function TransferDialog(props: ITransferDialogOptions) {
     }
   }, [props.open]);
 
-  const handleChangeAmount = (event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+  const handleChangeamount = (
+    event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     const value = parseInt(event.target.value);
 
     if (value < 0) {
       setErrorMessage("Amount must be a positive value");
       setAmount(0);
+    } else {
+      setErrorMessage("");
+      setAmount(value);
+    }
+
+    if (value > props.balance) {
+      setErrorMessage("Amount must be lower or equal to current balance");
+      setAmount(props.balance);
     } else {
       setErrorMessage("");
       setAmount(value);
@@ -50,19 +62,19 @@ export default function TransferDialog(props: ITransferDialogOptions) {
     setRecipient(event.target.value);
   };
 
-  const performTransferTransaction = async () => {
+  const performLocalTransferTransaction = async () => {
     if (amount === 0) {
-      setErrorMessage("Amount must be a positive value");
+      setErrorMessage("Amounts must be a positive value");
     } else {
       setSending(true);
+
       if (props.ledger === "Fabric") {
         await transferTokensFabric(props.user, recipient, amount.toString());
       } else {
         await transferTokensBesu(props.user, recipient, amount);
       }
-
-      props.onClose();
     }
+    props.onClose();
   };
 
   return (
@@ -70,8 +82,7 @@ export default function TransferDialog(props: ITransferDialogOptions) {
       <DialogTitle>{"Transfer CBDC"}</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Select the recipient of the CBDC and how many you would like to
-          transfer from {props.user}"s address?
+          Select the recipient of the tokens and the amount to transfer
         </DialogContentText>
         <Select
           fullWidth
@@ -82,14 +93,11 @@ export default function TransferDialog(props: ITransferDialogOptions) {
           defaultValue={recipient}
           onChange={handleChangeRecipient}
         >
-          {recipients.map(
-            (user) =>
-              user !== props.user && (
-                <MenuItem key={user} value={user}>
-                  {user}
-                </MenuItem>
-              ),
-          )}
+          {recipients.map((user) => (
+            <MenuItem key={user} value={user}>
+              {user}
+            </MenuItem>
+          ))}
         </Select>
         <TextField
           required
@@ -98,11 +106,11 @@ export default function TransferDialog(props: ITransferDialogOptions) {
           id="amount"
           name="amount"
           value={amount}
-          label="Amount"
+          label="amount"
           type="number"
-          placeholder="Amount"
+          placeholder="amount"
           variant="outlined"
-          onChange={handleChangeAmount}
+          onChange={handleChangeamount}
           sx={{ margin: "1rem 0" }}
         />
         {errorMessage !== "" && (
@@ -117,7 +125,7 @@ export default function TransferDialog(props: ITransferDialogOptions) {
         ) : (
           <div>
             <Button onClick={props.onClose}>Cancel</Button>
-            <Button onClick={performTransferTransaction}>Confirm</Button>
+            <Button onClick={performLocalTransferTransaction}>Confirm</Button>
           </div>
         )}
       </DialogActions>

@@ -125,6 +125,9 @@
       "path": "./examples/cactus-common-example-server/tsconfig.json"
     },
     {
+      "path": "./packages/cactus-plugin-ccmodel-hephaestus/tsconfig.json"
+    },
+    {
       "path": "./examples/cactus-example-carbon-accounting-backend/tsconfig.json"
     },
     {
@@ -153,12 +156,6 @@
     },
     {
       "path": "./examples/cactus-example-discounted-asset-trade-client/tsconfig.json"
-    },
-    {
-      "path": "./examples/cactus-example-cbdc-bridging-backend/tsconfig.json"
-    },
-    {
-      "path": "./examples/cactus-example-cbdc-bridging-frontend/tsconfig.json"
     },
     {
       "path": "./extensions/cactus-plugin-object-store-ipfs/tsconfig.json"
@@ -222,6 +219,8 @@
     "esModuleInterop": true,
     "inlineSourceMap": true,
     "forceConsistentCasingInFileNames": true,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,  
   }
 }

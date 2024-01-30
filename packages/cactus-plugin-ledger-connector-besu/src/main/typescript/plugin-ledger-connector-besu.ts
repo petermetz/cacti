@@ -110,6 +110,13 @@ import {
   IDeployContractV1NoKeychainResponse,
   deployContractV1NoKeychain,
 } from "./impl/deploy-contract-v1/deploy-contract-v1-no-keychain";
+import { Observable, ReplaySubject } from "rxjs";
+
+export interface RunTransactionV1Exchange {
+  request: InvokeContractV1Request;
+  response: RunTransactionResponse;
+  timestamp: Date;
+}
 
 export const E_KEYCHAIN_NOT_FOUND = "cactus.connector.besu.keychain_not_found";
 
@@ -147,6 +154,9 @@ export class PluginLedgerConnectorBesu
   } = {};
 
   private endpoints: IWebServiceEndpoint[] | undefined;
+
+  private txSubject: ReplaySubject<RunTransactionV1Exchange> =
+    new ReplaySubject();
 
   public static readonly CLASS_NAME = "PluginLedgerConnectorBesu";
 
@@ -199,6 +209,10 @@ export class PluginLedgerConnectorBesu
 
   public getInstanceId(): string {
     return this.instanceId;
+  }
+
+  public getTxSubjectObservable(): Observable<RunTransactionV1Exchange> {
+    return this.txSubject.asObservable();
   }
 
   public async onPluginInit(): Promise<void> {
@@ -430,6 +444,7 @@ export class PluginLedgerConnectorBesu
     req: InvokeContractV1Request,
   ): Promise<InvokeContractV1Response> {
     const fnTag = `${this.className}#invokeContract()`;
+
     const contractName = req.contractName;
     let contractInstance: Contract;
 
@@ -608,6 +623,16 @@ export class PluginLedgerConnectorBesu
       const out = await this.transact(txReq);
       const success = out.transactionReceipt.status;
       const data = { success, out };
+
+      // create RunTransactionV1Exchange for transaction monitoring
+      const receiptData: RunTransactionV1Exchange = {
+        request: req,
+        response: out,
+        timestamp: new Date(),
+      };
+      this.log.debug(`RunTransactionV1Exchange created ${receiptData}`);
+      this.txSubject.next(receiptData);
+
       return data;
     } else {
       throw new Error(

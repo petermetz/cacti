@@ -466,7 +466,7 @@ export class PluginConsortiumStatic
       },
       treeHash,
       node: nodeInfo.node,
-      ledger: nodeInfo.ledgers,
+      ledger: nodeInfo.ledgers, // FIXME(petermetz)
       pluginInstance: nodeInfo.pluginInstances,
       signature: await this.sign(msg),
     };

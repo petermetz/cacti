@@ -1,3 +1,5 @@
+import express from "express";
+import cors from "cors";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs-extra";
@@ -6,6 +8,7 @@ import {
   Checks,
   LogLevelDesc,
   LoggerProvider,
+  Secp256k1Keys,
 } from "@hyperledger/cactus-common";
 import {
   BesuTestLedger,
@@ -25,6 +28,7 @@ import {
   FabricContractInvocationType,
   FileBase64,
   PluginLedgerConnectorFabric,
+  IPluginLedgerConnectorFabricOptions,
 } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 import {
   DefaultApi as BesuApi,
@@ -34,17 +38,17 @@ import {
   PluginLedgerConnectorBesu,
   Web3SigningCredentialType,
   InvokeContractV1Request as BesuInvokeContractV1Request,
+  IPluginLedgerConnectorBesuOptions,
 } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import AssetReferenceContractJson from "../../../solidity/asset-reference-contract/AssetReferenceContract.json";
-import CBDCcontractJson from "../../../solidity/cbdc-erc-20/CBDCcontract.json";
-import { IKeyPair } from "@hyperledger/cactus-plugin-satp-hermes";
-import { FabricSatpGateway } from "../satp-extension/fabric-satp-gateway";
-import { BesuSatpGateway } from "../satp-extension/besu-satp-gateway";
-import { PluginImportType } from "@hyperledger/cactus-core-api";
+import SATPContract from "../../../solidity/main/generated/satp-erc20.sol/SATPContract.json";
+import SATPWrapperContract from "../../../solidity/main/generated/satp-wrapper.sol/SATPWrapperContract.json";
+import { PluginFactorySATPGateway, SATPGateway, SATPGatewayConfig } from "@hyperledger/cactus-plugin-satp-hermes";
+import { IPluginFactoryOptions, PluginImportType } from "@hyperledger/cactus-core-api";
 import CryptoMaterial from "../../../crypto-material/crypto-material.json";
-import { ClientHelper } from "../satp-extension/client-helper";
-import { ServerHelper } from "../satp-extension/server-helper";
+import { SupportedChain, GatewayIdentity, DraftVersions, Address } from "@hyperledger/cactus-plugin-satp-hermes/src/main/typescript/core/types";
+import { FabricConfig, NetworkConfig } from "@hyperledger/cactus-plugin-satp-hermes/src/main/typescript/types/blockchain-interaction";
+import { bufArray2HexStr } from "@hyperledger/cactus-plugin-satp-hermes/src/main/typescript/gateway-utils";
 
 export interface ICbdcBridgingAppDummyInfrastructureOptions {
   logLevel?: LogLevelDesc;
@@ -55,11 +59,32 @@ export class CbdcBridgingAppDummyInfrastructure {
   // TODO: Move this to the FabricTestLedger class where it belongs.
   public static readonly FABRIC_2_AIO_CLI_CFG_DIR =
     "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/";
+  public static readonly SATP_CONTRACT = "SATPContract";
+  public static readonly SATP_WRAPPER = "SATPWrapperContract";
+  public static readonly FABRIC_ASSET_ID = "FabricAssetID";
+  public static readonly BESU_ASSET_ID = "BesuAssetID";
+  private static readonly FABRIC_CHANNEL_NAME = "mychannel";
 
   private readonly besu: BesuTestLedger;
   private readonly fabric: FabricTestLedgerV1;
   private readonly log: Logger;
+  private besuFirstHighNetWorthAccount: string = "";
+  private besuFirstHighNetWorthAccountPriv: string = "";
 
+  private besuOptions: IPluginLedgerConnectorBesuOptions | undefined;
+  private fabricConnectorBridgeOptions: IPluginLedgerConnectorFabricOptions | undefined;
+
+  private besuContractAddress: string | undefined;
+  private besuWrapperContractAddress: string | undefined;
+
+  private userIdentity1: any;
+
+  private fabricKeychainPlugin: PluginKeychainMemory | undefined;
+
+  private readonly gatewayFactory = new PluginFactorySATPGateway({
+    pluginImportType: PluginImportType.Local,
+  });
+    
   public get className(): string {
     return CbdcBridgingAppDummyInfrastructure.CLASS_NAME;
   }
@@ -86,8 +111,9 @@ export class CbdcBridgingAppDummyInfrastructure {
     });
 
     this.fabric = new FabricTestLedgerV1({
+      emitContainerLogs: true,
       publishAllPorts: true,
-      imageName: DEFAULT_FABRIC_2_AIO_IMAGE_NAME,
+      imageName: "ghcr.io/hyperledger/cactus-fabric2-all-in-one",
       imageVersion: FABRIC_25_LTS_AIO_IMAGE_VERSION,
       envVars: new Map([["FABRIC_VERSION", FABRIC_25_LTS_AIO_FABRIC_VERSION]]),
       logLevel: level || "DEBUG",
@@ -102,10 +128,22 @@ export class CbdcBridgingAppDummyInfrastructure {
     return FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2;
   }
 
+  public get draftVersions(): DraftVersions[] {
+    return [
+      {
+        Core: "v02",
+        Architecture: "v02",
+        Crash: "v02",
+      },
+    ];
+  }
+
   public async start(): Promise<void> {
     try {
       this.log.info(`Starting dummy infrastructure...`);
       await Promise.all([this.besu.start(), this.fabric.start()]);
+      this.besuFirstHighNetWorthAccount = this.besu.getGenesisAccountPubKey();
+      this.besuFirstHighNetWorthAccountPriv = this.besu.getGenesisAccountPrivKey();
       this.log.info(`Started dummy infrastructure OK`);
     } catch (ex) {
       this.log.error(`Starting of dummy infrastructure crashed: `, ex);
@@ -129,11 +167,11 @@ export class CbdcBridgingAppDummyInfrastructure {
 
   public async createFabricLedgerConnector(): Promise<PluginLedgerConnectorFabric> {
     const connectionProfileOrg1 = await this.fabric.getConnectionProfileOrg1();
-    const enrollAdminOutOrg1 = await this.fabric.enrollAdminV2({
-      organization: "org1",
-    });
+    const connectionProfileOrg2 = await this.fabric.getConnectionProfileOrgX("org2");
+
+    const enrollAdminOutOrg1 = await this.fabric.enrollAdmin();
     const adminWalletOrg1 = enrollAdminOutOrg1[1];
-    const [userIdentity1] = await this.fabric.enrollUserV2({
+    [this.userIdentity1] = await this.fabric.enrollUserV2({
       wallet: adminWalletOrg1,
       enrollmentID: "userA",
       organization: "org1",
@@ -154,32 +192,52 @@ export class CbdcBridgingAppDummyInfrastructure {
       organization: "org2",
     });
 
+    const [adminIdentityOrg2] = await this.fabric.enrollUserV2({
+      wallet: adminWalletOrg2,
+      enrollmentID: "adminUser",
+      organization: "org2",
+    });
+
     const sshConfig = await this.fabric.getSshConfig();
 
     const keychainEntryKey1 = "userA";
-    const keychainEntryValue1 = JSON.stringify(userIdentity1);
+    const keychainEntryValue1 = JSON.stringify(this.userIdentity1);
 
     const keychainEntryKey2 = "userB";
     const keychainEntryValue2 = JSON.stringify(userIdentity2);
 
-    const keychainEntryKey3 = "bridge";
+    const keychainEntryKey3 = CryptoMaterial.keychains.keychain2.ref;
     const keychainEntryValue3 = JSON.stringify(bridgeIdentity);
 
-    const keychainPlugin = new PluginKeychainMemory({
+    const keychainEntryKey4 = "adminUser";
+    const keychainEntryValue4 = JSON.stringify(adminIdentityOrg2);
+
+    this.fabricKeychainPlugin = new PluginKeychainMemory({
       instanceId: uuidv4(),
       keychainId: CryptoMaterial.keychains.keychain1.id,
-      logLevel: undefined,
+      logLevel: this.options.logLevel || "INFO",
       backend: new Map([
         [keychainEntryKey1, keychainEntryValue1],
         [keychainEntryKey2, keychainEntryValue2],
         [keychainEntryKey3, keychainEntryValue3],
+        [keychainEntryKey4, keychainEntryValue4],
       ]),
     });
 
-    const pluginRegistry = new PluginRegistry({ plugins: [keychainPlugin] });
+    const bridgeKeychainPlugin = new PluginKeychainMemory({
+      instanceId: uuidv4(),
+      keychainId: CryptoMaterial.keychains.keychain2.id,
+      logLevel: this.options.logLevel || "INFO",
+      backend: new Map([
+        [keychainEntryKey3, keychainEntryValue3],
+      ]),
+    });
 
-    this.log.info(`Creating Fabric Connector...`);
-    return new PluginLedgerConnectorFabric({
+    const pluginRegistry = new PluginRegistry({ plugins: [this.fabricKeychainPlugin] });
+
+    const bridgePluginRegistry = new PluginRegistry({ plugins: [bridgeKeychainPlugin] });
+
+   const fabricOptions = {
       instanceId: uuidv4(),
       dockerBinary: "/usr/local/bin/docker",
       peerBinary: "/fabric-samples/bin/peer",
@@ -197,18 +255,41 @@ export class CbdcBridgingAppDummyInfrastructure {
         strategy: DefaultEventHandlerStrategy.NetworkScopeAllfortx,
         commitTimeout: 300,
       },
-    });
+    }
+
+    this.fabricConnectorBridgeOptions = {
+      instanceId: uuidv4(),
+      dockerBinary: "/usr/local/bin/docker",
+      peerBinary: "/fabric-samples/bin/peer",
+      goBinary: "/usr/local/go/bin/go",
+      pluginRegistry: bridgePluginRegistry,
+      cliContainerEnv: this.org2Env,
+      sshConfig,
+      connectionProfile: connectionProfileOrg2,
+      logLevel: this.options.logLevel || "INFO",
+      discoveryOptions: {
+        enabled: true,
+        asLocalhost: true,
+      },
+      eventHandlerOptions: {
+        strategy: DefaultEventHandlerStrategy.NetworkScopeAllfortx,
+        commitTimeout: 300,
+      },
+    };
+
+    this.log.info(`Creating Fabric Connector...`);
+    return new PluginLedgerConnectorFabric(fabricOptions);
   }
 
   public async createBesuLedgerConnector(): Promise<PluginLedgerConnectorBesu> {
     const rpcApiHttpHost = await this.besu.getRpcApiHttpHost();
     const rpcApiWsHost = await this.besu.getRpcApiWsHost();
 
-    const keychainEntryKey = AssetReferenceContractJson.contractName;
-    const keychainEntryValue = JSON.stringify(AssetReferenceContractJson);
+    const keychainEntryKey = CbdcBridgingAppDummyInfrastructure.SATP_CONTRACT;
+    const keychainEntryValue = JSON.stringify(SATPContract);
 
-    const keychainEntryKey2 = CBDCcontractJson.contractName;
-    const keychainEntryValue2 = JSON.stringify(CBDCcontractJson);
+    const keychainEntryKey2 = CbdcBridgingAppDummyInfrastructure.SATP_WRAPPER;
+    const keychainEntryValue2 = JSON.stringify(SATPWrapperContract);    
 
     const keychainPlugin = new PluginKeychainMemory({
       instanceId: uuidv4(),
@@ -220,17 +301,20 @@ export class CbdcBridgingAppDummyInfrastructure {
       ]),
     });
 
+    this.besuOptions = {
+      instanceId: uuidv4(),
+      rpcApiHttpHost,
+      rpcApiWsHost,
+      pluginRegistry: new PluginRegistry({ plugins: [keychainPlugin] }),
+      logLevel: this.options.logLevel || "INFO",
+    };
+
     this.log.info(`Creating Besu Connector...`);
     const factory = new PluginFactoryLedgerConnector({
       pluginImportType: PluginImportType.Local,
     });
 
-    const besuConnector = await factory.create({
-      rpcApiHttpHost,
-      rpcApiWsHost,
-      instanceId: uuidv4(),
-      pluginRegistry: new PluginRegistry({ plugins: [keychainPlugin] }),
-    });
+    const besuConnector = await factory.create(this.besuOptions);
 
     const accounts = [
       CryptoMaterial.accounts.userA.ethAddress,
@@ -245,70 +329,181 @@ export class CbdcBridgingAppDummyInfrastructure {
     return besuConnector;
   }
 
-  public async createClientGateway(
-    nodeApiHost: string,
-    keyPair: IKeyPair,
-  ): Promise<FabricSatpGateway> {
+  public async createSATPGateway(
+    id: string,
+    name: string,
+    hostPath: string,
+    serverPort: number,
+    clientPort: number,
+    apiPort: number,
+    supportedDLTs: SupportedChain[],
+    proofID: string,
+    version: DraftVersions[],
+    logLevel: LogLevelDesc,
+    counterPartyGateways: GatewayIdentity[],
+    bridgesConfig: NetworkConfig[],
+  ): Promise<SATPGateway> {~
     this.log.info(`Creating Source Gateway...`);
-    const pluginSourceGateway = new FabricSatpGateway({
-      name: "cactus-plugin-source#satpGateway",
-      dltIDs: ["DLT2"],
-      instanceId: uuidv4(),
-      keyPair: keyPair,
-      fabricPath: nodeApiHost,
-      fabricSigningCredential: {
-        keychainId: CryptoMaterial.keychains.keychain1.id,
-        keychainRef: "bridge",
-      },
-      fabricChannelName: "mychannel",
-      fabricContractName: "asset-reference-contract",
-      clientHelper: new ClientHelper(),
-      serverHelper: new ServerHelper({}),
-    });
+    const factoryOptions: IPluginFactoryOptions = {
+      pluginImportType: PluginImportType.Local,
+    };
+    const factory = new PluginFactorySATPGateway(factoryOptions);
 
-    await pluginSourceGateway.localRepository?.reset();
-    await pluginSourceGateway.remoteRepository?.reset();
+    const gatewayIdentity = {
+      id,
+      name,
+      version,
+      supportedDLTs,
+      proofID,
+      address: `http://${hostPath}`,
+      gatewayServerPort: serverPort,
+      gatewayClientPort: clientPort,
+      gatewayOpenAPIPort: apiPort,
+    } as GatewayIdentity;
 
-    return pluginSourceGateway;
+    const options: SATPGatewayConfig = {
+      logLevel: logLevel,
+      gid: gatewayIdentity,
+      counterPartyGateways,
+      bridgesConfig: bridgesConfig,
+    };
+    return await factory.create(options);
   }
 
-  public async createServerGateway(
-    nodeApiHost: string,
-    keyPair: IKeyPair,
-  ): Promise<BesuSatpGateway> {
-    this.log.info(`Creating Recipient Gateway...`);
-    const pluginRecipientGateway = new BesuSatpGateway({
-      name: "cactus-plugin-recipient#satpGateway",
-      dltIDs: ["DLT1"],
+  public async createSATPGateways(): Promise<SATPGateway[]> {
+    const fnTag = `${this.className}#createSATPGateways()`;
+    const logLevel = this.options.logLevel || "INFO";
+
+    const fabricGatewayKeyPair = Secp256k1Keys.generateKeyPairsBuffer();
+
+    const besuGatewayKeyPair = Secp256k1Keys.generateKeyPairsBuffer();
+
+    const fabricGatewayIdentity = {
+      id: "fabric-satp-gateway-id",
+      name: "Fabric SATP Gateway",
+      version: this.draftVersions,
+      supportedDLTs: [SupportedChain.FABRIC],
+      proofID: "fabricGatewayProofID",
+      address: `http://localhost`,
+      gatewayServerPort: 3010,
+      gatewayClientPort: 3011,
+      gatewayOpenAPIPort: 4010,
+    } as GatewayIdentity;
+
+    const besuGatewayIdentity = {
+      id: "besu-satp-gateway-id",
+      name: "Besu SATP Gateway",
+      version: this.draftVersions,
+      supportedDLTs: [SupportedChain.BESU],
+      proofID: "besuGatewayProofID",
+      address: `http://localhost`,
+      gatewayServerPort: 3110,
+      gatewayClientPort: 3111,
+      gatewayOpenAPIPort: 4110,
+    } as GatewayIdentity;
+
+    const pluginBungeeFabricOptions = { //todo change this when bungee is implemented
+      keyPair: Secp256k1Keys.generateKeyPairsBuffer(),
       instanceId: uuidv4(),
-      keyPair: keyPair,
-      besuPath: nodeApiHost,
-      besuWeb3SigningCredential: {
-        ethAccount: CryptoMaterial.accounts["bridge"].ethAddress,
-        secret: CryptoMaterial.accounts["bridge"].privateKey,
+      pluginRegistry: new PluginRegistry(),
+      logLevel,
+    };
+
+    const pluginBungeeBesuOptions = { //todo change this when bungee is implemented
+      keyPair: Secp256k1Keys.generateKeyPairsBuffer(),
+      instanceId: uuidv4(),
+      pluginRegistry: new PluginRegistry(),
+      logLevel,
+    };
+
+    const fabricConfig = {
+      network: SupportedChain.FABRIC,
+      signingCredential: {
+        keychainId: CryptoMaterial.keychains.keychain2.id,
+        keychainRef: CryptoMaterial.keychains.keychain2.ref,
+      },
+      channelName: CbdcBridgingAppDummyInfrastructure.FABRIC_CHANNEL_NAME,
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_WRAPPER,
+      options: this.fabricConnectorBridgeOptions,
+      bungeeOptions: pluginBungeeFabricOptions,
+    } as FabricConfig;
+
+    const besuConfig = {
+      network: SupportedChain.BESU,
+      keychainId: CryptoMaterial.keychains.keychain2.id,
+      signingCredential: {
+        ethAccount: CryptoMaterial.accounts.bridge.ethAddress,
+        secret: CryptoMaterial.accounts.bridge.privateKey,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      besuContractName: AssetReferenceContractJson.contractName,
-      besuKeychainId: CryptoMaterial.keychains.keychain2.id,
-      clientHelper: new ClientHelper(),
-      serverHelper: new ServerHelper({}),
-    });
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_WRAPPER,
+      contractAddress: this.besuWrapperContractAddress,
+      options: this.besuOptions,
+      bungeeOptions: pluginBungeeBesuOptions,
+      gas: 999999999999999,
+    };
 
-    await pluginRecipientGateway.localRepository?.reset();
-    await pluginRecipientGateway.remoteRepository?.reset();
+    const besuGatewayOptions: SATPGatewayConfig = {
+      logLevel: logLevel,
+      gid: besuGatewayIdentity,
+      counterPartyGateways: [{
+        id: "fabric-satp-gateway-id",
+        name: "Fabric SATP Gateway",
+        version: this.draftVersions,
+        supportedDLTs: [SupportedChain.FABRIC],
+        proofID: "fabricGatewayProofID",
+        address: `http://localhost`,
+        gatewayServerPort: 3010,
+        gatewayClientPort: 3011,
+        gatewayOpenAPIPort: 4010,
+        pubKey: bufArray2HexStr(fabricGatewayKeyPair.publicKey),
+      } as GatewayIdentity],
+      bridgesConfig: [besuConfig],
+      enableOpenAPI: true,
+      keyPair: besuGatewayKeyPair,
+    };
 
-    return pluginRecipientGateway;
+    const fabricGatewayOptions = {
+      logLevel: logLevel,
+      gid: fabricGatewayIdentity,
+      counterPartyGateways: [{
+        id: "besu-satp-gateway-id",
+        name: "Besu SATP Gateway",
+        version: this.draftVersions,
+        supportedDLTs: [SupportedChain.BESU],
+        proofID: "besuGatewayProofID",
+        address: `http://localhost`,
+        gatewayServerPort: 3110,
+        gatewayClientPort: 3111,
+        gatewayOpenAPIPort: 4110,
+        pubKey: bufArray2HexStr(besuGatewayKeyPair.publicKey),
+      } as GatewayIdentity],
+      bridgesConfig: [fabricConfig],
+      enableOpenAPI: true,
+      keyPair: fabricGatewayKeyPair,
+    };
+
+    const besuGateway = await this.gatewayFactory.create(besuGatewayOptions);
+
+    this.log.info(`Besu Gateway created`);
+
+    const fabricGateway = await this.gatewayFactory.create(fabricGatewayOptions);
+    
+    this.log.info(`Fabric Gateway created`);
+
+
+    return [fabricGateway, besuGateway];
   }
 
-  public async deployFabricAssetReferenceContract(
+  public async deployFabricSATPContract(
     fabricApiClient: FabricApi,
   ): Promise<void> {
     const channelId = "mychannel";
 
-    const contractName = "asset-reference-contract";
+    const contractName = CbdcBridgingAppDummyInfrastructure.SATP_CONTRACT
 
     const contractRelPath =
-      "../../../fabric-contracts/asset-reference/typescript";
+      "../../../fabric-contracts/satp-contract/chaincode-typescript";
     const contractDir = path.join(__dirname, contractRelPath);
 
     // ├── package.json
@@ -318,13 +513,13 @@ export class CbdcBridgingAppDummyInfrastructure {
     // │   └── index.ts
     // ├── tsconfig.json
     // └── tslint.json
-    const sourceFiles: FileBase64[] = [];
+    const satpSourceFiles: FileBase64[] = [];
     {
       const filename = "./tsconfig.json";
       const relativePath = "./";
       const filePath = path.join(contractDir, relativePath, filename);
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      satpSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
@@ -335,7 +530,7 @@ export class CbdcBridgingAppDummyInfrastructure {
       const relativePath = "./";
       const filePath = path.join(contractDir, relativePath, filename);
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      satpSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
@@ -346,256 +541,300 @@ export class CbdcBridgingAppDummyInfrastructure {
       const relativePath = "./src/";
       const filePath = path.join(contractDir, relativePath, filename);
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      satpSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
       });
     }
     {
-      const filename = "./asset-reference.ts";
+      const filename = "./ITraceableContract.ts";
       const relativePath = "./src/";
       const filePath = path.join(contractDir, relativePath, filename);
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      satpSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
       });
     }
     {
-      const filename = "./asset-reference-contract.ts";
+      const filename = "./satp-contract-interface.ts";
       const relativePath = "./src/";
       const filePath = path.join(contractDir, relativePath, filename);
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      satpSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
       });
     }
+    {
+      const filename = "./satp-contract.ts";
+      const relativePath = "./src/";
+      const filePath = path.join(contractDir, relativePath, filename);
+      const buffer = await fs.readFile(filePath);
+      satpSourceFiles.push({
+        body: buffer.toString("base64"),
+        filepath: relativePath,
+        filename,
+      });
+    }
+    {
+      const filename = "./tokenERC20.ts";
+      const relativePath = "./src/";
+      const filePath = path.join(contractDir, relativePath, filename);
+      const buffer = await fs.readFile(filePath);
+      satpSourceFiles.push({
+        body: buffer.toString("base64"),
+        filepath: relativePath,
+        filename,
+      });
+    }
+    this.log.info(`Deploying Fabric SATP contract in API`);
+    
+    const res = await fabricApiClient
+      .deployContractV1(
+        {
+          channelId: channelId,
+          ccVersion: "1.0.0",
+          sourceFiles: satpSourceFiles,
+          ccName: contractName,
+          targetOrganizations: [this.org1Env, this.org2Env],
+          caFile:
+            FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1.ORDERER_TLS_ROOTCERT_FILE,
+          ccLabel: contractName,
+          ccLang: ChainCodeProgrammingLanguage.Typescript,
+          ccSequence: 1,
+          orderer: "orderer.example.com:7050",
+          ordererTLSHostnameOverride: "orderer.example.com",
+          connTimeout: 60,
+        },
+        // {
+        //   maxContentLength: Infinity,
+        //   maxBodyLength: Infinity,
+        // },
+      );
 
-    let retries = 0;
-    while (retries <= 5) {
-      await fabricApiClient
-        .deployContractV1(
-          {
-            channelId,
-            ccVersion: "1.0.0",
-            sourceFiles,
-            ccName: contractName,
-            targetOrganizations: [this.org1Env, this.org2Env],
-            caFile:
-              FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1.ORDERER_TLS_ROOTCERT_FILE,
-            ccLabel: "asset-reference-contract",
-            ccLang: ChainCodeProgrammingLanguage.Typescript,
-            ccSequence: 1,
-            orderer: "orderer.example.com:7050",
-            ordererTLSHostnameOverride: "orderer.example.com",
-            connTimeout: 120,
-          },
-          {
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity,
-          },
-        )
-        .then(async (res: { data: { packageIds: any; lifecycle: any } }) => {
-          retries = 6;
-
-          const { packageIds, lifecycle } = res.data;
-
-          const {
-            approveForMyOrgList,
-            installList,
-            queryInstalledList,
-            commit,
-            packaging,
-            queryCommitted,
-          } = lifecycle;
-
-          Checks.truthy(packageIds, `packageIds truthy OK`);
-          Checks.truthy(
+      const { packageIds, lifecycle, success } = res.data;
+  
+      const {
+        approveForMyOrgList,
+        installList,
+        queryInstalledList,
+        commit,
+        packaging,
+        queryCommitted,
+      } = lifecycle;
+  
+      Checks.truthy(packageIds, `packageIds truthy OK`);
+      Checks.truthy(
             Array.isArray(packageIds),
             `Array.isArray(packageIds) truthy OK`,
           );
-          Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
-          Checks.truthy(
-            Array.isArray(approveForMyOrgList),
-            `Array.isArray(approveForMyOrgList) truthy OK`,
-          );
-          Checks.truthy(installList, `installList truthy OK`);
-          Checks.truthy(
-            Array.isArray(installList),
-            `Array.isArray(installList) truthy OK`,
-          );
-          Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
-          Checks.truthy(
-            Array.isArray(queryInstalledList),
-            `Array.isArray(queryInstalledList) truthy OK`,
-          );
-          Checks.truthy(commit, `commit truthy OK`);
-          Checks.truthy(packaging, `packaging truthy OK`);
-          Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
-        })
-        .catch(() => console.log("trying to deploy fabric contract again"));
-      retries++;
+  
+      Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
+      Checks.truthy(
+        Array.isArray(approveForMyOrgList),
+        `Array.isArray(approveForMyOrgList) truthy OK`,
+      );
+      Checks.truthy(installList, `installList truthy OK`);
+      Checks.truthy(
+        Array.isArray(installList),
+        `Array.isArray(installList) truthy OK`,
+      );
+      Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
+      Checks.truthy(
+        Array.isArray(queryInstalledList),
+        `Array.isArray(queryInstalledList) truthy OK`,
+      );
+      Checks.truthy(commit, `commit truthy OK`);
+      Checks.truthy(packaging, `packaging truthy OK`);
+      Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
+      this.log.info("SATP Contract deployed");    
     }
-  }
+  
 
-  public async deployFabricCbdcContract(
+  public async deployFabricWrapperContract(
     fabricApiClient: FabricApi,
   ): Promise<void> {
     const channelId = "mychannel";
-    const channelName = channelId;
 
-    const contractName = "cbdc";
+    const contractName = CbdcBridgingAppDummyInfrastructure.SATP_WRAPPER;
 
-    const contractRelPath = "../../../fabric-contracts/cbdc-erc-20/javascript";
+    const contractRelPath = "../../../fabric-contracts/satp-wrapper/chaincode-typescript";
     const contractDir = path.join(__dirname, contractRelPath);
 
     // ├── package.json
     // ├── index.js
     // ├── lib
     // │   ├── tokenERC20.js
-    const sourceFiles: FileBase64[] = [];
+    const wrapperSourceFiles: FileBase64[] = [];
+    {
+      const filename = "./tsconfig.json";
+      const relativePath = "./";
+      const filePath = path.join(
+        contractDir,
+        relativePath,
+        filename,
+      );
+      const buffer = await fs.readFile(filePath);
+      wrapperSourceFiles.push({
+        body: buffer.toString("base64"),
+        filepath: relativePath,
+        filename,
+      });
+    }
     {
       const filename = "./package.json";
       const relativePath = "./";
-      const filePath = path.join(contractDir, relativePath, filename);
+      const filePath = path.join(
+        contractDir,
+        relativePath,
+        filename,
+      );
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      wrapperSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
       });
     }
     {
-      const filename = "./index.js";
-      const relativePath = "./";
-      const filePath = path.join(contractDir, relativePath, filename);
+      const filename = "./index.ts";
+      const relativePath = "./src/";
+      const filePath = path.join(
+        contractDir,
+        relativePath,
+        filename,
+      );
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      wrapperSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
       });
     }
     {
-      const filename = "./tokenERC20.js";
-      const relativePath = "./lib/";
-      const filePath = path.join(contractDir, relativePath, filename);
+      const filename = "./interaction-signature.ts";
+      const relativePath = "./src/";
+      const filePath = path.join(
+        contractDir,
+        relativePath,
+        filename,
+      );
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      wrapperSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
       });
     }
     {
-      const filename = "./crypto-material.json";
-      const relativePath = "./crypto-material/";
-      const filePath = path.join(contractDir, relativePath, filename);
+      const filename = "./ITraceableContract.ts";
+      const relativePath = "./src/";
+      const filePath = path.join(
+        contractDir,
+        relativePath,
+        filename,
+      );
       const buffer = await fs.readFile(filePath);
-      sourceFiles.push({
+      wrapperSourceFiles.push({
+        body: buffer.toString("base64"),
+        filepath: relativePath,
+        filename,
+      });
+    }
+    {
+      const filename = "./satp-wrapper.ts";
+      const relativePath = "./src/";
+      const filePath = path.join(
+        contractDir,
+        relativePath,
+        filename,
+      );
+      const buffer = await fs.readFile(filePath);
+      wrapperSourceFiles.push({
+        body: buffer.toString("base64"),
+        filepath: relativePath,
+        filename,
+      });
+    }
+    {
+      const filename = "./token.ts";
+      const relativePath = "./src/";
+      const filePath = path.join(
+        contractDir,
+        relativePath,
+        filename,
+      );
+      const buffer = await fs.readFile(filePath);
+      wrapperSourceFiles.push({
         body: buffer.toString("base64"),
         filepath: relativePath,
         filename,
       });
     }
 
-    let retries = 0;
-    while (retries <= 5) {
-      await fabricApiClient
-        .deployContractV1(
-          {
-            channelId,
-            ccVersion: "1.0.0",
-            sourceFiles,
-            ccName: contractName,
-            targetOrganizations: [this.org1Env, this.org2Env],
-            caFile:
-              FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1.ORDERER_TLS_ROOTCERT_FILE,
-            ccLabel: "cbdc",
-            ccLang: ChainCodeProgrammingLanguage.Javascript,
-            ccSequence: 1,
-            orderer: "orderer.example.com:7050",
-            ordererTLSHostnameOverride: "orderer.example.com",
-            connTimeout: 120,
-          },
-          {
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity,
-          },
-        )
-        .then(async (res: { data: { packageIds: any; lifecycle: any } }) => {
-          retries = 6;
+    await fabricApiClient
+      .deployContractV1(
+        {
+          channelId,
+          ccVersion: "1.0.0",
+          sourceFiles: wrapperSourceFiles,
+          ccName: contractName,
+          targetOrganizations: [this.org1Env, this.org2Env],
+          caFile:
+            FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1.ORDERER_TLS_ROOTCERT_FILE,
+          ccLabel: contractName,
+          ccLang: ChainCodeProgrammingLanguage.Typescript,
+          ccSequence: 1,
+          orderer: "orderer.example.com:7050",
+          ordererTLSHostnameOverride: "orderer.example.com",
+          connTimeout: 120,
+        },
+        {
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        },
+      )
+      .then(async (res: { data: { packageIds: any; lifecycle: any } }) => {
+        const { packageIds, lifecycle } = res.data;
 
-          const { packageIds, lifecycle } = res.data;
+        const {
+          approveForMyOrgList,
+          installList,
+          queryInstalledList,
+          commit,
+          packaging,
+          queryCommitted,
+        } = lifecycle;
 
-          const {
-            approveForMyOrgList,
-            installList,
-            queryInstalledList,
-            commit,
-            packaging,
-            queryCommitted,
-          } = lifecycle;
-
-          Checks.truthy(packageIds, `packageIds truthy OK`);
-          Checks.truthy(
-            Array.isArray(packageIds),
-            `Array.isArray(packageIds) truthy OK`,
-          );
-          Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
-          Checks.truthy(
-            Array.isArray(approveForMyOrgList),
-            `Array.isArray(approveForMyOrgList) truthy OK`,
-          );
-          Checks.truthy(installList, `installList truthy OK`);
-          Checks.truthy(
-            Array.isArray(installList),
-            `Array.isArray(installList) truthy OK`,
-          );
-          Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
-          Checks.truthy(
-            Array.isArray(queryInstalledList),
-            `Array.isArray(queryInstalledList) truthy OK`,
-          );
-          Checks.truthy(commit, `commit truthy OK`);
-          Checks.truthy(packaging, `packaging truthy OK`);
-          Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
-
-          // FIXME - without this wait it randomly fails with an error claiming that
-          // the endorsement was impossible to be obtained. The fabric-samples script
-          // does the same thing, it just waits 10 seconds for good measure so there
-          // might not be a way for us to avoid doing this, but if there is a way we
-          // absolutely should not have timeouts like this, anywhere...
-          let retries_2 = 0;
-          while (retries_2 <= 5) {
-            await new Promise((resolve) => setTimeout(resolve, 10000));
-
-            await fabricApiClient
-              .runTransactionV1({
-                contractName,
-                channelName,
-                params: ["name1", "symbol1", "8"],
-                methodName: "Initialize",
-                invocationType: FabricContractInvocationType.Send,
-                signingCredential: {
-                  keychainId: CryptoMaterial.keychains.keychain1.id,
-                  keychainRef: "userA",
-                },
-              })
-              .then(() => (retries_2 = 6))
-              .catch(() =>
-                console.log("trying to Initialize fabric contract again"),
-              );
-            retries_2++;
-          }
-        })
-        .catch(() => console.log("trying to deploy fabric contract again"));
-      retries++;
-    }
+        Checks.truthy(packageIds, `packageIds truthy OK`);
+        Checks.truthy(
+          Array.isArray(packageIds),
+          `Array.isArray(packageIds) truthy OK`,
+        );
+        Checks.truthy(approveForMyOrgList, `approveForMyOrgList truthy OK`);
+        Checks.truthy(
+          Array.isArray(approveForMyOrgList),
+          `Array.isArray(approveForMyOrgList) truthy OK`,
+        );
+        Checks.truthy(installList, `installList truthy OK`);
+        Checks.truthy(
+          Array.isArray(installList),
+          `Array.isArray(installList) truthy OK`,
+        );
+        Checks.truthy(queryInstalledList, `queryInstalledList truthy OK`);
+        Checks.truthy(
+          Array.isArray(queryInstalledList),
+          `Array.isArray(queryInstalledList) truthy OK`,
+        );
+        Checks.truthy(commit, `commit truthy OK`);
+        Checks.truthy(packaging, `packaging truthy OK`);
+        Checks.truthy(queryCommitted, `queryCommitted truthy OK`);
+      })
+      .catch(() => console.log("trying to deploy fabric contract again"));
   }
 
   public async deployBesuContracts(besuApiClient: BesuApi): Promise<void> {
@@ -604,114 +843,200 @@ export class CbdcBridgingAppDummyInfrastructure {
     const deployCbdcContractResponse =
       await besuApiClient.deployContractSolBytecodeV1({
         keychainId: CryptoMaterial.keychains.keychain2.id,
-        contractName: CBDCcontractJson.contractName,
-        contractAbi: CBDCcontractJson.abi,
-        constructorArgs: [],
+        contractName: CbdcBridgingAppDummyInfrastructure.SATP_CONTRACT,
+        contractAbi: SATPContract.abi,
+        constructorArgs: [this.besuFirstHighNetWorthAccount, CbdcBridgingAppDummyInfrastructure.BESU_ASSET_ID],
         web3SigningCredential: {
-          ethAccount: CryptoMaterial.accounts["bridge"].ethAddress,
-          secret: CryptoMaterial.accounts["bridge"].privateKey,
+          ethAccount: this.besuFirstHighNetWorthAccount,
+          secret: this.besuFirstHighNetWorthAccountPriv,
           type: Web3SigningCredentialType.PrivateKeyHex,
         },
-        bytecode: CBDCcontractJson.bytecode,
+        bytecode: SATPContract.bytecode.object,
         gas: 10000000,
       } as DeployContractSolidityBytecodeV1Request);
 
     if (deployCbdcContractResponse == undefined) {
       throw new Error(`${fnTag}, error when deploying CBDC smart contract`);
     }
-
-    const deployAssetReferenceContractResponse =
+    
+    this.besuContractAddress = deployCbdcContractResponse.data.transactionReceipt.contractAddress ?? "";
+    await this.startDummyServer(this.besuContractAddress);
+    const deployWrapperContractResponse =
       await besuApiClient.deployContractSolBytecodeV1({
         keychainId: CryptoMaterial.keychains.keychain2.id,
-        contractName: AssetReferenceContractJson.contractName,
-        contractAbi: AssetReferenceContractJson.abi,
+        contractName: CbdcBridgingAppDummyInfrastructure.SATP_WRAPPER,
+        contractAbi: SATPWrapperContract.abi,
         constructorArgs: [
-          deployCbdcContractResponse.data.transactionReceipt.contractAddress,
+          CryptoMaterial.accounts["bridge"].ethAddress,
         ],
         web3SigningCredential: {
           ethAccount: CryptoMaterial.accounts["bridge"].ethAddress,
           secret: CryptoMaterial.accounts["bridge"].privateKey,
           type: Web3SigningCredentialType.PrivateKeyHex,
         },
-        bytecode: AssetReferenceContractJson.bytecode,
+        bytecode: SATPWrapperContract.bytecode.object,
         gas: 10000000,
       } as DeployContractSolidityBytecodeV1Request);
 
-    if (deployAssetReferenceContractResponse == undefined) {
+    if (deployWrapperContractResponse == undefined) {
       throw new Error(
         `${fnTag}, error when deploying Asset Reference smart contract`,
       );
     }
 
-    // set Asset Reference smart contract address in cbdc one (sidechain contract)
-    const insertARContractAddress = await besuApiClient.invokeContractV1({
-      contractName: CBDCcontractJson.contractName,
+    this.besuWrapperContractAddress = deployWrapperContractResponse.data.transactionReceipt.contractAddress ?? "";
+
+    const giveRoleRes = await besuApiClient.invokeContractV1({
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_CONTRACT,
+      keychainId: CryptoMaterial.keychains.keychain2.id,
       invocationType: EthContractInvocationType.Send,
-      methodName: "setAssetReferenceContract",
-      gas: 1000000,
-      params: [
-        deployAssetReferenceContractResponse.data.transactionReceipt
-          .contractAddress,
-      ],
+      methodName: "giveRole",
+      params: [deployWrapperContractResponse.data.transactionReceipt.contractAddress],
       signingCredential: {
-        ethAccount: CryptoMaterial.accounts["bridge"].ethAddress,
-        secret: CryptoMaterial.accounts["bridge"].privateKey,
+        ethAccount: this.besuFirstHighNetWorthAccount,
+        secret: this.besuFirstHighNetWorthAccountPriv,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      keychainId: CryptoMaterial.keychains.keychain2.id,
-    } as BesuInvokeContractV1Request);
-
-    if (insertARContractAddress == undefined) {
-      throw new Error(
-        `${fnTag}, error when setting Asset Reference smart contract address in sidechain contract`,
-      );
-    }
-
-    // make the owner of the sidechain contract the asset reference one
-    const transferOwnership = await besuApiClient.invokeContractV1({
-      contractName: CBDCcontractJson.contractName,
-      invocationType: EthContractInvocationType.Send,
-      methodName: "transferOwnership",
       gas: 1000000,
-      params: [
-        deployAssetReferenceContractResponse.data.transactionReceipt
-          .contractAddress,
-      ],
+    });
+    const giveRoleRes1 = await besuApiClient.invokeContractV1({
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_CONTRACT,
+      keychainId: CryptoMaterial.keychains.keychain2.id,
+      invocationType: EthContractInvocationType.Send,
+      methodName: "giveRole",
+      params: [CryptoMaterial.accounts["bridge"].ethAddress],
       signingCredential: {
-        ethAccount: CryptoMaterial.accounts["bridge"].ethAddress,
-        secret: CryptoMaterial.accounts["bridge"].privateKey,
+        ethAccount: this.besuFirstHighNetWorthAccount,
+        secret: this.besuFirstHighNetWorthAccountPriv,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      keychainId: CryptoMaterial.keychains.keychain2.id,
-    } as BesuInvokeContractV1Request);
+      gas: 1000000,
+    });
 
-    if (transferOwnership == undefined) {
-      throw new Error(
-        `${fnTag}, error when transferring the ownershop Reference smart contract address in sidechain contract`,
-      );
+    Checks.truthy(giveRoleRes, "giveRoleRes");
+  }
+
+  public async initializeContractsAndAddPermitions(fabricApiClient: FabricApi, besuApiClient: BesuApi) {
+
+    const fabricInitializeResponse = await fabricApiClient.runTransactionV1({
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_CONTRACT,
+      channelName: CbdcBridgingAppDummyInfrastructure.FABRIC_CHANNEL_NAME,
+      params: [this.userIdentity1.mspId, CbdcBridgingAppDummyInfrastructure.FABRIC_ASSET_ID],
+      methodName: "InitToken",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId: this.fabricKeychainPlugin?.getKeychainId()!,
+        keychainRef: "userA",
+      },
+    });
+
+    Checks.truthy(fabricInitializeResponse, "fabricInitializeResponse");
+    Checks.truthy(fabricInitializeResponse.status, "fabricInitializeResponse.data");
+
+    if(fabricInitializeResponse.status < 200 || fabricInitializeResponse.status > 299) {
+      throw new Error("Failed to initialize CBDC Fabric contract");
     }
 
-    // make the owner of the asset reference contract the sidechain one
-    const addOwnerToAssetRefContract = await besuApiClient.invokeContractV1({
-      contractName: AssetReferenceContractJson.contractName,
-      invocationType: EthContractInvocationType.Send,
-      methodName: "addOwner",
-      gas: 1000000,
-      params: [
-        deployCbdcContractResponse.data.transactionReceipt.contractAddress,
-      ],
+    const fabricWrapperInitializeResponse = await fabricApiClient.runTransactionV1({
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_WRAPPER,
+      channelName: CbdcBridgingAppDummyInfrastructure.FABRIC_CHANNEL_NAME,
+      params: ["Org2MSP"],
+      methodName: "Initialize",
+      invocationType: FabricContractInvocationType.Send,
       signingCredential: {
-        ethAccount: CryptoMaterial.accounts["bridge"].ethAddress,
-        secret: CryptoMaterial.accounts["bridge"].privateKey,
+        keychainId: this.fabricKeychainPlugin?.getKeychainId()!,
+        keychainRef: "adminUser",
+      },
+    });
+
+    Checks.truthy(fabricWrapperInitializeResponse, "fabricWrapperInitializeResponse");
+    Checks.truthy(fabricWrapperInitializeResponse.status, "fabricWrapperInitializeResponse.data");
+
+    if(fabricWrapperInitializeResponse.status < 200 || fabricWrapperInitializeResponse.status > 299) {
+      throw new Error("Failed to initialize Wrapper Fabric contract");
+    }
+
+    const setBridgeWrapperResponse = await fabricApiClient.runTransactionV1({
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_WRAPPER,
+      channelName: CbdcBridgingAppDummyInfrastructure.FABRIC_CHANNEL_NAME,
+      params: ["Org2MSP", CryptoMaterial.accounts.bridge.fabricID],
+      methodName: "setBridge",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId: this.fabricKeychainPlugin?.getKeychainId()!,
+        keychainRef: "adminUser",
+      },
+    });
+
+    Checks.truthy(setBridgeWrapperResponse, "setBridgeWrapperResponse");
+    Checks.truthy(setBridgeWrapperResponse.status, "setBridgeResponse.data");
+
+    if(setBridgeWrapperResponse.status < 200 || setBridgeWrapperResponse.status > 299) {
+      throw new Error("Failed to set Bridge Fabric contract");
+    }
+
+    const setBridgeCBDCResponse = await fabricApiClient.runTransactionV1({
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_CONTRACT,
+      channelName: CbdcBridgingAppDummyInfrastructure.FABRIC_CHANNEL_NAME,
+      params: ["Org2MSP"],
+      methodName: "setBridge",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId: this.fabricKeychainPlugin?.getKeychainId()!,
+        keychainRef: "userA",
+      },
+    });
+
+    Checks.truthy(setBridgeCBDCResponse, "setBridgeCBDCResponse");
+    Checks.truthy(setBridgeCBDCResponse.status, "setBridgeCBDCResponse.data");
+
+    if(setBridgeCBDCResponse.status < 200 || setBridgeCBDCResponse.status > 299) {
+      throw new Error("Failed to set Bridge Fabric contract");
+    }
+
+    const besuInitializeResponse = await besuApiClient.invokeContractV1({
+      contractName: CbdcBridgingAppDummyInfrastructure.SATP_CONTRACT,
+      keychainId: CryptoMaterial.keychains.keychain2.id,
+      invocationType: EthContractInvocationType.Send,
+      methodName: "giveRole",
+      params: [this.besuWrapperContractAddress],
+      signingCredential: {
+        ethAccount: this.besuFirstHighNetWorthAccount,
+        secret: this.besuFirstHighNetWorthAccountPriv,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      keychainId: CryptoMaterial.keychains.keychain2.id,
-    } as BesuInvokeContractV1Request);
+      gas: 1000000,
+    });
 
-    if (addOwnerToAssetRefContract == undefined) {
-      throw new Error(
-        `${fnTag}, error when transfering CBDC smart contract ownership`,
-      );
+    Checks.truthy(besuInitializeResponse, "besuInitializeResponse");
+    Checks.truthy(besuInitializeResponse.status, "besuInitializeResponse.data");
+
+    if(besuInitializeResponse.status < 200 || besuInitializeResponse.status > 299) {
+      throw new Error("Failed to initialize CBDC Besu contract");
     }
+
+  }
+
+  async startDummyServer(address: string){
+    //just to send contract address to the frontend at each run
+    const app = express();
+    app.use(cors());
+    const port = 9999;
+
+    // Example endpoint that returns the contract address
+    app.get('/contract-address', (_req: any, res: { json: (arg0: { address: string; }) => void; }) => {
+      // Replace this with the actual logic to retrieve the contract address
+      const contractAddress = address;
+      res.json({ address: contractAddress });
+    });
+    app.get('/wrapper-address', (_req: any, res: { json: (arg0: { address: string; }) => void; }) => {
+      // Replace this with the actual logic to retrieve the contract address
+      const contractAddress = this.besuWrapperContractAddress!;
+      res.json({ address: contractAddress });
+    });
+
+    app.listen(port, () => {
+      //console.log(`Server running on http://localhost:${port}`);
+    });
   }
 }
