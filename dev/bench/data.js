@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1706662668773,
+  "lastUpdate": 1706664143849,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -38,6 +38,44 @@ window.BENCHMARK_DATA = {
             "range": "±1.63%",
             "unit": "ops/sec",
             "extra": "182 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "d1e153dec5655bd79e997b7623c5a0168cbe02f0",
+          "message": "squash! - test 6 - worsened performance!\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-01-30T17:12:59-08:00",
+          "tree_id": "5e2b8d2200bdf42ba6cfba247bd9e812929787b7",
+          "url": "https://github.com/petermetz/cacti/commit/d1e153dec5655bd79e997b7623c5a0168cbe02f0"
+        },
+        "date": 1706664142026,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 9.72,
+            "range": "±0.30%",
+            "unit": "ops/sec",
+            "extra": "145 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 402,
+            "range": "±1.39%",
+            "unit": "ops/sec",
+            "extra": "183 samples"
           }
         ]
       }
