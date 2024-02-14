@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1707188624835,
+  "lastUpdate": 1707925055546,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -114,6 +114,44 @@ window.BENCHMARK_DATA = {
             "range": "±1.74%",
             "unit": "ops/sec",
             "extra": "181 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": false,
+          "id": "fb50fb2a43904f6fd6ae7b25b2faf9237d57006f",
+          "message": "build(deps): fix CVE-2024-21484 - force jsrsasign >=11.0.0 resolutions\n\n1. Also upgraded the Fabric ledger related dependencies across the board\nbecause this newer version has a higher probability of not having issues\nwith the newer transitive dependency that we are forcing on it.\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-02-13T23:58:19-08:00",
+          "tree_id": "c390e5b164f43f560715bdd426f2714e444d0d3d",
+          "url": "https://github.com/petermetz/cacti/commit/fb50fb2a43904f6fd6ae7b25b2faf9237d57006f"
+        },
+        "date": 1707925053979,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 584,
+            "range": "±1.88%",
+            "unit": "ops/sec",
+            "extra": "177 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 368,
+            "range": "±1.35%",
+            "unit": "ops/sec",
+            "extra": "180 samples"
           }
         ]
       }
