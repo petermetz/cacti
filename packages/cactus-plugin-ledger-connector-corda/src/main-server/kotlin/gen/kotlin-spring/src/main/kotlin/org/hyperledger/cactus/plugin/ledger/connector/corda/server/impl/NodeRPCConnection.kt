@@ -11,17 +11,17 @@ import net.corda.core.utilities.NetworkHostAndPort
 import net.corda.core.utilities.loggerFor
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import javax.annotation.PostConstruct
-import javax.annotation.PreDestroy
-import javax.validation.Valid
+import jakarta.annotation.PostConstruct
+import jakarta.annotation.PreDestroy
+import jakarta.validation.Valid
 
 import java.net.InetAddress
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.validation.annotation.Validated
 import java.util.concurrent.CountDownLatch
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotNull
 
 
 private const val CACTUS_CORDA_RPC_USERNAME = "cactus.corda.rpc.username"
