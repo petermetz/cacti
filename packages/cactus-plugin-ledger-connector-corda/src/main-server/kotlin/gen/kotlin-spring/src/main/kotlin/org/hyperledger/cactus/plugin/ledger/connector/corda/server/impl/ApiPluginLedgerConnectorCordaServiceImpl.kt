@@ -1,12 +1,14 @@
 package org.hyperledger.cactus.plugin.ledger.connector.corda.server.impl
 
+// import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.ObjectWriter
-import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.springframework.stereotype.Service
+import net.corda.core.contracts.ContractState
 import net.corda.core.flows.FlowLogic
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.FlowProgressHandle
@@ -21,15 +23,13 @@ import net.schmizz.sshj.userauth.password.PasswordUtils
 import net.schmizz.sshj.xfer.InMemorySourceFile
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.api.ApiPluginLedgerConnectorCordaService
 import org.hyperledger.cactus.plugin.ledger.connector.corda.server.model.*
+import org.springframework.stereotype.Service
+import org.springframework.web.util.HtmlUtils.htmlEscape
 import java.io.IOException
 import java.io.InputStream
-import java.lang.RuntimeException
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.IllegalArgumentException
-import net.corda.core.contracts.ContractState
-import org.springframework.web.util.HtmlUtils.htmlEscape
-import kotlin.Exception
+
 
 // TODO Look into this project for powering the connector of ours:
 // https://github.com/180Protocol/codaptor
@@ -50,6 +50,7 @@ class ApiPluginLedgerConnectorCordaServiceImpl(
         val mapper: ObjectMapper = jacksonObjectMapper()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+            // .registerModule(JavaTimeModule())
 
         val writer: ObjectWriter = mapper.writer()
 
@@ -345,9 +346,10 @@ class ApiPluginLedgerConnectorCordaServiceImpl(
 
     override fun networkMapV1(body: Any?): List<NodeInfo> {
         val reader = mapper.readerFor(object : TypeReference<List<NodeInfo?>?>() {})
-
         val networkMapSnapshot = rpc.proxy.networkMapSnapshot()
-        val networkMapJson = writer.writeValueAsString(networkMapSnapshot)
+        val serializer = CordaNetworkMapSnapshotJsonSerializer(networkMapSnapshot)
+        val x = serializer.asListOfMaps()
+        val networkMapJson = writer.writeValueAsString(x)
         logger.trace("networkMapSnapshot=\n{}", networkMapJson)
 
         val nodeInfoList = reader.readValue<List<NodeInfo>>(networkMapJson)

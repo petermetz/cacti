@@ -1,20 +1,21 @@
-FROM gradle:6.8.0-jdk8 as builder
+FROM gradle:8.1.1-jdk17-jammy as builder
 
 WORKDIR /
 COPY ./kotlin/gen/kotlin-spring /kotlin-spring/
 
 WORKDIR /kotlin-spring/
 
-RUN gradle build
+RUN gradle clean build
 WORKDIR /
 
-FROM openjdk:8u275-jre-slim-buster
+# FROM eclipse-temurin:11.0.21_9-jre-jammy
+FROM eclipse-temurin:17.0.9_9-jre-jammy
 
 ARG APP=/usr/src/app
 ENV APP=/usr/src/app
 
 RUN apt update
-RUN apt install -y ca-certificates tzdata curl tini
+RUN apt install -y ca-certificates tzdata curl tini iputils-ping netcat
 RUN rm -rf /var/lib/apt/lists/*
 
 ENV TZ=Etc/UTC \
