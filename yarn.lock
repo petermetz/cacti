@@ -9471,7 +9471,7 @@ __metadata:
     "@types/fs-extra": "npm:9.0.13"
     "@types/js-yaml": "npm:4.0.3"
     "@types/lodash": "npm:4.14.172"
-    "@types/node": "npm:20.11.24"
+    "@types/node": "npm:18.11.9"
     "@types/node-forge": "npm:1.3.0"
     "@types/ssh2": "npm:0.5.47"
     "@types/ssh2-streams": "npm:0.1.9"
@@ -15643,15 +15643,6 @@ __metadata:
   version: 18.18.2
   resolution: "@types/node@npm:18.18.2"
   checksum: 10/7585ed0c8ff6f6e8e78564c3b2def30d8c3a2c88fb63fb04b832b3b96497ff2609081154348cbb8906d81e3434c54ac61bf3aba4be66b4aeccc0c63aa4dca6be
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:20.11.24":
-  version: 20.11.24
-  resolution: "@types/node@npm:20.11.24"
-  dependencies:
-    undici-types: "npm:~5.26.4"
-  checksum: 10/7f34bfae5f9b98b9910230af4b4c52dc7fb2d1e96fdebfbc3d7576f8ab3d100076f193f9469add9e7418b455294155e7e6a028498cc5e98f9d49349875a459cf
   languageName: node
   linkType: hard
 
