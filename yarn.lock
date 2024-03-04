@@ -21,7 +21,7 @@ __metadata:
   linkType: hard
 
 "@2060.io/ref-napi@npm:3.0.6, @2060.io/ref-napi@npm:^3.0.6":
-  version: 3.0.6
+  version: 3.0.6 
   resolution: "@2060.io/ref-napi@npm:3.0.6"
   dependencies:
     debug: "npm:^4.1.1"
@@ -8298,6 +8298,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hyperledger/cactus-plugin-keychain-memory@workspace:packages/cactus-plugin-keychain-memory"
   dependencies:
+    "@grpc/grpc-js": "npm:1.10.3"
     "@hyperledger/cactus-common": "npm:2.0.0-alpha.2"
     "@hyperledger/cactus-core": "npm:2.0.0-alpha.2"
     "@hyperledger/cactus-core-api": "npm:2.0.0-alpha.2"
@@ -8374,21 +8375,29 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hyperledger/cactus-plugin-ledger-connector-besu@workspace:packages/cactus-plugin-ledger-connector-besu"
   dependencies:
+    "@grpc/grpc-js": "npm:1.10.3"
     "@hyperledger/cactus-common": "npm:2.0.0-alpha.2"
     "@hyperledger/cactus-core": "npm:2.0.0-alpha.2"
     "@hyperledger/cactus-core-api": "npm:2.0.0-alpha.2"
     "@hyperledger/cactus-plugin-keychain-memory": "npm:2.0.0-alpha.2"
     "@hyperledger/cactus-test-tooling": "npm:2.0.0-alpha.2"
+    "@openapitools/openapi-generator-cli": "npm:2.7.0"
     "@types/body-parser": "npm:1.19.4"
     "@types/express": "npm:4.17.19"
+    "@types/google-protobuf": "npm:3.15.5"
     "@types/http-errors": "npm:2.0.4"
     "@types/uuid": "npm:9.0.8"
     axios: "npm:1.6.0"
     body-parser: "npm:1.20.2"
     express: "npm:4.19.2"
+    google-protobuf: "npm:3.21.2"
+    grpc-tools: "npm:1.12.4"
+    grpc_tools_node_protoc_ts: "npm:5.3.3"
     http-errors: "npm:2.0.0"
+    http-errors-enhanced-cjs: "npm:2.0.1"
     joi: "npm:17.9.1"
     key-encoder: "npm:2.0.3"
+    npm-run-all2: "npm:6.1.2"
     openapi-types: "npm:12.1.3"
     prom-client: "npm:13.2.0"
     run-time-error-cjs: "npm:1.4.0"
@@ -9046,6 +9055,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hyperledger/cactus-test-plugin-ledger-connector-besu@workspace:packages/cactus-test-plugin-ledger-connector-besu"
   dependencies:
+    "@grpc/grpc-js": "npm:1.10.3"
     "@hyperledger/cactus-cmd-api-server": "npm:2.0.0-alpha.2"
     "@hyperledger/cactus-common": "npm:2.0.0-alpha.2"
     "@hyperledger/cactus-core": "npm:2.0.0-alpha.2"
@@ -17185,7 +17195,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-styles@npm:^6.1.0":
+"ansi-styles@npm:^6.1.0, ansi-styles@npm:^6.2.1":
   version: 6.2.1
   resolution: "ansi-styles@npm:6.2.1"
   checksum: 10/70fdf883b704d17a5dfc9cde206e698c16bcd74e7f196ab821511651aee4f9f76c9514bdfa6ca3a27b5e49138b89cb222a28caf3afe4567570139577f991df32
@@ -38268,6 +38278,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"npm-run-all2@npm:6.1.2":
+  version: 6.1.2
+  resolution: "npm-run-all2@npm:6.1.2"
+  dependencies:
+    ansi-styles: "npm:^6.2.1"
+    cross-spawn: "npm:^7.0.3"
+    memorystream: "npm:^0.3.1"
+    minimatch: "npm:^9.0.0"
+    pidtree: "npm:^0.6.0"
+    read-package-json-fast: "npm:^3.0.2"
+    shell-quote: "npm:^1.7.3"
+  bin:
+    npm-run-all: bin/npm-run-all/index.js
+    npm-run-all2: bin/npm-run-all/index.js
+    run-p: bin/run-p/index.js
+    run-s: bin/run-s/index.js
+  checksum: 10/b031f409a8c7144cd4dc6ef7cbe6007c9c78b1df38e32d2b5049e697f204d13145dcd419656f313a5afce44c9148a77ed87cf050ff98ceff75cc3553d031b896
+  languageName: node
+  linkType: hard
+
 "npm-run-all@npm:4.1.5":
   version: 4.1.5
   resolution: "npm-run-all@npm:4.1.5"
@@ -40172,6 +40202,15 @@ __metadata:
   bin:
     pidtree: bin/pidtree.js
   checksum: 10/eb85b841cd168151bfadb984f9514d67a884d6962d4a2d250d4e8acf85cf031d7dab080f7272fb2735f9033364e5058c73eeebbee3cf6fd829169a75d19f189a
+  languageName: node
+  linkType: hard
+
+"pidtree@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "pidtree@npm:0.6.0"
+  bin:
+    pidtree: bin/pidtree.js
+  checksum: 10/ea67fb3159e170fd069020e0108ba7712df9f0fd13c8db9b2286762856ddce414fb33932e08df4bfe36e91fe860b51852aee49a6f56eb4714b69634343add5df
   languageName: node
   linkType: hard
 

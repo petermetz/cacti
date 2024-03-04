@@ -1,3 +1,5 @@
+import { ServiceDefinition, UntypedServiceImplementation } from "@grpc/grpc-js";
+
 import {
   Logger,
   Checks,
@@ -30,6 +32,7 @@ export interface IPluginKeychainMemoryOptions extends ICactusPluginOptions {
 }
 
 export class PluginKeychainMemory
+  // implements IPluginGrpcService, IPluginKeychain, IPluginWebService
   implements IPluginKeychain, IPluginWebService
 {
   public static readonly CLASS_NAME = "PluginKeychainMemory";
@@ -87,6 +90,14 @@ export class PluginKeychainMemory
     const res: string = await this.prometheusExporter.getPrometheusMetrics();
     this.log.debug(`getPrometheusExporterMetrics() response: %o`, res);
     return res;
+  }
+
+  public async getGrpcServiceDefinitionX(): Promise<ServiceDefinition> {
+    throw new Error("Not implemented!");
+  }
+
+  public async createGrpcServiceImplementationX(): Promise<UntypedServiceImplementation> {
+    throw new Error("Not implemented");
   }
 
   async registerWebServices(app: Express): Promise<IWebServiceEndpoint[]> {
