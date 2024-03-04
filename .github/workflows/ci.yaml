@@ -36,35 +36,22 @@ jobs:
     steps:
       - uses: actions/checkout@v3.5.2
 
-      - uses: dorny/paths-filter@v2.11.1
+      - uses: dorny/paths-filter@v3.0.2
         id: changes
         with:
+          predicate-quantifier: 'every'
           filters: |
             cmd-api-server-changed:
-              - './packages/cactus-cmd-api-server/**'
-              - './packages/cactus-test-cmd-api-server/**'
-              - './packages/cactus-common/**'
-              - './packages/cactus-core/**'
-              - './packages/cactus-core-api/**'
-              - './packages/cactus-test-tooling/**'
-              - './packages/cactus-plugin-keychain-vault/**'
-              # - './.github/workflows/ci.yaml'
+              - './packages/(cactus-cmd-api-server|cactus-test-cmd-api-server|cactus-common|cactus-core|cactus-core-api|cactus-test-tooling|cactus-plugin-keychain-vault)/**'
+              - '**!(*.md|*.css|*.html|*.jpg|*.jpeg|*.png)'
 
             plugin-ledger-connector-polkadot-changed:
-              - './packages/cactus-plugin-ledger-connector-polkadot/**!(*.md|*.css|*.html|*.jpg|*.jpeg|*.png)'
-              - './packages/cactus-common/**!(*.md|*.css|*.html|*.jpg|*.jpeg|*.png)'
-              - './packages/cactus-core/**!(*.md|*.css|*.html|*.jpg|*.jpeg|*.png)'
-              - './packages/cactus-core-api/**!(*.md|*.css|*.html|*.jpg|*.jpeg|*.png)'
-              - './packages/cactus-test-tooling/**!(*.md|*.css|*.html|*.jpg|*.jpeg|*.png)'
-              # - './.github/workflows/ci.yaml'
+              - './packages/(cactus-plugin-ledger-connector-polkadot|cactus-common|cactus-core|cactus-core-api|cactus-test-tooling)/**'
+              - '**!(*.md|*.css|*.html|*.jpg|*.jpeg|*.png)'
             
             plugin-ledger-connector-aries-changed:
-              - './packages/cactus-plugin-ledger-connector-aries/**'
-              - './packages/cactus-common/**'
-              - './packages/cactus-core/**'
-              - './packages/cactus-core-api/**'
-              - './packages/cactus-test-tooling/**'
-              # - './.github/workflows/ci.yaml'
+              - './packages/(cactus-plugin-ledger-connector-aries|cactus-common|cactus-core|cactus-core-api|cactus-test-tooling)/**'
+              - '**!(*.md|*.css|*.html|*.jpg|*.jpeg|*.png)'
 
             plugin-ledger-connector-besu-changed:
               - './packages/cactus-plugin-ledger-connector-besu/**'
