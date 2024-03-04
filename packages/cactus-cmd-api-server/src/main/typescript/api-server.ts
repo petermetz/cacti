@@ -80,6 +80,9 @@ export interface IApiServerConstructorOptions {
   readonly enableShutdownHook?: boolean;
 }
 
+/**
+ * Dummy typescript file change.
+ */
 export class ApiServer {
   public static readonly CLASS_NAME = "ApiServer";
   public static readonly E_POST_CRASH_SHUTDOWN =
