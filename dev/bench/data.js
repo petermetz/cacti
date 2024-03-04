@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1709145642579,
+  "lastUpdate": 1709523922819,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -226,6 +226,44 @@ window.BENCHMARK_DATA = {
             "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
             "value": 386,
             "range": "±1.62%",
+            "unit": "ops/sec",
+            "extra": "182 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "daf2793cbf43eca7684483ece36a837bc3b7ee37",
+          "message": "build(deps): bump @openzeppelin/contracts-* to 4.9.6\n\nBumps @openzeppelin/contracts-upgradeable from 4.9.3 to 4.9.6.\nhttps://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/releases\n\n---\nupdated-dependencies:\n- dependency-name: \"@openzeppelin/contracts-upgradeable\"\n  dependency-type: direct:production\n\n===================================================\n\nBumps @openzeppelin/contracts from 4.9.3 to 4.9.6.\nhttps://github.com/OpenZeppelin/openzeppelin-contracts/releases\n\n---\nupdated-dependencies:\n- dependency-name: \"@openzeppelin/contracts\"\n  dependency-type: direct:production\n\nCo-authored-by: Peter Somogyvari <peter.somogyvari@accenture.com>\n\nSigned-off-by: dependabot[bot] <support@github.com>\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-03-03T19:06:32-08:00",
+          "tree_id": "a5fe94251e4b101c076e3c7f57c5d3d2e2c844f2",
+          "url": "https://github.com/petermetz/cacti/commit/daf2793cbf43eca7684483ece36a837bc3b7ee37"
+        },
+        "date": 1709523920986,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 594,
+            "range": "±1.92%",
+            "unit": "ops/sec",
+            "extra": "177 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 370,
+            "range": "±1.97%",
             "unit": "ops/sec",
             "extra": "182 samples"
           }
