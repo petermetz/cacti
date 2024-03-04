@@ -1,5 +1,7 @@
 # Change Log
 
+## Dummy change to verify if path filtering works or not.
+
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
