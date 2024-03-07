@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1709523922819,
+  "lastUpdate": 1709801012065,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -264,6 +264,44 @@ window.BENCHMARK_DATA = {
             "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
             "value": 370,
             "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "182 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "1dfcf17bf97ef559b9a52d7ce92663d2b43f4ca2",
+          "message": "test(connector-besu): migrate v21-get-balance test to Jest from tape\n\nPart of our ongoing effort to migrate the complete test suite from tape\nto Jest.\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-03-06T23:30:04-08:00",
+          "tree_id": "9402b3b5d33efc03e511e540ea65fb274f26fdca",
+          "url": "https://github.com/petermetz/cacti/commit/1dfcf17bf97ef559b9a52d7ce92663d2b43f4ca2"
+        },
+        "date": 1709801007923,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 623,
+            "range": "±1.75%",
+            "unit": "ops/sec",
+            "extra": "177 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 389,
+            "range": "±1.51%",
             "unit": "ops/sec",
             "extra": "182 samples"
           }
