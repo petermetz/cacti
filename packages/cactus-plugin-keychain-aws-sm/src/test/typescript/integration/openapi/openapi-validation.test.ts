@@ -50,6 +50,9 @@ test(testCase, async (t: Test) => {
   });
   await localStackContainer.start();
 
+  const hello = "asdf";
+  console.log(hello);
+
   const ci = await Containers.getById(localStackContainer.containerId);
   const localstackIpAddr = await internalIpV4();
   const hostPort = await Containers.getPublicPort(
