@@ -12,9 +12,6 @@ RUN mkdir /config/besu/
 RUN mkdir /opt/besu/public-keys/
 
 ADD ./log-config.xml /config/log-config.xml
-ADD ./orion.conf /config/orion/orion.conf
-ADD ./nodeKey.pub /config/orion/nodeKey.pub
-ADD ./nodeKey.key /config/orion/nodeKey.key
 ADD ./bootnode_start.sh /opt/besu/bootnode_start.sh
 ADD ./key /opt/besu/keys/key
 ADD ./key.pub /opt/besu/keys/key.pub
