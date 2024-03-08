@@ -7,15 +7,9 @@ Comes equipped with supervisord which provides access to tailing logs of both or
 
 ## Build an image locally
 
-* To build the besu v1.5.1 image locally use:
+* To build the Hyperledger Besu All-in-One image locally use:
   ```sh
-  docker build . -t hyperledger/cactus-besu-all-in-one:latest
-  ```
-
-* To build the besu v21.1.x image locally use:
-  
-  ```sh
-  docker build ./tools/docker/besu-all-in-one/ -f ./tools/docker/besu-all-in-one/v21_1_x/Dockerfile -t baio21
+  docker build ./tools/docker/besu-all-in-one/ -f ./tools/docker/besu-all-in-one/Dockerfile -t baio -t hyperledger/cactus-besu-all-in-one
   ```
 
 ## Shell into a running container:
