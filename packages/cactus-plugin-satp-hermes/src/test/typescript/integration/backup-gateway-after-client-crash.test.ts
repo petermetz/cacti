@@ -109,7 +109,7 @@ const BESU_ASSET_ID = uuidv4();
 
 const log = LoggerProvider.getOrCreate({
   level: "INFO",
-  label: "satpTestWithBackupGateway",
+  label: "backup-gateway-after-client-crash",
 });
 
 beforeAll(async () => {
@@ -742,6 +742,7 @@ test("client gateway crashes after lock fabric asset", async () => {
 
   // now we simulate the crash of the client gateway
   pluginSourceGateway.localRepository?.destroy();
+  pluginSourceGateway.remoteRepository?.destroy();
   await Servers.shutdown(sourceGatewayServer);
 
   const expressApp = express();
@@ -802,7 +803,9 @@ afterAll(async () => {
   await besuTestLedger.destroy();
 
   pluginSourceGateway.localRepository?.destroy();
+  pluginSourceGateway.remoteRepository?.destroy();
   pluginRecipientGateway.localRepository?.destroy();
+  pluginRecipientGateway.remoteRepository?.destroy();
 
   await Servers.shutdown(besuServer);
   await Servers.shutdown(fabricServer);

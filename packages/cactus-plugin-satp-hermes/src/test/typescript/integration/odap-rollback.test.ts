@@ -110,7 +110,7 @@ const BESU_ASSET_ID = uuidv4();
 
 const log = LoggerProvider.getOrCreate({
   level: "INFO",
-  label: "odap-rollback-after-crash-test",
+  label: "odap-rollback",
 });
 
 beforeAll(async () => {

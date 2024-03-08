@@ -105,7 +105,7 @@ const BESU_ASSET_ID = uuidv4();
 
 const log = LoggerProvider.getOrCreate({
   level: "INFO",
-  label: "satpTestWithLedgerConnectors",
+  label: "odap-api-call-with-ledger-connector",
 });
 
 beforeAll(async () => {

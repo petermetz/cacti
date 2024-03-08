@@ -113,7 +113,7 @@ const BESU_ASSET_ID = uuidv4();
 
 const log = LoggerProvider.getOrCreate({
   level: "INFO",
-  label: "satpTestWithLedgerConnectors",
+  label: "client-crash-after-delete-asset",
 });
 
 beforeAll(async () => {
@@ -775,6 +775,7 @@ test("client gateway crashes after deleting fabric asset", async () => {
 
   // now we simulate the crash of the client gateway
   pluginSourceGateway.localRepository?.destroy();
+  pluginSourceGateway.remoteRepository?.destroy();
   await Servers.shutdown(sourceGatewayServer);
 
   const expressApp = express();

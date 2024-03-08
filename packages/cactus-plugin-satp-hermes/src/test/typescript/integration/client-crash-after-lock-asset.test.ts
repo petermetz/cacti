@@ -113,7 +113,7 @@ const BESU_ASSET_ID = uuidv4();
 
 const log = LoggerProvider.getOrCreate({
   level: "INFO",
-  label: "satpTestWithLedgerConnectors",
+  label: "client-crash-after-lock-asset",
 });
 
 beforeAll(async () => {
