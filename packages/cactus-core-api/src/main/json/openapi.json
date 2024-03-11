@@ -26,6 +26,13 @@
             "maxLength": 1024,
             "nullable": false
           },
+          "pluginPkgInstallSource": {
+            "type": "string",
+            "description": "If specified, it overrides the installation source of the package from the npm registry configured to be a folder on the local file-system. This is useful for testing how a plugin package behaves when loaded into the API server without having to publish it to a registry first.",
+            "minLength": 1,
+            "maxLength": 1024,
+            "nullable": false
+          },
           "type": {
             "nullable": false,
             "description": "",

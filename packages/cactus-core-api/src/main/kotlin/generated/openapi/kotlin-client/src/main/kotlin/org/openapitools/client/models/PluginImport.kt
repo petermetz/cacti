@@ -27,6 +27,7 @@ import com.squareup.moshi.JsonClass
  * @param packageName 
  * @param type 
  * @param action 
+ * @param pluginPkgInstallSource If specified, it overrides the installation source of the package from the npm registry configured to be a folder on the local file-system. This is useful for testing how a plugin package behaves when loaded into the API server without having to publish it to a registry first.
  * @param options 
  */
 
@@ -41,6 +42,10 @@ data class PluginImport (
 
     @Json(name = "action")
     val action: PluginImportAction,
+
+    /* If specified, it overrides the installation source of the package from the npm registry configured to be a folder on the local file-system. This is useful for testing how a plugin package behaves when loaded into the API server without having to publish it to a registry first. */
+    @Json(name = "pluginPkgInstallSource")
+    val pluginPkgInstallSource: kotlin.String? = null,
 
     @Json(name = "options")
     val options: kotlin.Any? = null

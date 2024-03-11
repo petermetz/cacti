@@ -1,11 +1,13 @@
 import type { Application, NextFunction, Request, Response } from "express";
 import * as OpenApiValidator from "express-openapi-validator";
 import { OpenAPIV3 } from "express-openapi-validator/dist/framework/types";
-
+import type { ValidationError } from "express-openapi-validator/dist/framework/types";
 import { error as EovErrors } from "express-openapi-validator";
 
 import {
   Checks,
+  hasKey,
+  Logger,
   LoggerProvider,
   LogLevelDesc,
 } from "@hyperledger/cactus-common";
@@ -48,43 +50,92 @@ export async function installOpenapiValidationMiddleware(
       ignorePaths: (path: string) => !paths.includes(path),
     }),
   );
-  app.use(
-    (
-      err: {
-        status?: number;
-        errors: [
-          {
-            path: string;
-            message: string;
-            errorCode: string;
-          },
-        ];
-      },
-      req: Request,
-      res: Response,
-      next: NextFunction,
-    ) => {
-      const tag = "[express-openapi-validator-middleware-handler]";
-      if (isOpenApiRequestValidationError(err)) {
-        if (err.status) {
-          const { errors, status } = err;
-          log.debug("%s Got valid error, status=%s - %o", tag, status, errors);
-          res.status(err.status);
-          res.send(err.errors);
-        } else {
-          log.debug("%s Got invalid error - status missing - %o", tag, err);
-          res.status(500);
-          res.send(err);
-        }
-      } else if (err) {
-        log.debug("%s Got invalid error - validator crash(?) - %o", tag, err);
-        res.status(500);
-        res.send(err);
-      } else {
-        log.debug("%s Validation Passed OK - %s", tag, req.url);
-        next();
-      }
-    },
+
+  const log2 = LoggerProvider.getOrCreate({
+    label: "expressOpenApiValidatorMiddlewareHandler()",
+    level: logLevel || "INFO",
+  });
+
+  app.use((ex: unknown, req: Request, res: Response, next: NextFunction) =>
+    expressOpenApiValidatorMiddlewareHandler(log2, ex, req, res, next),
+  );
+}
+
+export function expressOpenApiValidatorMiddlewareHandler(
+  log: Logger,
+  ex: unknown,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  if (isOpenApiRequestValidationError(ex)) {
+    if (ex.status) {
+      const { errors, status } = ex;
+      const [{ message, path, errorCode }] = errors;
+      log.debug(
+        "Got valid error: %s path=%s, status=%s, message=%s, errorCode=%o",
+        req?.url,
+        path,
+        status,
+        message,
+        errorCode,
+      );
+      res.status(ex.status);
+      res.send(ex.errors);
+    } else {
+      log.debug("Got invalid error: %s status missing - %o", req?.url, ex);
+      res.status(500);
+      res.json(ex);
+    }
+  } else if (isBodyParserError(ex)) {
+    const { type, statusCode, expose } = ex;
+    log.debug(
+      "BodyParser error: %s type=%s, statusCode=%o, expose=%o",
+      req?.url,
+      type,
+      statusCode,
+      expose,
+    );
+
+    res.status(ex.statusCode);
+
+    if (ex.expose) {
+      res.json({ error: ex.message });
+    } else {
+      res.json({ error: "ExpressJS req body parse failed (body-parser pkg)" });
+    }
+  } else if (ex) {
+    log.debug("Got invalid error: %s unknown reason - %o", req?.url, ex);
+    res.status(500);
+    res.json(ex);
+  } else {
+    log.debug("%s Validation Passed OK - %s", req.url);
+    next();
+  }
+}
+
+export interface IBodyParserError {
+  readonly status: number;
+  readonly statusCode: number;
+  readonly expose: boolean;
+  readonly type: string;
+  readonly message: string;
+}
+
+export function isBodyParserError(x: unknown): x is IBodyParserError {
+  return (
+    hasKey(x, "status") &&
+    typeof x.status === "number" &&
+    isFinite(x.status) &&
+    hasKey(x, "statusCode") &&
+    typeof x.statusCode === "number" &&
+    isFinite(x.statusCode) &&
+    hasKey(x, "expose") &&
+    typeof x.expose === "boolean" &&
+    hasKey(x, "type") &&
+    typeof x.type === "string" &&
+    hasKey(x, "message") &&
+    typeof x.message === "string"
   );
 }
 
@@ -109,7 +160,9 @@ export async function installOpenapiValidationMiddleware(
  * future, debugging these kind of errors are much easier and can be done based
  * on the logs alone (hopefully).
  */
-export function isOpenApiRequestValidationError(ex: unknown): boolean {
+export function isOpenApiRequestValidationError(
+  ex: unknown,
+): ex is ValidationError {
   if (ex) {
     return Object.values(EovErrors).some((x) => ex instanceof x);
   } else {

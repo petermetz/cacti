@@ -98,6 +98,19 @@ export class GetKeychainEntryV1Endpoint implements IWebServiceEndpoint {
     } catch (ex) {
       const errorMsg = `${reqTag} ${fnTag} Failed to deploy contract:`;
       await handleRestEndpointException({ errorMsg, log, error: ex, res });
+      // FIXME - double check that the underlying implementation throws http errors
+      // if (ex?.message?.includes(`${key} secret not found`)) {
+      //   res.status(404).json({
+      //     key,
+      //     error: ex?.stack || ex?.message,
+      //   });
+      // } else {
+      //   this.log.error(`Crash while serving ${reqTag}`, ex);
+      //   res.status(500).json({
+      //     message: "Internal Server Error",
+      //     error: ex?.stack || ex?.message,
+      //   });
+      // }
     }
   }
 }

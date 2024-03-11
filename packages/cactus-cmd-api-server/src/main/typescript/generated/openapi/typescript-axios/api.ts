@@ -110,6 +110,36 @@ export type WatchHealthcheckV1 = typeof WatchHealthcheckV1[keyof typeof WatchHea
 export const DefaultApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * The various distinct openapi.json documents (formerly called swagger.json) are flattened into a single one.
+         * @summary Returns the combined openapi.json document of all plugins currently installed in the API server.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAggregateOpenapiJsonV1: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/api-server/get-aggregate-openapi-json`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Returns the current timestamp of the API server as proof of health/liveness
          * @summary Can be used to verify liveness of an API server instance
          * @param {*} [options] Override http request option.
@@ -209,6 +239,16 @@ export const DefaultApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = DefaultApiAxiosParamCreator(configuration)
     return {
         /**
+         * The various distinct openapi.json documents (formerly called swagger.json) are flattened into a single one.
+         * @summary Returns the combined openapi.json document of all plugins currently installed in the API server.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getAggregateOpenapiJsonV1(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<any>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAggregateOpenapiJsonV1(options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
          * Returns the current timestamp of the API server as proof of health/liveness
          * @summary Can be used to verify liveness of an API server instance
          * @param {*} [options] Override http request option.
@@ -248,6 +288,15 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = DefaultApiFp(configuration)
     return {
         /**
+         * The various distinct openapi.json documents (formerly called swagger.json) are flattened into a single one.
+         * @summary Returns the combined openapi.json document of all plugins currently installed in the API server.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAggregateOpenapiJsonV1(options?: any): AxiosPromise<any> {
+            return localVarFp.getAggregateOpenapiJsonV1(options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns the current timestamp of the API server as proof of health/liveness
          * @summary Can be used to verify liveness of an API server instance
          * @param {*} [options] Override http request option.
@@ -283,6 +332,17 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
  * @extends {BaseAPI}
  */
 export class DefaultApi extends BaseAPI {
+    /**
+     * The various distinct openapi.json documents (formerly called swagger.json) are flattened into a single one.
+     * @summary Returns the combined openapi.json document of all plugins currently installed in the API server.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getAggregateOpenapiJsonV1(options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getAggregateOpenapiJsonV1(options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * Returns the current timestamp of the API server as proof of health/liveness
      * @summary Can be used to verify liveness of an API server instance

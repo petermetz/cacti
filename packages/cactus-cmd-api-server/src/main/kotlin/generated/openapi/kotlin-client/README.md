@@ -44,6 +44,7 @@ All URIs are relative to *http://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*DefaultApi* | [**getAggregateOpenapiJsonV1**](docs/DefaultApi.md#getaggregateopenapijsonv1) | **GET** /api/v1/api-server/get-aggregate-openapi-json | Returns the combined openapi.json document of all plugins currently installed in the API server.
 *DefaultApi* | [**getHealthCheckV1**](docs/DefaultApi.md#gethealthcheckv1) | **GET** /api/v1/api-server/healthcheck | Can be used to verify liveness of an API server instance
 *DefaultApi* | [**getOpenApiSpecV1**](docs/DefaultApi.md#getopenapispecv1) | **GET** /api/v1/api-server/get-open-api-spec | 
 *DefaultApi* | [**getPrometheusMetricsV1**](docs/DefaultApi.md#getprometheusmetricsv1) | **GET** /api/v1/api-server/get-prometheus-exporter-metrics | Get the Prometheus Metrics

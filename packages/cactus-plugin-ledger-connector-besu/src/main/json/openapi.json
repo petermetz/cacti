@@ -776,10 +776,6 @@
             "type": "string",
             "nullable": false
           },
-          "signingCredential": {
-            "$ref": "#/components/schemas/Web3SigningCredential",
-            "nullable": false
-          },
           "invocationType": {
             "$ref": "#/components/schemas/EthContractInvocationType",
             "nullable": false,

@@ -13,9 +13,12 @@ syntax = "proto3";
 package org.hyperledger.cactus.cmd_api_server;
 
 import "google/protobuf/empty.proto";
+import "models/any_type_pb.proto";
 import "models/health_check_response_pb.proto";
 
 service DefaultService {
+  rpc GetAggregateOpenapiJsonV1 (google.protobuf.Empty) returns (AnyTypePB);
+
   rpc GetHealthCheckV1 (google.protobuf.Empty) returns (HealthCheckResponsePB);
 
   rpc GetOpenApiSpecV1 (google.protobuf.Empty) returns (GetOpenApiSpecV1Response);
