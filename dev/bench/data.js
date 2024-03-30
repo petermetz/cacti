@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1711655737239,
+  "lastUpdate": 1711817248766,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -114,6 +114,44 @@ window.BENCHMARK_DATA = {
             "range": "±1.13%",
             "unit": "ops/sec",
             "extra": "180 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "e2b93b3f27e02a3739a7bf3daffcf55bbaed4717",
+          "message": "build: bump web3-utils to v4.2.1 in test-plugin-htlc-eth-besu-erc20\n\nBumps [web3-utils](https://github.com/ChainSafe/web3.js) from 4.0.3 to 4.2.1.\n- [Release notes](https://github.com/ChainSafe/web3.js/releases)\n- [Changelog](https://github.com/web3/web3.js/blob/4.x/CHANGELOG.md)\n- [Commits](https://github.com/ChainSafe/web3.js/compare/v4.0.3...v4.2.1)\n\n---\nupdated-dependencies:\n- dependency-name: web3-utils\n  dependency-type: direct:production\n...\n\nCo-authored-by: Peter Somogyvari <peter.somogyvari@accenture.com>\n\nSigned-off-by: dependabot[bot] <support@github.com>\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-03-30T09:27:02-07:00",
+          "tree_id": "2997ca9acd7b3ea5012cecc9e9f227f9afded858",
+          "url": "https://github.com/petermetz/cacti/commit/e2b93b3f27e02a3739a7bf3daffcf55bbaed4717"
+        },
+        "date": 1711817245201,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 586,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "176 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 359,
+            "range": "±1.24%",
+            "unit": "ops/sec",
+            "extra": "181 samples"
           }
         ]
       }
