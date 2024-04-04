@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1712031125943,
+  "lastUpdate": 1712248371095,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -38,6 +38,44 @@ window.BENCHMARK_DATA = {
             "range": "±1.44%",
             "unit": "ops/sec",
             "extra": "182 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "9e830874dfed51a805566a5bedc62e3d43fc234f",
+          "message": "feat(cactus-core): add ConnectRPC service interface and type guard\n\nDefine the types and type guard needed for the API server to be able to\nrecognize plugins that have implemented a ConnectRPC interface for their\noperations.\n\nAlso, these types will be used by the plugins themselves to mark the\nimplementations as valid for ConnectRPC usage.\n\nConnectRPC is very similar to gRPC but has some nice features in addition\nto it such as the HTTP 2 and HTTP 1.1 proxying through express and\nfastify HTTP server instances.\n\nFor further details see this link:\nhttps://connectrpc.com/\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-04-04T09:06:22-07:00",
+          "tree_id": "3cb65cdd21f9da7a8dc739b72c413c9b28fa97c8",
+          "url": "https://github.com/petermetz/cacti/commit/9e830874dfed51a805566a5bedc62e3d43fc234f"
+        },
+        "date": 1712248368937,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 586,
+            "range": "±1.69%",
+            "unit": "ops/sec",
+            "extra": "178 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 363,
+            "range": "±1.20%",
+            "unit": "ops/sec",
+            "extra": "181 samples"
           }
         ]
       }
