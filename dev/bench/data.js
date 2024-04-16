@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1713073790932,
+  "lastUpdate": 1713281356417,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -152,6 +152,44 @@ window.BENCHMARK_DATA = {
             "range": "±1.32%",
             "unit": "ops/sec",
             "extra": "182 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "331d6b422b2c03f89d737d2e32c3fc79a563fd69",
+          "message": "test(connector-besu): migrate v21-get-transaction-endpoint to Jest\n\nThe full file path of the test case:\n\n```sh\npackages/cactus-test-plugin-ledger-connector-besu/src/test/typescript/\nintegration/plugin-validator-besu/v21-get-transaction-endpoint.test.ts\n```\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-04-15T20:48:36-07:00",
+          "tree_id": "d4ed207acf6cc822e5d2213777d6dd72a88ab153",
+          "url": "https://github.com/petermetz/cacti/commit/331d6b422b2c03f89d737d2e32c3fc79a563fd69"
+        },
+        "date": 1713281353575,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 591,
+            "range": "±1.71%",
+            "unit": "ops/sec",
+            "extra": "178 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 366,
+            "range": "±1.41%",
+            "unit": "ops/sec",
+            "extra": "181 samples"
           }
         ]
       }
