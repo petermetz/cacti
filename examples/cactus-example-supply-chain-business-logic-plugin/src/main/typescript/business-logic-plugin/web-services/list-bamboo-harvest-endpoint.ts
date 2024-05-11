@@ -15,10 +15,10 @@ import {
 } from "@hyperledger/cactus-core-api";
 import { registerWebServiceEndpoint } from "@hyperledger/cactus-core";
 import {
-  DefaultApi as QuorumApi,
+  DefaultApi as BesuApi,
   EthContractInvocationType,
   Web3SigningCredentialType,
-} from "@hyperledger/cactus-plugin-ledger-connector-quorum";
+} from "@hyperledger/cactus-plugin-ledger-connector-besu";
 
 import OAS from "../../../json/openapi.json";
 import { BambooHarvestConverter } from "../../model/converter/bamboo-harvest-converter";
@@ -27,7 +27,7 @@ export interface IListBambooHarvestEndpointOptions {
   logLevel?: LogLevelDesc;
   contractName: string;
   //  contractAbi: any;
-  apiClient: QuorumApi;
+  apiClient: BesuApi;
   keychainId: string;
 }
 

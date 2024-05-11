@@ -22,13 +22,13 @@ import {
 } from "@hyperledger/cactus-core-api";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import {
-  DefaultApi as QuorumApi,
-  PluginLedgerConnectorQuorum,
+  DefaultApi as BesuApi,
+  PluginLedgerConnectorBesu,
   Web3SigningCredentialType,
-} from "@hyperledger/cactus-plugin-ledger-connector-quorum";
+} from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import {
   pruneDockerAllIfGithubAction,
-  QuorumTestLedger,
+  BesuTestLedger,
 } from "@hyperledger/cactus-test-tooling";
 import { LogLevelDesc, Servers } from "@hyperledger/cactus-common";
 
@@ -44,8 +44,8 @@ const testCase2 = "ApiClient #1 Routes based on Ledger ID #1";
 const testCase3 = "ApiClient #1 Routes based on Ledger ID #2";
 
 describe(testCase, () => {
-  const quorumTestLedger1 = new QuorumTestLedger();
-  const quorumTestLedger2 = new QuorumTestLedger();
+  const besuTestLedger1 = new BesuTestLedger();
+  const besuTestLedger2 = new BesuTestLedger();
   let consortiumDatabase: ConsortiumDatabase;
   let mainApiClient: ApiClient;
 
@@ -63,11 +63,11 @@ describe(testCase, () => {
 
   const ledger1: Ledger = {
     id: "my_cool_ledger_that_i_want_to_transact_on",
-    ledgerType: LedgerType.Quorum2X,
+    ledgerType: LedgerType.Besu2X,
   };
   const ledger2: Ledger = {
     id: "other_ledger_that_is_just_taking_up_space",
-    ledgerType: LedgerType.Quorum2X,
+    ledgerType: LedgerType.Besu2X,
   };
 
   beforeAll(async () => {
@@ -78,8 +78,8 @@ describe(testCase, () => {
   //scope just for the awaits
   // test(testCase, async (t: Test) => {
   beforeAll(async () => {
-    await quorumTestLedger1.start();
-    await quorumTestLedger2.start();
+    await besuTestLedger1.start();
+    await besuTestLedger2.start();
 
     httpServer1 = await Servers.startOnPreferredPort(4050);
     addressInfo1 = httpServer1.address() as AddressInfo;
@@ -152,25 +152,25 @@ describe(testCase, () => {
   });
 
   afterAll(async () => {
-    await quorumTestLedger1.stop();
-    await quorumTestLedger1.destroy();
-    await quorumTestLedger2.stop();
-    await quorumTestLedger2.destroy();
+    await besuTestLedger1.stop();
+    await besuTestLedger1.destroy();
+    await besuTestLedger2.stop();
+    await besuTestLedger2.destroy();
     await apiServer1.shutdown();
     await apiServer2.shutdown();
     await pruneDockerAllIfGithubAction({ logLevel });
   });
 
   test(testCase1, async () => {
-    const rpcApiHttpHost1 = await quorumTestLedger1.getRpcApiHttpHost();
+    const rpcApiHttpHost1 = await besuTestLedger1.getRpcApiHttpHost();
 
-    const { alloc } = await quorumTestLedger1.getGenesisJsObject();
+    const { alloc } = await besuTestLedger1.getGenesisJsObject();
 
     initialFundsAccount1 = Object.keys(alloc).find(
       (addr) => parseInt(alloc[addr].balance, 10) > 10e7,
     ) as string;
 
-    const rpcApiHttpHost2 = await quorumTestLedger2.getRpcApiHttpHost();
+    const rpcApiHttpHost2 = await besuTestLedger2.getRpcApiHttpHost();
     initialFundsAccount2 = Object.keys(alloc).find(
       (addr) => parseInt(alloc[addr].balance, 10) > 10e7,
     ) as string;
@@ -178,7 +178,7 @@ describe(testCase, () => {
     {
       const pluginRegistry = new PluginRegistry({ plugins: [] });
 
-      const pluginQuorumConnector = new PluginLedgerConnectorQuorum({
+      const pluginBesuConnector = new PluginLedgerConnectorBesu({
         instanceId: uuidV4(),
         rpcApiHttpHost: rpcApiHttpHost1,
         logLevel,
@@ -208,7 +208,7 @@ describe(testCase, () => {
         await configService.newExampleConfigConvict(apiServerOptions);
 
       pluginRegistry.add(pluginConsortiumManual);
-      pluginRegistry.add(pluginQuorumConnector);
+      pluginRegistry.add(pluginBesuConnector);
 
       apiServer1 = new ApiServer({
         httpServerApi: httpServer1,
@@ -222,7 +222,7 @@ describe(testCase, () => {
     {
       const pluginRegistry = new PluginRegistry({ plugins: [] });
 
-      const pluginQuorumConnector = new PluginLedgerConnectorQuorum({
+      const pluginBesuConnector = new PluginLedgerConnectorBesu({
         privateUrl: rpcApiHttpHost2,
         instanceId: uuidV4(),
         rpcApiHttpHost: rpcApiHttpHost2,
@@ -254,7 +254,7 @@ describe(testCase, () => {
         await configService.newExampleConfigConvict(apiServerOptions);
 
       pluginRegistry.add(pluginConsortiumManual);
-      pluginRegistry.add(pluginQuorumConnector);
+      pluginRegistry.add(pluginBesuConnector);
 
       apiServer2 = new ApiServer({
         httpServerApi: httpServer2,
@@ -268,7 +268,7 @@ describe(testCase, () => {
     }
   });
   test(testCase2, async () => {
-    const apiClient1 = await mainApiClient.ofLedger(ledger1.id, QuorumApi, {});
+    const apiClient1 = await mainApiClient.ofLedger(ledger1.id, BesuApi, {});
     const testAccount1 = new Web3().eth.accounts.create(uuidV4());
     const res = await apiClient1.runTransactionV1({
       transactionConfig: {
@@ -289,7 +289,7 @@ describe(testCase, () => {
   });
 
   test(testCase3, async () => {
-    const apiClient2 = await mainApiClient.ofLedger(ledger2.id, QuorumApi, {});
+    const apiClient2 = await mainApiClient.ofLedger(ledger2.id, BesuApi, {});
     const testAccount2 = new Web3().eth.accounts.create(uuidV4());
     const res = await apiClient2.runTransactionV1({
       transactionConfig: {

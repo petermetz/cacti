@@ -12,9 +12,9 @@ import {
   IWebServiceEndpoint,
 } from "@hyperledger/cactus-core-api";
 import {
-  DefaultApi as QuorumApi,
+  DefaultApi as EthereumApi,
   Web3SigningCredential,
-} from "@hyperledger/cactus-plugin-ledger-connector-quorum";
+} from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
 import { DefaultApi as BesuApi } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { InsertBambooHarvestEndpoint } from "./web-services/insert-bamboo-harvest-endpoint";
 import { DefaultApi as FabricApi } from "@hyperledger/cactus-plugin-ledger-connector-fabric";

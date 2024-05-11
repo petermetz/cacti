@@ -46,9 +46,6 @@ enum class LedgerType(val value: kotlin.String) {
     @Json(name = "FABRIC_2")
     fABRIC2("FABRIC_2"),
 
-    @Json(name = "QUORUM_2X")
-    qUORUM2X("QUORUM_2X"),
-
     @Json(name = "SAWTOOTH_1X")
     sAWTOOTH1X("SAWTOOTH_1X");
 

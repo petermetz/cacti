@@ -321,7 +321,7 @@ Don't have a ethereum network on hand to test with? Test or develop against our 
 **Terminal Window 1 (Ledger)**
 
 ```sh
-docker run -p 0.0.0.0:8545:8545/tcp  -p 0.0.0.0:8546:8546/tcp  -p 0.0.0.0:8888:8888/tcp  -p 0.0.0.0:9001:9001/tcp  -p 0.0.0.0:9545:9545/tcp hyperledger/cactus-quorum-all-in-one:latest
+docker run -p 0.0.0.0:8545:8545/tcp  -p 0.0.0.0:8546:8546/tcp  -p 0.0.0.0:8888:8888/tcp  -p 0.0.0.0:9001:9001/tcp  -p 0.0.0.0:9545:9545/tcp hyperledger/cactus-ethereum-all-in-one:latest
 ```
 
 **Terminal Window 2 (Cactus API Server)**
