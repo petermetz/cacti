@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1717006523075,
+  "lastUpdate": 1717008357524,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -98,6 +98,44 @@ window.BENCHMARK_DATA = {
             "name": "plugin-ledger-connector-besu_HTTP_GET_getOpenApiSpecV1",
             "value": 754,
             "range": "±3.13%",
+            "unit": "ops/sec",
+            "extra": "181 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "zondervan.v.calvez@accenture.com",
+            "name": "zondervancalvez",
+            "username": "zondervancalvez"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "81da3334d8e638f85e398dd228bcef836a278230",
+          "message": "fix(cmd-api-server): address CVE-2022-25881\n\nPrimary Changes:\n\tUpdated the Dockerfile & https-cache-semantics inside the cmd-api-server package\n\nFixes: #2862\n\nSigned-off-by: zondervancalvez <zondervan.v.calvez@accenture.com>\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-05-29T11:12:31-07:00",
+          "tree_id": "150f754ac29b731c5aafa0fe70fe64afdec1aca2",
+          "url": "https://github.com/petermetz/cacti/commit/81da3334d8e638f85e398dd228bcef836a278230"
+        },
+        "date": 1717008355336,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 583,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "178 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 361,
+            "range": "±1.39%",
             "unit": "ops/sec",
             "extra": "181 samples"
           }
