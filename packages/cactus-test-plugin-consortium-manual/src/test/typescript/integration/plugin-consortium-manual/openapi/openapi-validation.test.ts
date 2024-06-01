@@ -160,6 +160,7 @@ test(testCase, async (t: Test) => {
       apiServerOptions.apiCorsDomainCsv = "*";
       apiServerOptions.apiPort = addressInfo1.port;
       apiServerOptions.grpcPort = 0;
+      apiServerOptions.crpcPort = 0;
       apiServerOptions.cockpitPort = 0;
       apiServerOptions.apiTlsEnabled = false;
       const config =
@@ -198,6 +199,7 @@ test(testCase, async (t: Test) => {
       apiServerOptions.apiPort = addressInfo2.port;
       apiServerOptions.cockpitPort = 0;
       apiServerOptions.grpcPort = 0;
+      apiServerOptions.crpcPort = 0;
       apiServerOptions.apiTlsEnabled = false;
       const config =
         await configService.newExampleConfigConvict(apiServerOptions);
@@ -235,6 +237,7 @@ test(testCase, async (t: Test) => {
       apiServerOptions.apiPort = addressInfo3.port;
       apiServerOptions.cockpitPort = 0;
       apiServerOptions.grpcPort = 0;
+      apiServerOptions.crpcPort = 0;
       apiServerOptions.apiTlsEnabled = false;
       const config =
         await configService.newExampleConfigConvict(apiServerOptions);
