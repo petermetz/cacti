@@ -10,6 +10,8 @@ import {
   EthContractInvocationType,
   InvokeContractV1Request,
   InvokeRawWeb3EthMethodV1Request,
+  PluginLedgerConnectorEthereum,
+  InvokeRawWeb3EthMethodV1Response,
 } from "@hyperledger/cactus-plugin-ledger-connector-ethereum";
 import { NetworkDetails, ObtainLedgerStrategy } from "./obtain-ledger-strategy";
 import { Configuration } from "@hyperledger/cactus-core-api";
@@ -77,21 +79,33 @@ export class StrategyEthereum implements ObtainLedgerStrategy {
     this.log.debug(`Generating ledger snapshot`);
     Checks.truthy(networkDetails, `${fnTag} networkDetails`);
 
-    const config = new Configuration({
-      basePath: networkDetails.connectorApiPath,
-    });
-    const ethereumApi = new EthereumApi(config);
+    let ethereumApi: EthereumApi | undefined;
+    let connector: PluginLedgerConnectorEthereum | undefined;
+
+    if (networkDetails.connector) {
+      connector = networkDetails.connector as PluginLedgerConnectorEthereum;
+    } else if (networkDetails.connectorApiPath) {
+      const config = new Configuration({
+        basePath: networkDetails.connectorApiPath,
+      });
+      ethereumApi = new EthereumApi(config);
+    } else {
+      throw new Error(
+        `${StrategyEthereum.CLASS_NAME}#generateLedgerStates: networkDetails must have either connector or connectorApiPath`,
+      );
+    }
 
     const ledgerStates = new Map<string, State>();
     const assetsKey =
       stateIds.length == 0
-        ? await this.getAllAssetsKey(networkDetails, ethereumApi)
+        ? await this.getAllAssetsKey(networkDetails, connector, ethereumApi)
         : stateIds;
     this.log.debug("Current assets detected to capture: " + assetsKey);
     for (const assetKey of assetsKey) {
       const { transactions, values, blocks } = await this.getAllInfoByKey(
         assetKey,
         networkDetails,
+        connector,
         ethereumApi,
       );
 
@@ -122,7 +136,8 @@ export class StrategyEthereum implements ObtainLedgerStrategy {
 
   async getAllAssetsKey(
     networkDetails: EthereumNetworkDetails,
-    api: EthereumApi,
+    connector: PluginLedgerConnectorEthereum | undefined,
+    api: EthereumApi | undefined,
   ): Promise<string[]> {
     const parameters = {
       contract: {
@@ -134,28 +149,19 @@ export class StrategyEthereum implements ObtainLedgerStrategy {
       params: [],
       signingCredential: networkDetails.signingCredential,
     };
-    const response = await api.invokeContractV1(
+    const response = await this.invokeContract(
       parameters as InvokeContractV1Request,
+      connector,
+      api,
     );
-    if (response.status >= 200 && response.status < 300) {
-      if (response.data.callOutput) {
-        return response.data.callOutput as string[];
-      } else {
-        throw new Error(
-          `${StrategyEthereum.CLASS_NAME}#getAllAssetsKey: contract ${networkDetails.contractName} method getAllAssetsIDs output is falsy`,
-        );
-      }
-    }
-    throw new Error(
-      `${StrategyEthereum.CLASS_NAME}#getAllAssetsKey: EthereumAPI error with status ${response.status}: ` +
-        response.data,
-    );
+    return response;
   }
 
   async getAllInfoByKey(
     key: string,
     networkDetails: EthereumNetworkDetails,
-    api: EthereumApi,
+    connector: PluginLedgerConnectorEthereum | undefined,
+    api: EthereumApi | undefined,
   ): Promise<{
     transactions: Transaction[];
     values: string[];
@@ -171,19 +177,8 @@ export class StrategyEthereum implements ObtainLedgerStrategy {
       methodName: "getPastLogs",
       params: [filter],
     };
-    const response = await api.invokeWeb3EthMethodV1(getLogsReq);
-    if (response.status < 200 || response.status >= 300) {
-      throw new Error(
-        `${StrategyEthereum.CLASS_NAME}#getAllInfoByKey: BesuAPI getPastLogsV1 error with status ${response.status}: ` +
-          response.data,
-      );
-    }
-    if (!response.data.data) {
-      throw new Error(
-        `${StrategyEthereum.CLASS_NAME}#getAllInfoByKey: BesuAPI getPastLogsV1 API call successfull but output data is falsy`,
-      );
-    }
-    const decoded = response.data.data as EvmLog[];
+    const response = await this.invokeWeb3EthMethod(getLogsReq, connector, api);
+    const decoded = response.data as EvmLog[];
     const transactions: Transaction[] = [];
     const blocks: Map<string, EvmBlock> = new Map<string, EvmBlock>();
     const values: string[] = [];
@@ -194,37 +189,21 @@ export class StrategyEthereum implements ObtainLedgerStrategy {
         methodName: "getTransaction",
         params: [log.transactionHash],
       };
-      const txTx = await api.invokeWeb3EthMethodV1(getTransactionReq);
-
-      if (txTx.status < 200 || txTx.status >= 300) {
-        throw new Error(
-          `${StrategyEthereum.CLASS_NAME}#getAllInfoByKey: EthereumAPI invokeWeb3EthMethodV1 getTransaction error with status ${txTx.status}: ` +
-            txTx.data,
-        );
-      }
-      if (!txTx.data.data) {
-        throw new Error(
-          `${StrategyEthereum.CLASS_NAME}#getAllInfoByKey: EthereumAPI invokeWeb3EthMethodV1 getTransaction successfull but output data is falsy`,
-        );
-      }
+      const txTx = await this.invokeWeb3EthMethod(
+        getTransactionReq,
+        connector,
+        api,
+      );
 
       const getBlockReq: InvokeRawWeb3EthMethodV1Request = {
         methodName: "getBlock",
         params: [log.blockHash],
       };
-      const txBlock = await api.invokeWeb3EthMethodV1(getBlockReq);
-
-      if (txBlock.status < 200 || txBlock.status >= 300) {
-        throw new Error(
-          `${StrategyEthereum.CLASS_NAME}#getAllInfoByKey: EthereumAPI invokeWeb3EthMethodV1 getBlock error with status ${txBlock.status}: ` +
-            txBlock.data,
-        );
-      }
-      if (!txBlock.data.data) {
-        throw new Error(
-          `${StrategyEthereum.CLASS_NAME}#getAllInfoByKey: EthereumAPI invokeWeb3EthMethodV1 getBlock successfull but output data is falsy`,
-        );
-      }
+      const txBlock = await this.invokeWeb3EthMethod(
+        getBlockReq,
+        connector,
+        api,
+      );
 
       this.log.debug(
         "Transaction: " +
@@ -234,22 +213,96 @@ export class StrategyEthereum implements ObtainLedgerStrategy {
           "\n =========== \n",
       );
       const proof = new Proof({
-        creator: txTx.data.data.from as string, //no sig for ethereum
+        creator: txTx.data.from as string, //no sig for ethereum
       });
       const transaction: Transaction = new Transaction(
         log.transactionHash,
-        txBlock.data.data.timestamp,
+        txBlock.data.timestamp,
         new TransactionProof(proof, log.transactionHash),
       );
       transaction.setStateId(key);
       transaction.setTarget(networkDetails.contractAddress as string);
-      transaction.setPayload(txTx.data.data.input ? txTx.data.data.input : ""); //FIXME: payload = transaction input ?
+      transaction.setPayload(txTx.data.input ? txTx.data.input : ""); //FIXME: payload = transaction input ?
       transactions.push(transaction);
       values.push(JSON.stringify(log.data));
 
-      blocks.set(transaction.getId(), txBlock.data.data);
+      blocks.set(transaction.getId(), txBlock.data);
     }
 
     return { transactions: transactions, values: values, blocks: blocks };
+  }
+
+  async invokeContract(
+    parameters: InvokeContractV1Request,
+    connector: PluginLedgerConnectorEthereum | undefined,
+    api: EthereumApi | undefined,
+  ): Promise<string[]> {
+    if (connector) {
+      const response = await connector.invokeContract(parameters);
+      if (response.callOutput) {
+        return response.callOutput as string[];
+      } else {
+        throw new Error(
+          `${StrategyEthereum.CLASS_NAME}#getAllAssetsKey: contract ${parameters.contract} method invokeContract output is falsy`,
+        );
+      }
+    } else if (api) {
+      const response = await api.invokeContractV1(
+        parameters as InvokeContractV1Request,
+      );
+      if (response.status >= 200 && response.status < 300) {
+        if (response.data.callOutput) {
+          return response.data.callOutput as string[];
+        } else {
+          throw new Error(
+            `${StrategyEthereum.CLASS_NAME}#getAllAssetsKey: contract ${parameters.contract} method invokeContract output is falsy`,
+          );
+        }
+      }
+      throw new Error(
+        `${StrategyEthereum.CLASS_NAME}#getAllAssetsKey: EthereumAPI error with status ${response.status}: ` +
+          response.data,
+      );
+    }
+    throw new Error(
+      `${StrategyEthereum.CLASS_NAME}#invokeContract: EthereumAPI or Connector were not defined`,
+    );
+  }
+
+  async invokeWeb3EthMethod(
+    parameters: InvokeRawWeb3EthMethodV1Request,
+    connector: PluginLedgerConnectorEthereum | undefined,
+    api: EthereumApi | undefined,
+  ): Promise<InvokeRawWeb3EthMethodV1Response> {
+    if (connector) {
+      const response = {
+        data: await connector.invokeRawWeb3EthMethod(parameters),
+      } as InvokeRawWeb3EthMethodV1Response;
+      if (response) {
+        return response;
+      } else {
+        throw new Error(
+          `${StrategyEthereum.CLASS_NAME}#invokeWeb3EthMethod: output is falsy`,
+        );
+      }
+    } else if (api) {
+      const response = await api.invokeWeb3EthMethodV1(parameters);
+      if (response.status >= 200 && response.status < 300) {
+        if (response.data.data) {
+          return response.data;
+        } else {
+          throw new Error(
+            `${StrategyEthereum.CLASS_NAME}#invokeWeb3EthMethod: output is falsy`,
+          );
+        }
+      }
+      throw new Error(
+        `${StrategyEthereum.CLASS_NAME}#invokeWeb3EthMethod: EthereumAPI error with status ${response.status}: ` +
+          response.data,
+      );
+    }
+    throw new Error(
+      `${StrategyEthereum.CLASS_NAME}#invokeWeb3EthMethod: EthereumAPI was not defined`,
+    );
   }
 }

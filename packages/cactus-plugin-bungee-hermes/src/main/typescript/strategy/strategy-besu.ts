@@ -10,10 +10,12 @@ import {
   EthContractInvocationType,
   EvmBlock,
   EvmLog,
+  EvmTransaction,
   GetBlockV1Request,
   GetPastLogsV1Request,
   GetTransactionV1Request,
   InvokeContractV1Request,
+  PluginLedgerConnectorBesu,
   Web3SigningCredential,
 } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { State } from "../view-creation/state";
@@ -29,6 +31,7 @@ export interface BesuNetworkDetails extends NetworkDetails {
   contractName: string;
   contractAddress: string;
 }
+
 export class StrategyBesu implements ObtainLedgerStrategy {
   public static readonly CLASS_NAME = "StrategyBesu";
 
@@ -48,20 +51,32 @@ export class StrategyBesu implements ObtainLedgerStrategy {
     this.log.debug(`Generating ledger snapshot`);
     Checks.truthy(networkDetails, `${fnTag} networkDetails`);
 
-    const config = new Configuration({
-      basePath: networkDetails.connectorApiPath,
-    });
-    const besuApi = new BesuApi(config);
+    let besuApi: BesuApi | undefined;
+    let connector: PluginLedgerConnectorBesu | undefined;
+
+    if (networkDetails.connector) {
+      connector = networkDetails.connector as PluginLedgerConnectorBesu;
+    } else if (networkDetails.connectorApiPath) {
+      const config = new Configuration({
+        basePath: networkDetails.connectorApiPath,
+      });
+      besuApi = new BesuApi(config);
+    } else {
+      throw new Error(
+        `${StrategyBesu.CLASS_NAME}#generateLedgerStates: networkDetails must have either connector or connectorApiPath`,
+      );
+    }
     const ledgerStates = new Map<string, State>();
     const assetsKey =
       stateIds.length == 0
-        ? await this.getAllAssetsKey(networkDetails, besuApi)
+        ? await this.getAllAssetsKey(networkDetails, connector, besuApi)
         : stateIds;
     this.log.debug("Current assets detected to capture: " + assetsKey);
     for (const assetKey of assetsKey) {
       const { transactions, values, blocks } = await this.getAllInfoByKey(
         assetKey,
         networkDetails,
+        connector,
         besuApi,
       );
 
@@ -92,7 +107,8 @@ export class StrategyBesu implements ObtainLedgerStrategy {
 
   async getAllAssetsKey(
     networkDetails: BesuNetworkDetails,
-    api: BesuApi,
+    connector: PluginLedgerConnectorBesu | undefined,
+    api: BesuApi | undefined,
   ): Promise<string[]> {
     const parameters = {
       contractName: networkDetails.contractName,
@@ -103,29 +119,19 @@ export class StrategyBesu implements ObtainLedgerStrategy {
       signingCredential: networkDetails.signingCredential,
       gas: 1000000,
     };
-    const response = await api.invokeContractV1(
+    const response = await this.invokeContract(
       parameters as InvokeContractV1Request,
+      connector,
+      api,
     );
-
-    if (response.status >= 200 && response.status < 300) {
-      if (response.data.callOutput) {
-        return response.data.callOutput as string[];
-      } else {
-        throw new Error(
-          `${StrategyBesu.CLASS_NAME}#getAllAssetsKey: contract ${networkDetails.contractName} method getAllAssetsIDs output is falsy`,
-        );
-      }
-    }
-    throw new Error(
-      `${StrategyBesu.CLASS_NAME}#getAllAssetsKey: BesuAPI error with status ${response.status}: ` +
-        response.data,
-    );
+    return response;
   }
 
   async getAllInfoByKey(
     key: string,
     networkDetails: BesuNetworkDetails,
-    api: BesuApi,
+    connector: PluginLedgerConnectorBesu | undefined,
+    api: BesuApi | undefined,
   ): Promise<{
     transactions: Transaction[];
     values: string[];
@@ -137,29 +143,144 @@ export class StrategyBesu implements ObtainLedgerStrategy {
       address: networkDetails.contractAddress,
       topics: [[null], [Web3.utils.keccak256(key)]], //filter logs by asset key
     };
-    const response = await api.getPastLogsV1(req as GetPastLogsV1Request);
-    if (response.status < 200 || response.status >= 300) {
-      throw new Error(
-        `${StrategyBesu.CLASS_NAME}#getAllInfoByKey: BesuAPI getPastLogsV1 error with status ${response.status}: ` +
-          response.data,
-      );
-    }
-    if (!response.data.logs) {
-      throw new Error(
-        `${StrategyBesu.CLASS_NAME}#getAllInfoByKey: BesuAPI getPastLogsV1 API call successfull but output data is falsy`,
-      );
-    }
 
-    const decoded = response.data.logs as EvmLog[];
+    const decoded = await this.getPastLogs(req, connector, api);
     const transactions: Transaction[] = [];
     const blocks: Map<string, EvmBlock> = new Map<string, EvmBlock>();
     const values: string[] = [];
     this.log.debug("Getting transaction logs for asset: " + key);
 
     for (const log of decoded) {
-      const txTx = await api.getTransactionV1({
-        transactionHash: log.transactionHash,
-      } as GetTransactionV1Request);
+      const txTx = await this.getTransaction(
+        {
+          transactionHash: log.transactionHash,
+        } as GetTransactionV1Request,
+        connector,
+        api,
+      );
+
+      const txBlock = await this.getBlock(
+        {
+          blockHashOrBlockNumber: log.blockHash,
+        } as GetBlockV1Request,
+        connector,
+        api,
+      );
+
+      this.log.debug(
+        "Transaction: " +
+          log.transactionHash +
+          "\nData: " +
+          JSON.stringify(log.data) +
+          "\n =========== \n",
+      );
+      const proof = new Proof({
+        creator: txTx.from as string, //no sig for besu
+      });
+      const transaction: Transaction = new Transaction(
+        log.transactionHash,
+        txBlock.timestamp,
+        new TransactionProof(proof, log.transactionHash),
+      );
+      transaction.setStateId(key);
+      transaction.setTarget(networkDetails.contractAddress as string);
+      transaction.setPayload(txTx.input ? txTx.input : ""); //FIXME: payload = transaction input ?
+      transactions.push(transaction);
+      values.push(JSON.stringify(log.data));
+
+      blocks.set(transaction.getId(), txBlock);
+    }
+
+    return { transactions: transactions, values: values, blocks: blocks };
+  }
+
+  async invokeContract(
+    parameters: InvokeContractV1Request,
+    connector: PluginLedgerConnectorBesu | undefined,
+    api: BesuApi | undefined,
+  ): Promise<string[]> {
+    if (connector) {
+      const response = await connector.invokeContract(parameters);
+      if (response.callOutput) {
+        return response.callOutput as string[];
+      } else {
+        throw new Error(
+          `${StrategyBesu.CLASS_NAME}#invokeContract: contract ${parameters.contractName} method ${parameters.methodName} output is falsy`,
+        );
+      }
+    } else if (api) {
+      const response = await api.invokeContractV1(parameters);
+      if (response.status >= 200 && response.status < 300) {
+        if (response.data.callOutput) {
+          return response.data.callOutput as string[];
+        } else {
+          throw new Error(
+            `${StrategyBesu.CLASS_NAME}#invokeContract: contract ${parameters.contractName} method ${parameters.methodName} output is falsy`,
+          );
+        }
+      }
+      throw new Error(
+        `${StrategyBesu.CLASS_NAME}#invokeContract: BesuAPI error with status ${response.status}: ` +
+          response.data,
+      );
+    }
+    throw new Error(
+      `${StrategyBesu.CLASS_NAME}#invokeContract: BesuAPI or Connector were not defined`,
+    );
+  }
+
+  async getPastLogs(
+    req: GetPastLogsV1Request,
+    connector: PluginLedgerConnectorBesu | undefined,
+    api: BesuApi | undefined,
+  ): Promise<EvmLog[]> {
+    if (connector) {
+      const response = await connector.getPastLogs(req);
+      if (response.logs) {
+        return response.logs;
+      } else {
+        throw new Error(
+          `${StrategyBesu.CLASS_NAME}#getPastLogs: BesuAPI getPastLogs output is falsy`,
+        );
+      }
+    }
+    if (api) {
+      const response = await api.getPastLogsV1(req);
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(
+          `${StrategyBesu.CLASS_NAME}#getAllInfoByKey: BesuAPI getPastLogsV1 error with status ${response.status}: ` +
+            response.data,
+        );
+      }
+      if (!response.data.logs) {
+        throw new Error(
+          `${StrategyBesu.CLASS_NAME}#getAllInfoByKey: BesuAPI getPastLogsV1 API call successfull but output data is falsy`,
+        );
+      }
+      return response.data.logs as EvmLog[];
+    }
+    throw new Error(
+      `${StrategyBesu.CLASS_NAME}#getTransaction: BesuAPI or Connector were not defined`,
+    );
+  }
+
+  async getTransaction(
+    req: GetTransactionV1Request,
+    connector: PluginLedgerConnectorBesu | undefined,
+    api: BesuApi | undefined,
+  ): Promise<EvmTransaction> {
+    if (connector) {
+      const response = await connector.getTransaction(req);
+      if (response.transaction) {
+        return response.transaction;
+      } else {
+        throw new Error(
+          `${StrategyBesu.CLASS_NAME}#getTransaction: BesuAPI getTransaction output is falsy`,
+        );
+      }
+    }
+    if (api) {
+      const txTx = await api.getTransactionV1(req);
 
       if (txTx.status < 200 || txTx.status >= 300) {
         throw new Error(
@@ -172,11 +293,30 @@ export class StrategyBesu implements ObtainLedgerStrategy {
           `${StrategyBesu.CLASS_NAME}#getAllInfoByKey: BesuAPI getTransactionV1 call successfull but output data is falsy`,
         );
       }
+      return txTx.data.transaction;
+    }
+    throw new Error(
+      `${StrategyBesu.CLASS_NAME}#getTransaction: BesuAPI or Connector were not defined`,
+    );
+  }
 
-      const txBlock = await api.getBlockV1({
-        blockHashOrBlockNumber: log.blockHash,
-      } as GetBlockV1Request);
-
+  async getBlock(
+    req: GetBlockV1Request,
+    connector: PluginLedgerConnectorBesu | undefined,
+    api: BesuApi | undefined,
+  ): Promise<EvmBlock> {
+    if (connector) {
+      const response = await connector.getBlock(req);
+      if (response.block) {
+        return response.block;
+      } else {
+        throw new Error(
+          `${StrategyBesu.CLASS_NAME}#getBlock: BesuAPI getBlock output is falsy`,
+        );
+      }
+    }
+    if (api) {
+      const txBlock = await api.getBlockV1(req);
       if (txBlock.status < 200 || txBlock.status >= 300) {
         throw new Error(
           `${StrategyBesu.CLASS_NAME}#getAllInfoByKey: BesuAPI getBlockV1 error with status ${txBlock.status}: ` +
@@ -188,33 +328,10 @@ export class StrategyBesu implements ObtainLedgerStrategy {
           `${StrategyBesu.CLASS_NAME}#getAllInfoByKey: BesuAPI getBlockV1 call successfull but output data is falsy`,
         );
       }
-
-      this.log.debug(
-        "Transaction: " +
-          log.transactionHash +
-          "\nData: " +
-          JSON.stringify(log.data) +
-          "\n =========== \n",
-      );
-      const proof = new Proof({
-        creator: txTx.data.transaction.from as string, //no sig for besu
-      });
-      const transaction: Transaction = new Transaction(
-        log.transactionHash,
-        txBlock.data.block.timestamp,
-        new TransactionProof(proof, log.transactionHash),
-      );
-      transaction.setStateId(key);
-      transaction.setTarget(networkDetails.contractAddress as string);
-      transaction.setPayload(
-        txTx.data.transaction.input ? txTx.data.transaction.input : "",
-      ); //FIXME: payload = transaction input ?
-      transactions.push(transaction);
-      values.push(JSON.stringify(log.data));
-
-      blocks.set(transaction.getId(), txBlock.data.block);
+      return txBlock.data.block;
     }
-
-    return { transactions: transactions, values: values, blocks: blocks };
+    throw new Error(
+      `${StrategyBesu.CLASS_NAME}#getTransaction: BesuAPI or Connector were not defined`,
+    );
   }
 }
