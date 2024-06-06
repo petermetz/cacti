@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1717008357524,
+  "lastUpdate": 1717690578190,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -138,6 +138,44 @@ window.BENCHMARK_DATA = {
             "range": "±1.39%",
             "unit": "ops/sec",
             "extra": "181 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": false,
+          "id": "b98fa013282901ee7eb2054c71dbc763762be964",
+          "message": "build: fix codegen flakiness with sequential execution, handrolled nwget\n\n1. The package.json file of the cmd-api-server package now runs the codegen related scripts\nsequentially (e.g. using `run-s` instead of `run-p` of `npm-run-all`). This lowers the probability\nthat the download of the openapi-generator .jar file is too late to finish and a crash occurs due\nto the .jar file not being present on the file-system when it is called upon.\n2. Also adding a hand-built `nwget` alternative because it was hanging the process after finishing\nthe download (I've only seen this reproduced locally, but neveretheless it was frustrating)\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-06-06T08:57:34-07:00",
+          "tree_id": "11e872e776d583b91c2d464122c07117eb7f0f0c",
+          "url": "https://github.com/petermetz/cacti/commit/b98fa013282901ee7eb2054c71dbc763762be964"
+        },
+        "date": 1717690575024,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 609,
+            "range": "±1.67%",
+            "unit": "ops/sec",
+            "extra": "179 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 375,
+            "range": "±1.40%",
+            "unit": "ops/sec",
+            "extra": "183 samples"
           }
         ]
       }
