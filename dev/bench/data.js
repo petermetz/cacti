@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1717690578190,
+  "lastUpdate": 1717692172679,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -176,6 +176,44 @@ window.BENCHMARK_DATA = {
             "range": "±1.40%",
             "unit": "ops/sec",
             "extra": "183 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": false,
+          "id": "40f7fd8f0c32a1b9468ea5993d3df198aa0baa9f",
+          "message": "test(plugin-consortium-manual): fix port binding - multiple API servers\n\n1. The ConnectRPC port defaults to 6000 in the API server so for test cases where multiple\ninstances of the API server are created and started, we need to specify the ports\nexplicitly in the API server config so that they don't clash with each other casusing the\ntest to fail.\n2. The fix here was to simply bind to port 0 for all the ConnectRPC listeners which\neliminated the possibility of a clash and the test is passing once again.\n3. I also snuck in a quality of life improvement for contributors: the API server will no\nlonger log the entire details of the fastify server that is being used for CRPC thereby\nreducing the verbosity of the logs by a wide margin.\n\nCrash logs that revealed the bug in the test case:\n\n```sh\n024-05-31T20:14:00.9554919Z [2024-05-31T20:14:00.953Z] ERROR (api-server):\nFailed to start ApiServer Error: listen EADDRINUSE: address already in use 127.0.0.1:6000\n2024-05-31T20:14:00.95Z     at Http2Server.setupListenHandle [as _listen2] (node:net:1817:16)\n2024-05-31T20:14:00.95Z     at listenInCluster (node:net:1865:12)\n2024-05-31T20:14:00.95Z     at doListen (node:net:2014:7)\n2024-05-31T20:14:00.95Z     at processTicksAndRejections (node:internal/process/task_queues:83:21)\n2024-05-31T20:14:00.95Z     at runNextTicks (node:internal/process/task_queues:64:3)\n2024-05-31T20:14:00.95Z     at processImmediate (node:internal/timers:447:9) {\n2024-05-31T20:14:00.95Z   code: 'EADDRINUSE',\n2024-05-31T20:14:00.95Z   errno: -98,\n2024-05-31T20:14:00.95Z   syscall: 'listen',\n2024-05-31T20:14:00.95Z   address: '127.0.0.1',\n2024-05-31T20:14:00.95Z   port: 6000\n2024-05-31T20:14:00.95Z }\n```\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-06-06T09:25:40-07:00",
+          "tree_id": "345f3d039c7d970508973ce5c69f6cf6826d0cc3",
+          "url": "https://github.com/petermetz/cacti/commit/40f7fd8f0c32a1b9468ea5993d3df198aa0baa9f"
+        },
+        "date": 1717692169876,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "cmd-api-server_HTTP_GET_getOpenApiSpecV1",
+            "value": 582,
+            "range": "±1.97%",
+            "unit": "ops/sec",
+            "extra": "176 samples"
+          },
+          {
+            "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
+            "value": 367,
+            "range": "±1.26%",
+            "unit": "ops/sec",
+            "extra": "182 samples"
           }
         ]
       }
