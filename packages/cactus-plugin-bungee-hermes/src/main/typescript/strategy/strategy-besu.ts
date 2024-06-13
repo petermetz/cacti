@@ -25,6 +25,7 @@ import { Transaction } from "../view-creation/transaction";
 import Web3 from "web3";
 import { Proof } from "../view-creation/proof";
 import { TransactionProof } from "../view-creation/transaction-proof";
+import { BadRequestError, InternalServerError } from "http-errors-enhanced-cjs";
 export interface BesuNetworkDetails extends NetworkDetails {
   signingCredential: Web3SigningCredential;
   keychainId: string;
@@ -47,9 +48,9 @@ export class StrategyBesu implements ObtainLedgerStrategy {
     stateIds: string[],
     networkDetails: BesuNetworkDetails,
   ): Promise<Map<string, State>> {
-    const fnTag = `${StrategyBesu.CLASS_NAME}#generateLedgerStates()`;
+    const fn = `${StrategyBesu.CLASS_NAME}#generateLedgerStates()`;
     this.log.debug(`Generating ledger snapshot`);
-    Checks.truthy(networkDetails, `${fnTag} networkDetails`);
+    Checks.truthy(networkDetails, `${fn} networkDetails`);
 
     let besuApi: BesuApi | undefined;
     let connector: PluginLedgerConnectorBesu | undefined;
@@ -66,10 +67,14 @@ export class StrategyBesu implements ObtainLedgerStrategy {
         `${StrategyBesu.CLASS_NAME}#generateLedgerStates: networkDetails must have either connector or connectorApiPath`,
       );
     }
+    const connectorOrApiClient = connector ? connector : besuApi;
+    if (!connectorOrApiClient) {
+      throw new InternalServerError(`${fn} got neither connector nor BesuAPI`);
+    }
     const ledgerStates = new Map<string, State>();
     const assetsKey =
       stateIds.length == 0
-        ? await this.getAllAssetsKey(networkDetails, connector, besuApi)
+        ? await this.getAllAssetsKey(networkDetails, connectorOrApiClient)
         : stateIds;
     this.log.debug("Current assets detected to capture: " + assetsKey);
     for (const assetKey of assetsKey) {
@@ -107,8 +112,7 @@ export class StrategyBesu implements ObtainLedgerStrategy {
 
   async getAllAssetsKey(
     networkDetails: BesuNetworkDetails,
-    connector: PluginLedgerConnectorBesu | undefined,
-    api: BesuApi | undefined,
+    connectorOrApiClient: PluginLedgerConnectorBesu | BesuApi,
   ): Promise<string[]> {
     const parameters = {
       contractName: networkDetails.contractName,
@@ -121,8 +125,7 @@ export class StrategyBesu implements ObtainLedgerStrategy {
     };
     const response = await this.invokeContract(
       parameters as InvokeContractV1Request,
-      connector,
-      api,
+      connectorOrApiClient,
     );
     return response;
   }
@@ -196,37 +199,78 @@ export class StrategyBesu implements ObtainLedgerStrategy {
 
   async invokeContract(
     parameters: InvokeContractV1Request,
-    connector: PluginLedgerConnectorBesu | undefined,
-    api: BesuApi | undefined,
+    connectorOrApiClient: PluginLedgerConnectorBesu | BesuApi,
   ): Promise<string[]> {
-    if (connector) {
+    const fn = `${StrategyBesu.CLASS_NAME}#invokeContract()`;
+    if (!connectorOrApiClient) {
+      // throw BadRequestError because it is not our fault that we did not get
+      // all the needed parameters, e.g. we are signaling that this is a "user error"
+      // where the "user" is the other developer who called our function.
+      throw new BadRequestError(`${fn} connectorOrApiClient is falsy`);
+    } else if (connectorOrApiClient instanceof PluginLedgerConnectorBesu) {
+      const connector: PluginLedgerConnectorBesu = connectorOrApiClient;
       const response = await connector.invokeContract(parameters);
-      if (response.callOutput) {
-        return response.callOutput as string[];
-      } else {
-        throw new Error(
-          `${StrategyBesu.CLASS_NAME}#invokeContract: contract ${parameters.contractName} method ${parameters.methodName} output is falsy`,
-        );
+      if (!response) {
+        // We throw an InternalServerError because the user is not responsible
+        // for us not being able to obtain a result from the contract invocation.
+        // They provided us parameters for the call (which we then validated and
+        // accepted) an therefore now if something goes wrong we have to throw
+        // an exception accordingly (e.g. us "admitting fault")
+        throw new InternalServerError(`${fn} response is falsy`);
       }
-    } else if (api) {
+      if (!response.callOutput) {
+        throw new InternalServerError(`${fn} response.callOutput is falsy`);
+      }
+      const { callOutput } = response;
+      if (!Array.isArray(callOutput)) {
+        throw new InternalServerError(`${fn} callOutput not an array`);
+      }
+      const allItemsAreStrings = callOutput.every((x) => typeof x === "string");
+      if (!allItemsAreStrings) {
+        throw new InternalServerError(`${fn} callOutput has non-string items`);
+      }
+      return response.callOutput as string[];
+    } else if (connectorOrApiClient instanceof BesuApi) {
+      const api: BesuApi = connectorOrApiClient;
       const response = await api.invokeContractV1(parameters);
-      if (response.status >= 200 && response.status < 300) {
-        if (response.data.callOutput) {
-          return response.data.callOutput as string[];
-        } else {
-          throw new Error(
-            `${StrategyBesu.CLASS_NAME}#invokeContract: contract ${parameters.contractName} method ${parameters.methodName} output is falsy`,
-          );
-        }
+      if (!response) {
+        throw new InternalServerError(`${fn} response is falsy`);
       }
-      throw new Error(
-        `${StrategyBesu.CLASS_NAME}#invokeContract: BesuAPI error with status ${response.status}: ` +
-          response.data,
-      );
+      if (!response.status) {
+        throw new InternalServerError(`${fn} response.status is falsy`);
+      }
+      const { status, data, statusText, config } = response;
+      if (response.status < 200 || response.status > 300) {
+        // We log the error here on the debug level so that later on we can inspect the contents
+        // of it in the logs if we need to. The reason that this is important is because we do not
+        // want to dump the full response onto our own error response that is going back to the caller
+        // due to that potentially being a security issue that we are exposing internal data via the
+        // error responses.
+        // With that said, we still need to make sure that we can determine the root cause of any
+        // issues after the fact and therefore we must save the error response details somewhere (the logs)
+        this.log.debug("BesuAPI non-2xx HTTP response:", data, status, config);
+
+        // For the caller/client we just send back a generic error admitting that we somehow messed up:
+        const errorMessage = `${fn} BesuAPI error status: ${status}: ${statusText}`;
+        throw new InternalServerError(errorMessage);
+      }
+      if (!data) {
+        throw new InternalServerError(`${fn} response.data is falsy`);
+      }
+      if (!data.callOutput) {
+        throw new InternalServerError(`${fn} data.callOutput is falsy`);
+      }
+      const { callOutput } = data;
+      if (!Array.isArray(callOutput)) {
+        throw new InternalServerError(`${fn} callOutput not an array`);
+      }
+      const allItemsAreStrings = callOutput.every((x) => typeof x === "string");
+      if (!allItemsAreStrings) {
+        throw new InternalServerError(`${fn} callOutput has non-string items`);
+      }
+      return response.data.callOutput;
     }
-    throw new Error(
-      `${StrategyBesu.CLASS_NAME}#invokeContract: BesuAPI or Connector were not defined`,
-    );
+    throw new InternalServerError(`${fn}: neither BesuAPI nor Connector given`);
   }
 
   async getPastLogs(

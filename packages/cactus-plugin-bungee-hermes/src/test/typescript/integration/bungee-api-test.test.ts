@@ -160,13 +160,16 @@ beforeAll(async () => {
 });
 
 test("tests bungee api using different strategies", async () => {
+  const pluginRegistry = new PluginRegistry({ logLevel, plugins: [] });
   const keyPair = Secp256k1Keys.generateKeyPairsBuffer();
   pluginBungeeHermesOptions = {
+    pluginRegistry,
     keyPair,
     instanceId: uuidv4(),
     logLevel,
   };
   const bungee = new PluginBungeeHermes(pluginBungeeHermesOptions);
+  pluginRegistry.add(bungee);
 
   //add strategies to BUNGEE - Hermes
   bungee.addStrategy(FABRIC_STRATEGY, new StrategyFabric("INFO"));

@@ -150,11 +150,12 @@ describe("Ethereum contract deploy and invoke using keychain", () => {
       LockAssetContractJson.contractName,
       JSON.stringify(LockAssetContractJson),
     );
+    const pluginRegistry = new PluginRegistry({ plugins: [keychainPlugin] });
     connector = new PluginLedgerConnectorEthereum({
       instanceId: uuidV4(),
       rpcApiHttpHost,
       logLevel: testLogLevel,
-      pluginRegistry: new PluginRegistry({ plugins: [keychainPlugin] }),
+      pluginRegistry,
     });
 
     // Instantiate connector with the keychain plugin that already has the
@@ -234,6 +235,7 @@ describe("Ethereum contract deploy and invoke using keychain", () => {
       .contractAddress as string;
 
     pluginBungeeHermesOptions = {
+      pluginRegistry,
       keyPair: Secp256k1Keys.generateKeyPairsBuffer(),
       instanceId: uuidV4(),
       logLevel: testLogLevel,
