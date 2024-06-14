@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1718377767633,
+  "lastUpdate": 1718378564160,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -319,6 +319,37 @@ window.BENCHMARK_DATA = {
             "name": "cmd-api-server_gRPC_GetOpenApiSpecV1",
             "value": 348,
             "range": "±1.34%",
+            "unit": "ops/sec",
+            "extra": "181 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": false,
+          "id": "e6807301fa7b3174bbf1d7776f8812d063331983",
+          "message": "ci(github): fix VSCode dev container publish job - use official builder\n\n1. We don't have a Dockerfile anymore to define the image of the dev container\ninstead the build's input is the `devcontainer.json` file which can be built\nusing the `@devcontainers/cli` npm package instead of the usual `docker build`\ncommand on the terminal.\n2. The ci.yaml job building the image was already doing the build this way but\nwe must've forgotten to update the publish job as well.\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>",
+          "timestamp": "2024-06-14T07:47:17-07:00",
+          "tree_id": "ef8c9f7ec4b80a0b09041b352aed1808a9661c85",
+          "url": "https://github.com/petermetz/cacti/commit/e6807301fa7b3174bbf1d7776f8812d063331983"
+        },
+        "date": 1718378561545,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "plugin-ledger-connector-besu_HTTP_GET_getOpenApiSpecV1",
+            "value": 783,
+            "range": "±3.08%",
             "unit": "ops/sec",
             "extra": "181 samples"
           }
