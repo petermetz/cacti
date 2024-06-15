@@ -45,7 +45,7 @@ describe(testCase, () => {
     const contractName = "HelloWorld";
 
     const web3 = new Web3(rpcApiHttpHost);
-    const testEthAccount = web3.eth.accounts.create(uuidv4());
+    const testEthAccount = web3.eth.accounts.create();
 
     const keychainEntryKey = uuidv4();
     const keychainEntryValue = testEthAccount.privateKey;
@@ -94,7 +94,7 @@ describe(testCase, () => {
 
     const balance = await web3.eth.getBalance(testEthAccount.address);
     expect(balance).toBeTruthy();
-    expect(parseInt(balance, 10)).toEqual(10e9);
+    expect(balance).toEqual(10e9);
 
     let contractAddress: string;
 
@@ -136,7 +136,7 @@ describe(testCase, () => {
     }
 
     {
-      const testEthAccount2 = web3.eth.accounts.create(uuidv4());
+      const testEthAccount2 = web3.eth.accounts.create();
 
       const { rawTransaction } = await web3.eth.accounts.signTransaction(
         {
@@ -163,7 +163,7 @@ describe(testCase, () => {
 
       const balance2 = await web3.eth.getBalance(testEthAccount2.address);
       expect(balance2).toBeTruthy();
-      expect(parseInt(balance2, 10)).toEqual(10e6);
+      expect(balance2).toEqual(10e6);
     }
 
     {
@@ -190,7 +190,7 @@ describe(testCase, () => {
           invocationType: EthContractInvocationType.Send,
           methodName: "setName",
           params: [newName],
-          gas: 1000000,
+          gas: BigInt(1000000).toString(10),
           signingCredential: {
             ethAccount: testEthAccount.address,
             secret: testEthAccount.privateKey,
@@ -209,7 +209,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Call,
         methodName: "getName",
         params: [],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential: {
           ethAccount: testEthAccount.address,
           secret: testEthAccount.privateKey,
@@ -224,7 +224,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Send,
         methodName: "getName",
         params: [],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential: {
           ethAccount: testEthAccount.address,
           secret: testEthAccount.privateKey,
@@ -239,7 +239,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Send,
         methodName: "deposit",
         params: [],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential: {
           ethAccount: testEthAccount.address,
           secret: testEthAccount.privateKey,
@@ -255,7 +255,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Call,
         methodName: "getNameByIndex",
         params: [0],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential: {
           ethAccount: testEthAccount.address,
           secret: testEthAccount.privateKey,
@@ -280,7 +280,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Send,
         methodName: "setName",
         params: [newName],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential,
         nonce: 4,
       });
@@ -293,7 +293,7 @@ describe(testCase, () => {
           invocationType: EthContractInvocationType.Send,
           methodName: "setName",
           params: [newName],
-          gas: 1000000,
+          gas: BigInt(1000000).toString(10),
           signingCredential,
           nonce: 4,
         });
@@ -308,7 +308,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Call,
         methodName: "getName",
         params: [],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential,
       });
       expect(getNameOut).toEqual(newName);
@@ -319,7 +319,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Send,
         methodName: "getName",
         params: [],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential,
       });
       expect(getNameOut2).toBeTruthy();
@@ -330,7 +330,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Send,
         methodName: "deposit",
         params: [],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential,
         value: 10,
       });
@@ -342,7 +342,7 @@ describe(testCase, () => {
         invocationType: EthContractInvocationType.Call,
         methodName: "getNameByIndex",
         params: [1],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential,
       });
       expect(callOut).toEqual(newName);

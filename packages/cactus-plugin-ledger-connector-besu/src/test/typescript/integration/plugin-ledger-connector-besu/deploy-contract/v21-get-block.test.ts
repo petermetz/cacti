@@ -1,21 +1,23 @@
 import "jest-extended";
 import { v4 as uuidv4 } from "uuid";
+import { Web3Account } from "web3-eth-accounts";
+import Web3 from "web3";
+
 import { PluginRegistry } from "@hyperledger/cactus-core";
+import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
+import { BesuTestLedger } from "@hyperledger/cactus-test-tooling";
+import { LogLevelDesc } from "@hyperledger/cactus-common";
+import { PluginImportType } from "@hyperledger/cactus-core-api";
+
 import {
   PluginLedgerConnectorBesu,
   PluginFactoryLedgerConnector,
   GetBlockV1Request,
 } from "../../../../../main/typescript/public-api";
-import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
-import { BesuTestLedger } from "@hyperledger/cactus-test-tooling";
-import { LogLevelDesc } from "@hyperledger/cactus-common";
 import HelloWorldContractJson from "../../../../solidity/hello-world-contract/HelloWorld.json";
-import Web3 from "web3";
-import { PluginImportType } from "@hyperledger/cactus-core-api";
-import { Account } from "web3-core";
 
 describe("PluginLedgerConnectorBesu", () => {
-  const logLevel: LogLevelDesc = "TRACE";
+  const logLevel: LogLevelDesc = "INFO";
   const containerImageVersion = "2021-08-24--feat-1244";
   const containerImageName =
     "ghcr.io/hyperledger/cactus-besu-21-1-6-all-in-one";
@@ -26,7 +28,7 @@ describe("PluginLedgerConnectorBesu", () => {
   let rpcApiHttpHost: string;
   let rpcApiWsHost: string;
   let web3: Web3;
-  let testEthAccount: Account;
+  let testEthAccount: Web3Account;
   let keychainEntryValue;
   let connector: PluginLedgerConnectorBesu;
 
@@ -35,7 +37,7 @@ describe("PluginLedgerConnectorBesu", () => {
     rpcApiHttpHost = await besuTestLedger.getRpcApiHttpHost();
     rpcApiWsHost = await besuTestLedger.getRpcApiWsHost();
     web3 = new Web3(rpcApiHttpHost);
-    testEthAccount = web3.eth.accounts.create(uuidv4());
+    testEthAccount = web3.eth.accounts.create();
     keychainEntryValue = testEthAccount.privateKey;
 
     const keychainPlugin = new PluginKeychainMemory({

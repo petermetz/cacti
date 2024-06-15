@@ -46,7 +46,7 @@ describe("PluginLedgerConnectorBesu", () => {
 
   test("can get past logs of an account", async () => {
     const web3 = new Web3(rpcApiHttpHost);
-    const testEthAccount = web3.eth.accounts.create(uuidv4());
+    const testEthAccount = web3.eth.accounts.create();
 
     const keychainEntryKey = uuidv4();
     const keychainEntryValue = testEthAccount.privateKey;

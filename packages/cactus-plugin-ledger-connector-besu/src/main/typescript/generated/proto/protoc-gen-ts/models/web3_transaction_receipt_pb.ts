@@ -9,7 +9,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
     export class Web3TransactionReceiptPB extends pb_1.Message {
         #one_of_decls: number[][] = [[214641282]];
         constructor(data?: any[] | ({
-            status?: boolean;
+            status?: string;
             transactionHash?: string;
             transactionIndex?: number;
             blockHash?: string;
@@ -53,9 +53,9 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
             }
         }
         get status() {
-            return pb_1.Message.getFieldWithDefault(this, 355610639, false) as boolean;
+            return pb_1.Message.getFieldWithDefault(this, 355610639, "") as string;
         }
-        set status(value: boolean) {
+        set status(value: string) {
             pb_1.Message.setField(this, 355610639, value);
         }
         get transactionHash() {
@@ -119,7 +119,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
             return cases[pb_1.Message.computeOneofCase(this, [214641282])];
         }
         static fromObject(data: {
-            status?: boolean;
+            status?: string;
             transactionHash?: string;
             transactionIndex?: number;
             blockHash?: string;
@@ -161,7 +161,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
         }
         toObject() {
             const data: {
-                status?: boolean;
+                status?: string;
                 transactionHash?: string;
                 transactionIndex?: number;
                 blockHash?: string;
@@ -204,8 +204,8 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
         serialize(w: pb_1.BinaryWriter): void;
         serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
             const writer = w || new pb_1.BinaryWriter();
-            if (this.status != false)
-                writer.writeBool(355610639, this.status);
+            if (this.status.length)
+                writer.writeString(355610639, this.status);
             if (this.transactionHash.length)
                 writer.writeString(188901646, this.transactionHash);
             if (this.transactionIndex != 0)
@@ -232,7 +232,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
                     break;
                 switch (reader.getFieldNumber()) {
                     case 355610639:
-                        message.status = reader.readBool();
+                        message.status = reader.readString();
                         break;
                     case 188901646:
                         message.transactionHash = reader.readString();

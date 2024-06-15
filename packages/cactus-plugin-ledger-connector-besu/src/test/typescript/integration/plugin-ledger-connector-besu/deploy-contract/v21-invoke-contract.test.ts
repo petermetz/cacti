@@ -1,6 +1,8 @@
 import "jest-extended";
 
 import { v4 as uuidv4 } from "uuid";
+import Web3 from "web3";
+import { Web3Account } from "web3-eth-accounts";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import {
   EthContractInvocationType,
@@ -14,12 +16,10 @@ import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory
 import { BesuTestLedger } from "@hyperledger/cactus-test-tooling";
 import { LogLevelDesc } from "@hyperledger/cactus-common";
 import HelloWorldContractJson from "../../../../solidity/hello-world-contract/HelloWorld.json";
-import Web3 from "web3";
 import { PluginImportType } from "@hyperledger/cactus-core-api";
-import { Account } from "web3-core";
 
 describe("PluginLedgerConnectorBesu", () => {
-  const logLevel: LogLevelDesc = "TRACE";
+  const logLevel: LogLevelDesc = "INFO";
   const containerImageVersion = "2021-08-24--feat-1244";
   const containerImageName =
     "ghcr.io/hyperledger/cactus-besu-21-1-6-all-in-one";
@@ -30,7 +30,7 @@ describe("PluginLedgerConnectorBesu", () => {
   let rpcApiHttpHost: string;
   let rpcApiWsHost: string;
   let web3: Web3;
-  let testEthAccount: Account;
+  let testEthAccount: Web3Account;
   let contractAddress: string;
   let firstHighNetWorthAccount: string;
   let connector: PluginLedgerConnectorBesu;
@@ -45,7 +45,7 @@ describe("PluginLedgerConnectorBesu", () => {
     rpcApiHttpHost = await besuTestLedger.getRpcApiHttpHost();
     rpcApiWsHost = await besuTestLedger.getRpcApiWsHost();
     web3 = new Web3(rpcApiHttpHost);
-    testEthAccount = web3.eth.accounts.create(uuidv4());
+    testEthAccount = web3.eth.accounts.create();
 
     /**
      * Constant defining the standard 'dev' Besu genesis.json contents.
@@ -102,7 +102,7 @@ describe("PluginLedgerConnectorBesu", () => {
 
     const balance = await web3.eth.getBalance(testEthAccount.address);
     expect(balance).toBeTruthy();
-    expect(parseInt(balance, 10)).toEqual(10e9);
+    expect(balance).toEqual(10e9);
   });
 
   afterAll(async () => {
@@ -150,7 +150,7 @@ describe("PluginLedgerConnectorBesu", () => {
   });
 
   it("invokes contracts with Web3SigningCredentialType.NONE", async () => {
-    const testEthAccount2 = web3.eth.accounts.create(uuidv4());
+    const testEthAccount2 = web3.eth.accounts.create();
 
     const { rawTransaction } = await web3.eth.accounts.signTransaction(
       {
@@ -177,7 +177,7 @@ describe("PluginLedgerConnectorBesu", () => {
 
     const balance2 = await web3.eth.getBalance(testEthAccount2.address);
     expect(balance2).toBeTruthy();
-    expect(parseInt(balance2, 10)).toEqual(10e6);
+    expect(balance2).toEqual(10e6);
   });
 
   it("invokes contracts with Web3SigningCredentialType.PrivateKeyHex", async () => {
@@ -204,7 +204,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Send,
       methodName: "setName",
       params: [newName],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -224,7 +224,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -239,7 +239,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Send,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -254,7 +254,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Send,
       methodName: "deposit",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -270,7 +270,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getNameByIndex",
       params: [0],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -295,7 +295,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Send,
       methodName: "setName",
       params: [newName],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
       nonce: 4,
     });
@@ -308,7 +308,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Send,
       methodName: "setName",
       params: [newName],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
       nonce: 4,
     });
@@ -324,7 +324,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
     });
     expect(getNameOut).toEqual(newName);
@@ -335,7 +335,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Send,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
     });
     expect(getNameOut2).toBeTruthy();
@@ -346,7 +346,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Send,
       methodName: "deposit",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
       value: 10,
     });
@@ -359,7 +359,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getNameByIndex",
       params: [1],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
     });
 

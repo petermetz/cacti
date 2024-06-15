@@ -29,7 +29,7 @@ describe("PluginLedgerConnectorBesu", () => {
     const rpcApiHttpHost = await besuTestLedger.getRpcApiHttpHost();
     const rpcApiWsHost = await besuTestLedger.getRpcApiWsHost();
     const web3 = new Web3(rpcApiHttpHost);
-    const testEthAccount = web3.eth.accounts.create(uuidv4());
+    const testEthAccount = web3.eth.accounts.create();
 
     const keychainEntryKey = uuidv4();
     const keychainEntryValue = testEthAccount.privateKey;

@@ -226,7 +226,7 @@ describe("PluginLedgerConnectorBesu", () => {
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
       keychainId: keychain1.getKeychainId(),
-      gas: 3000000,
+      gas: BigInt(3000000).toString(10),
     });
 
     expect(deployOut).toBeTruthy();
@@ -406,7 +406,7 @@ describe("PluginLedgerConnectorBesu", () => {
         contractAbi: HelloWorldContractJson.abi,
         contractAddress: contractDeployReceipt.contractAddress,
         invocationType: EthContractInvocationType.Call,
-        gas: 3000000,
+        gas: BigInt(3000000).toString(10),
         methodName: "getName",
         params: [],
         signingCredential: {
@@ -425,7 +425,7 @@ describe("PluginLedgerConnectorBesu", () => {
         contractAbi: HelloWorldContractJson.abi,
         contractAddress: contractDeployReceipt.contractAddress,
         invocationType: EthContractInvocationType.Send,
-        gas: 3000000,
+        gas: BigInt(3000000).toString(10),
         methodName: "setName",
         params: ["Doctor Cactus"],
         privateTransactionConfig: {
@@ -447,7 +447,7 @@ describe("PluginLedgerConnectorBesu", () => {
         contractAbi: HelloWorldContractJson.abi,
         contractAddress: contractDeployReceipt.contractAddress,
         invocationType: EthContractInvocationType.Call,
-        gas: 3000000,
+        gas: BigInt(3000000).toString(10),
         methodName: "getName",
         params: [],
         privateTransactionConfig: {
@@ -469,7 +469,7 @@ describe("PluginLedgerConnectorBesu", () => {
         contractAbi: HelloWorldContractJson.abi,
         contractAddress: contractDeployReceipt.contractAddress,
         invocationType: EthContractInvocationType.Call,
-        gas: 3000000,
+        gas: BigInt(3000000).toString(10),
         methodName: "getName",
         params: [],
         privateTransactionConfig: {
@@ -491,7 +491,7 @@ describe("PluginLedgerConnectorBesu", () => {
         contractAbi: HelloWorldContractJson.abi,
         contractAddress: contractDeployReceipt.contractAddress,
         invocationType: EthContractInvocationType.Call,
-        gas: 3000000,
+        gas: BigInt(3000000).toString(10),
         methodName: "getName",
         params: [],
         privateTransactionConfig: {

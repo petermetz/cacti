@@ -10,11 +10,11 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
         #one_of_decls: number[][] = [[335211324], [205598263], [488538260], [3707]];
         constructor(data?: any[] | ({
             hash?: string;
-            nonce?: number;
+            nonce?: string;
             from?: string;
             value?: string;
             gasPrice?: string;
-            gas?: number;
+            gas?: string;
             input?: string;
         } & (({
             blockHash?: dependency_1.google.protobuf.Any;
@@ -70,9 +70,9 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
             pb_1.Message.setField(this, 3195150, value);
         }
         get nonce() {
-            return pb_1.Message.getFieldWithDefault(this, 105002991, 0) as number;
+            return pb_1.Message.getFieldWithDefault(this, 105002991, "") as string;
         }
-        set nonce(value: number) {
+        set nonce(value: string) {
             pb_1.Message.setField(this, 105002991, value);
         }
         get blockHash() {
@@ -130,9 +130,9 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
             pb_1.Message.setField(this, 5271059, value);
         }
         get gas() {
-            return pb_1.Message.getFieldWithDefault(this, 102105, 0) as number;
+            return pb_1.Message.getFieldWithDefault(this, 102105, "") as string;
         }
-        set gas(value: number) {
+        set gas(value: string) {
             pb_1.Message.setField(this, 102105, value);
         }
         get input() {
@@ -179,7 +179,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
         }
         static fromObject(data: {
             hash?: string;
-            nonce?: number;
+            nonce?: string;
             blockHash?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
             blockNumber?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
             transactionIndex?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
@@ -187,7 +187,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
             to?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
             value?: string;
             gasPrice?: string;
-            gas?: number;
+            gas?: string;
             input?: string;
         }): EvmTransactionPB {
             const message = new EvmTransactionPB({});
@@ -229,7 +229,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
         toObject() {
             const data: {
                 hash?: string;
-                nonce?: number;
+                nonce?: string;
                 blockHash?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
                 blockNumber?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
                 transactionIndex?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
@@ -237,7 +237,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
                 to?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
                 value?: string;
                 gasPrice?: string;
-                gas?: number;
+                gas?: string;
                 input?: string;
             } = {};
             if (this.hash != null) {
@@ -281,8 +281,8 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
             const writer = w || new pb_1.BinaryWriter();
             if (this.hash.length)
                 writer.writeString(3195150, this.hash);
-            if (this.nonce != 0)
-                writer.writeFloat(105002991, this.nonce);
+            if (this.nonce.length)
+                writer.writeString(105002991, this.nonce);
             if (this.has_blockHash)
                 writer.writeMessage(335211324, this.blockHash, () => this.blockHash.serialize(writer));
             if (this.has_blockNumber)
@@ -297,8 +297,8 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
                 writer.writeString(111972721, this.value);
             if (this.gasPrice.length)
                 writer.writeString(5271059, this.gasPrice);
-            if (this.gas != 0)
-                writer.writeFloat(102105, this.gas);
+            if (this.gas.length)
+                writer.writeString(102105, this.gas);
             if (this.input.length)
                 writer.writeString(100358090, this.input);
             if (!w)
@@ -314,7 +314,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
                         message.hash = reader.readString();
                         break;
                     case 105002991:
-                        message.nonce = reader.readFloat();
+                        message.nonce = reader.readString();
                         break;
                     case 335211324:
                         reader.readMessage(message.blockHash, () => message.blockHash = dependency_1.google.protobuf.Any.deserialize(reader));
@@ -338,7 +338,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
                         message.gasPrice = reader.readString();
                         break;
                     case 102105:
-                        message.gas = reader.readFloat();
+                        message.gas = reader.readString();
                         break;
                     case 100358090:
                         message.input = reader.readString();

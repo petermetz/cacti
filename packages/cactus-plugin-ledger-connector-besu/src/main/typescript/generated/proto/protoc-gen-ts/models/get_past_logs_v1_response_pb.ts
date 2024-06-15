@@ -4,13 +4,13 @@
  * source: models/get_past_logs_v1_response_pb.proto
  * git: https://github.com/thesayyn/protoc-gen-ts */
 import * as dependency_1 from "./../google/protobuf/any";
-import * as dependency_2 from "./evm_log_pb";
+import * as dependency_2 from "./get_past_logs_v1_response_logs_inner_pb";
 import * as pb_1 from "google-protobuf";
 export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
     export class GetPastLogsV1ResponsePB extends pb_1.Message {
         #one_of_decls: number[][] = [];
         constructor(data?: any[] | {
-            logs?: dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB[];
+            logs?: dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB[];
         }) {
             super();
             pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3327407], this.#one_of_decls);
@@ -21,26 +21,26 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
             }
         }
         get logs() {
-            return pb_1.Message.getRepeatedWrapperField(this, dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB, 3327407) as dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB[];
+            return pb_1.Message.getRepeatedWrapperField(this, dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB, 3327407) as dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB[];
         }
-        set logs(value: dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB[]) {
+        set logs(value: dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB[]) {
             pb_1.Message.setRepeatedWrapperField(this, 3327407, value);
         }
         static fromObject(data: {
-            logs?: ReturnType<typeof dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB.prototype.toObject>[];
+            logs?: ReturnType<typeof dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB.prototype.toObject>[];
         }): GetPastLogsV1ResponsePB {
             const message = new GetPastLogsV1ResponsePB({});
             if (data.logs != null) {
-                message.logs = data.logs.map(item => dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB.fromObject(item));
+                message.logs = data.logs.map(item => dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB.fromObject(item));
             }
             return message;
         }
         toObject() {
             const data: {
-                logs?: ReturnType<typeof dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB.prototype.toObject>[];
+                logs?: ReturnType<typeof dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB.prototype.toObject>[];
             } = {};
             if (this.logs != null) {
-                data.logs = this.logs.map((item: dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB) => item.toObject());
+                data.logs = this.logs.map((item: dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB) => item.toObject());
             }
             return data;
         }
@@ -49,7 +49,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
         serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
             const writer = w || new pb_1.BinaryWriter();
             if (this.logs.length)
-                writer.writeRepeatedMessage(3327407, this.logs, (item: dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB) => item.serialize(writer));
+                writer.writeRepeatedMessage(3327407, this.logs, (item: dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB) => item.serialize(writer));
             if (!w)
                 return writer.getResultBuffer();
         }
@@ -60,7 +60,7 @@ export namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
                     break;
                 switch (reader.getFieldNumber()) {
                     case 3327407:
-                        reader.readMessage(message.logs, () => pb_1.Message.addToRepeatedWrapperField(message, 3327407, dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB.deserialize(reader), dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.EvmLogPB));
+                        reader.readMessage(message.logs, () => pb_1.Message.addToRepeatedWrapperField(message, 3327407, dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB.deserialize(reader), dependency_2.org.hyperledger.cacti.plugin.ledger.connector.besu.GetPastLogsV1ResponseLogsInnerPB));
                         break;
                     default: reader.skipField();
                 }

@@ -41,7 +41,7 @@ message InvokeContractV1RequestPB {
 
   Web3BlockHeaderTimestampPB value = 111972721;
 
-  Web3BlockHeaderTimestampPB gas = 102105;
+  string gas = 102105;
 
   Web3BlockHeaderTimestampPB gasPrice = 5271059;
 

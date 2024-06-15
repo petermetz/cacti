@@ -1,7 +1,7 @@
 import "jest-extended";
 import { v4 as uuidv4 } from "uuid";
 import Web3 from "web3";
-import { Account } from "web3-core";
+import { Web3Account } from "web3-eth-accounts";
 
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
@@ -26,7 +26,7 @@ describe("PluginLedgerConnectorBesu", () => {
   let besuKeyPair: { privateKey: string };
   let firstHighNetWorthAccount: string;
   let keychainPlugin: PluginKeychainMemory;
-  let testEthAccount: Account;
+  let testEthAccount: Web3Account;
   let connector: PluginLedgerConnectorBesu;
 
   beforeAll(async () => {
@@ -57,7 +57,7 @@ describe("PluginLedgerConnectorBesu", () => {
     const rpcApiWsHost = await besuTestLedger.getRpcApiWsHost();
 
     const web3 = new Web3(rpcApiHttpHost);
-    testEthAccount = web3.eth.accounts.create(uuidv4());
+    testEthAccount = web3.eth.accounts.create();
 
     const keychainEntryKey = uuidv4();
     const keychainEntryValue = testEthAccount.privateKey;
@@ -106,7 +106,7 @@ describe("PluginLedgerConnectorBesu", () => {
     const balance = await web3.eth.getBalance(testEthAccount.address);
     expect(balance).toBeTruthy();
 
-    expect(parseInt(balance, 10)).toEqual(10e9);
+    expect(balance).toEqual(10e9);
   });
 
   it("deploys contract via .json file, verifies lock/unlock ops", async () => {
@@ -142,7 +142,7 @@ describe("PluginLedgerConnectorBesu", () => {
         secret: besuKeyPair.privateKey,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
     });
     expect(createRes).toBeTruthy();
     expect(createRes).toBeTrue();
@@ -158,7 +158,7 @@ describe("PluginLedgerConnectorBesu", () => {
         secret: besuKeyPair.privateKey,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
     });
 
     expect(lockRes).toBeTruthy();
@@ -175,7 +175,7 @@ describe("PluginLedgerConnectorBesu", () => {
         secret: besuKeyPair.privateKey,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
     });
 
     expect(unLockRes).toBeTruthy();
@@ -192,7 +192,7 @@ describe("PluginLedgerConnectorBesu", () => {
         secret: besuKeyPair.privateKey,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
     });
 
     expect(lockRes2).toBeTruthy();
@@ -209,7 +209,7 @@ describe("PluginLedgerConnectorBesu", () => {
         secret: besuKeyPair.privateKey,
         type: Web3SigningCredentialType.PrivateKeyHex,
       },
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
     });
 
     expect(deleteRes).toBeTruthy();

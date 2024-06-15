@@ -17,7 +17,7 @@ import "google/protobuf/any.proto";
 
 message Web3TransactionReceiptPB {
 
-  bool status = 355610639;
+  string status = 355610639;
 
   string transactionHash = 188901646;
 

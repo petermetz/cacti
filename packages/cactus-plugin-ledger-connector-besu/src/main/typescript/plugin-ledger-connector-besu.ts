@@ -10,14 +10,15 @@ import createHttpError from "http-errors";
 
 import OAS from "../json/openapi.json";
 
-import Web3 from "web3";
+import Web3, { ContractAbi } from "web3";
 
 import type { WebsocketProvider } from "web3-core";
 import Web3JsQuorum, { IWeb3Quorum } from "web3js-quorum";
 
 import { Contract, ContractSendMethod } from "web3-eth-contract";
-import type { TransactionReceipt } from "web3-eth";
+import { TransactionReceipt } from "web3-types";
 import {
+  EvmLog,
   GetBalanceV1Request,
   GetBalanceV1Response,
   Web3TransactionReceipt,
@@ -425,7 +426,7 @@ export class PluginLedgerConnectorBesu
     let contractInstance: Contract;
 
     if (req.keychainId != undefined) {
-      const networkId = await this.web3.eth.net.getId();
+      const networkId = (await this.web3.eth.net.getId()).toString(10);
       const keychainPlugin = this.pluginRegistry.findOneByKeychainId(
         req.keychainId,
       );
@@ -577,17 +578,17 @@ export class PluginLedgerConnectorBesu
         | Web3SigningCredentialCactusKeychainRef;
       const payload = (method.send as any).request();
       const { params } = payload;
-      const [transactionConfig] = params;
-      if (req.gas == undefined) {
-        req.gas = await this.web3.eth.estimateGas(transactionConfig);
+      const [txCfg] = params;
+      if (!req.gas) {
+        req.gas = (await this.web3.eth.estimateGas(txCfg)).toString(10);
       }
-      transactionConfig.from = web3SigningCredential.ethAccount;
-      transactionConfig.gas = req.gas;
-      transactionConfig.gasPrice = req.gasPrice;
-      transactionConfig.value = req.value;
-      transactionConfig.nonce = req.nonce;
+      txCfg.from = web3SigningCredential.ethAccount;
+      txCfg.gas = req.gas;
+      txCfg.gasPrice = req.gasPrice;
+      txCfg.value = req.value;
+      txCfg.nonce = req.nonce;
       const txReq: RunTransactionRequest = {
-        transactionConfig,
+        transactionConfig: txCfg,
         web3SigningCredential,
         consistencyStrategy: {
           blockConfirmations: 0,
@@ -836,7 +837,7 @@ export class PluginLedgerConnectorBesu
     let txReceipt;
     let timedOut = false;
     let tries = 0;
-    let confirmationCount = 0;
+    let confirmationCount = BigInt(0);
     const timeoutMs = consistencyStrategy.timeoutMs || Number.MAX_SAFE_INTEGER;
     const startedAt = new Date();
 
@@ -859,7 +860,8 @@ export class PluginLedgerConnectorBesu
       }
 
       const latestBlockNo = await this.web3.eth.getBlockNumber();
-      confirmationCount = latestBlockNo - txReceipt.blockNumber;
+      const x = BigInt(txReceipt.blockNumber);
+      confirmationCount = latestBlockNo - x;
     } while (confirmationCount >= consistencyStrategy.blockConfirmations);
 
     if (!txReceipt) {
@@ -900,7 +902,7 @@ export class PluginLedgerConnectorBesu
       throw new createHttpError[400](errorMessage);
     }
 
-    const networkId = await this.web3.eth.net.getId();
+    const networkId = (await this.web3.eth.net.getId()).toString(10);
 
     const tmpContract = new this.web3.eth.Contract(req.contractAbi);
     const deployment = tmpContract.deploy({
@@ -1020,10 +1022,11 @@ export class PluginLedgerConnectorBesu
   public async getBalance(
     request: GetBalanceV1Request,
   ): Promise<GetBalanceV1Response> {
-    const balance = await this.web3.eth.getBalance(
+    const balanceBigInt = await this.web3.eth.getBalance(
       request.address,
       request.defaultBlock,
     );
+    const balance = balanceBigInt.toString(10);
     return { balance };
   }
 
@@ -1040,7 +1043,32 @@ export class PluginLedgerConnectorBesu
     request: GetPastLogsV1Request,
   ): Promise<GetPastLogsV1Response> {
     const logs = await this.web3.eth.getPastLogs(request);
-    return { logs };
+    const mapped = logs.map((l) => {
+      if (typeof l === "string") {
+        return l;
+      }
+      const evmLog: EvmLog = {
+        address: l.address,
+        blockHash: l.blockHash,
+        blockNumber:
+          typeof l.blockNumber === "bigint"
+            ? l.blockNumber.toString(10)
+            : l.blockNumber,
+        data: l.data,
+        id: l.id,
+        logIndex:
+          typeof l.logIndex === "bigint" ? l.logIndex.toString(10) : l.logIndex,
+        removed: l.removed,
+        topics: l.topics,
+        transactionHash: l.transactionHash,
+        transactionIndex:
+          typeof l.transactionIndex === "bigint"
+            ? l.transactionIndex.toString(10)
+            : l.transactionIndex,
+      };
+      return evmLog;
+    });
+    return { logs: mapped };
   }
 
   public async getBlock(
@@ -1057,7 +1085,7 @@ export class PluginLedgerConnectorBesu
   ): Promise<GetBesuRecordV1Response> {
     const fnTag = `${this.className}#getBesuRecord()`;
     //////////////////////////////////////////////
-    let abi: AbiItem[] | AbiItem = [];
+    let abi: ContractAbi = [];
     const resp: GetBesuRecordV1Response = {};
     const txHash = request.transactionHash;
 

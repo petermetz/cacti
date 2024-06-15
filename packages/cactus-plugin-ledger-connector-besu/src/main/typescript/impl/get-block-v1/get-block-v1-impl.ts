@@ -8,10 +8,11 @@ import {
 } from "@hyperledger/cactus-common";
 
 import { EvmBlock } from "../../public-api";
+import { BlockNumberOrTag } from "web3-types";
 
 export async function getBlockV1Impl(
   ctx: { readonly web3: Web3; readonly logLevel: LogLevelDesc },
-  blockHashOrBlockNumber: BlockNumber,
+  blockHashOrBlockNumber: BlockNumberOrTag,
 ): Promise<EvmBlock> {
   const log = LoggerProvider.getOrCreate({
     label: "getBlockV1Impl()",
