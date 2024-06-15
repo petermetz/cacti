@@ -152,14 +152,14 @@ test(testCase, async (t: Test) => {
     HelloWorldContractJson.abi as never,
   );
   const setNameAbi = contract["_jsonInterface"].find(
-    (e) => e.name === "setName",
+    (e: { readonly name: string }) => e.name === "setName",
   ) as AbiItem & { signature: string; inputs: AbiItem[] };
   t.ok(setNameAbi, "setNameAbi truthy OK");
   t.ok(setNameAbi.inputs, "setNameAbi.inputs truthy OK");
   t.ok(setNameAbi.signature, "setNameAbi.signature truthy OK");
 
   const getNameAbi = contract["_jsonInterface"].find(
-    (e) => e.name === "getName",
+    (e: { readonly name: string }) => e.name === "getName",
   ) as AbiItem & { signature: string; inputs: AbiItem[] };
   t.ok(getNameAbi, "getNameAbi truthy OK");
   t.ok(getNameAbi.inputs, "getNameAbi.inputs truthy OK");

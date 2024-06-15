@@ -412,7 +412,7 @@ test(testCase, async (t: Test) => {
       contractAbi: HelloWorldContractJson.abi,
       contractAddress: contractDeployReceipt.contractAddress,
       invocationType: EthContractInvocationType.Call,
-      gas: 3000000,
+      gas: BigInt(3000000).toString(10),
       methodName: "getName",
       params: [],
       signingCredential: {
@@ -434,7 +434,7 @@ test(testCase, async (t: Test) => {
       contractAbi: HelloWorldContractJson.abi,
       contractAddress: contractDeployReceipt.contractAddress,
       invocationType: EthContractInvocationType.Send,
-      gas: 3000000,
+      gas: BigInt(3000000).toString(10),
       methodName: "setName",
       params: ["Doctor Cactus"],
       privateTransactionConfig: {
@@ -459,7 +459,7 @@ test(testCase, async (t: Test) => {
       contractAbi: HelloWorldContractJson.abi,
       contractAddress: contractDeployReceipt.contractAddress,
       invocationType: EthContractInvocationType.Call,
-      gas: 3000000,
+      gas: BigInt(3000000).toString(10),
       methodName: "getName",
       params: [],
       privateTransactionConfig: {
@@ -488,7 +488,7 @@ test(testCase, async (t: Test) => {
       contractAbi: HelloWorldContractJson.abi,
       contractAddress: contractDeployReceipt.contractAddress,
       invocationType: EthContractInvocationType.Call,
-      gas: 3000000,
+      gas: BigInt(3000000).toString(10),
       methodName: "getName",
       params: [],
       privateTransactionConfig: {
@@ -515,7 +515,7 @@ test(testCase, async (t: Test) => {
       contractAbi: HelloWorldContractJson.abi,
       contractAddress: contractDeployReceipt.contractAddress,
       invocationType: EthContractInvocationType.Call,
-      gas: 3000000,
+      gas: BigInt(3000000).toString(10),
       methodName: "getName",
       params: [],
       privateTransactionConfig: {

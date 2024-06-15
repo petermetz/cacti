@@ -55,21 +55,24 @@ export class BesuGrpcSvcStreams extends besu_grpc_svc_streams.org.hyperledger
     this.log.debug(`Created instance of ${this.className} OK`);
   }
 
-  WatchBlocksV1(
+  async WatchBlocksV1(
     call: ServerDuplexStream<
       watch_blocks_v1_request_pb.org.hyperledger.cacti.plugin.ledger.connector.besu.WatchBlocksV1RequestPB,
       watch_blocks_v1_progress_pb.org.hyperledger.cacti.plugin.ledger.connector.besu.WatchBlocksV1ProgressPB
     >,
-  ): void {
+  ): Promise<void> {
     this.log.debug("WatchBlocksV1::MAIN_FN=");
 
     const EVENT = "newBlockHeaders" as const;
 
-    const sub = this.web3.eth.subscribe(EVENT, (ex: Error, bh: BlockHeader) => {
-      this.log.debug("subscribe_newBlockHeaders::error=%o, bh=%o", ex, bh);
-      const chunk = new WatchBlocksV1ProgressPB();
-      call.write(chunk);
-    });
+    const sub = await this.web3.eth.subscribe(
+      EVENT,
+      (ex: Error, bh: BlockHeader) => {
+        this.log.debug("subscribe_newBlockHeaders::error=%o, bh=%o", ex, bh);
+        const chunk = new WatchBlocksV1ProgressPB();
+        call.write(chunk);
+      },
+    );
 
     const WatchBlocksV1PB =
       watch_blocks_v1_pb.org.hyperledger.cacti.plugin.ledger.connector.besu
@@ -86,9 +89,10 @@ export class BesuGrpcSvcStreams extends besu_grpc_svc_streams.org.hyperledger
       }
     });
 
-    call.once("close", () => {
-      this.log.debug("subscribe_newBlockHeaders::event=CLOSE");
-      sub.unsubscribe();
+    call.once("close", async () => {
+      this.log.debug("subscribe_newBlockHeaders::event=CLOSE unsubscribing...");
+      await sub.unsubscribe();
+      this.log.debug("subscribe_newBlockHeaders::event=CLOSE unsubscribed OK");
     });
   }
 }

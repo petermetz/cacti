@@ -14,10 +14,10 @@ package org.hyperledger.cacti.plugin.ledger.connector.besu;
 
 import "google/protobuf/any.proto";
 
-import "models/evm_log_pb.proto";
+import "models/get_past_logs_v1_response_logs_inner_pb.proto";
 
 message GetPastLogsV1ResponsePB {
 
-  repeated EvmLogPB logs = 3327407;
+  repeated GetPastLogsV1ResponseLogsInnerPB logs = 3327407;
 
 }

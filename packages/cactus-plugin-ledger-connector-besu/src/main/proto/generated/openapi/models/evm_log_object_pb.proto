@@ -15,26 +15,22 @@ package org.hyperledger.cacti.plugin.ledger.connector.besu;
 import "google/protobuf/any.proto";
 
 
-message EvmLogPB {
-
-  string id = 3355;
-
-  bool removed = 18094178;
-
-  string logIndex = 382599153;
-
-  string transactionIndex = 488538260;
-
-  string transactionHash = 188901646;
-
-  string blockHash = 335211324;
-
-  string blockNumber = 205598263;
+message EvmLogObjectPB {
 
   string address = 73950222;
 
   string data = 3076010;
 
+  string blockHash = 335211324;
+
+  string transactionHash = 188901646;
+
   repeated string topics = 331163357;
+
+  string logIndex = 382599153;
+
+  string transactionIndex = 488538260;
+
+  string blockNumber = 205598263;
 
 }

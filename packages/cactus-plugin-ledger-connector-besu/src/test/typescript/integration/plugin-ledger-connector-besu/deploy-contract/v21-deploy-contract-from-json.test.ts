@@ -71,7 +71,7 @@ test(testCase, async (t: Test) => {
   };
 
   const web3 = new Web3(rpcApiHttpHost);
-  const testEthAccount = web3.eth.accounts.create(uuidv4());
+  const testEthAccount = web3.eth.accounts.create();
 
   const keychainEntryKey = uuidv4();
   const keychainEntryValue = testEthAccount.privateKey;
@@ -168,7 +168,7 @@ test(testCase, async (t: Test) => {
 
   const balance = await web3.eth.getBalance(testEthAccount.address);
   t.ok(balance, "Retrieved balance of test account OK");
-  t.equals(parseInt(balance, 10), 10e9, "Balance of test account is OK");
+  t.equals(balance, 10e9, "Balance of test account is OK");
 
   let contractAddress: string;
 
@@ -223,7 +223,7 @@ test(testCase, async (t: Test) => {
   });
 
   test("invoke Web3SigningCredentialType.NONE", async (t2: Test) => {
-    const testEthAccount2 = web3.eth.accounts.create(uuidv4());
+    const testEthAccount2 = web3.eth.accounts.create();
 
     const { rawTransaction } = await web3.eth.accounts.signTransaction(
       {
@@ -251,7 +251,7 @@ test(testCase, async (t: Test) => {
 
     const balance2 = await web3.eth.getBalance(testEthAccount2.address);
     t2.ok(balance2, "Retrieved balance of test account 2 OK");
-    t2.equals(parseInt(balance2, 10), 10e6, "Balance of test account2 is OK");
+    t2.equals(balance2, 10e6, "Balance of test account2 is OK");
     t2.end();
   });
 
@@ -281,7 +281,7 @@ test(testCase, async (t: Test) => {
         invocationType: EthContractInvocationType.Send,
         methodName: "setName",
         params: [newName],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential: {
           ethAccount: testEthAccount.address,
           secret: testEthAccount.privateKey,
@@ -304,7 +304,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -320,7 +320,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Send,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -336,7 +336,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Send,
       methodName: "deposit",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -353,7 +353,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getNameByIndex",
       params: [0],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -386,7 +386,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Send,
       methodName: "setName",
       params: [newName],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
       nonce: 4,
     });
@@ -400,7 +400,7 @@ test(testCase, async (t: Test) => {
         invocationType: EthContractInvocationType.Send,
         methodName: "setName",
         params: [newName],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential,
         nonce: 4,
       });
@@ -420,7 +420,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
     });
     t2.equal(getNameOut, newName, `getName() output reflects the update OK`);
@@ -432,7 +432,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Send,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
     });
     t2.ok(getNameOut2, "getName() invocation #2 output is truthy OK");
@@ -444,7 +444,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Send,
       methodName: "deposit",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
       value: 10,
     });
@@ -457,7 +457,7 @@ test(testCase, async (t: Test) => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getNameByIndex",
       params: [1],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential,
     });
     t2.equal(

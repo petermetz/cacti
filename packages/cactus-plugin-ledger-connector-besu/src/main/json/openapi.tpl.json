@@ -106,7 +106,7 @@
             "type": "string"
           },
           "nonce": {
-            "type": "number"
+            "type": "string"
           },
           "blockHash": {},
           "blockNumber": {},
@@ -122,7 +122,7 @@
             "type": "string"
           },
           "gas": {
-            "type": "number"
+            "type": "string"
           },
           "input": {
             "type": "string"
@@ -155,7 +155,14 @@
           "logs": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/EvmLog"
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/EvmLog"
+                }
+              ]
             }
           }
         }
@@ -175,27 +182,32 @@
       },
       "EvmLog": {
         "type": "object",
-        "required": [
-          "address",
-          "data",
-          "blockHash",
-          "transactionHash",
-          "topics",
-          "logIndex",
-          "transactionIndex",
-          "blockNumber"
-        ],
         "properties": {
-          "address": {
+          "id": {
             "type": "string"
           },
-          "data": {
+          "removed": {
+            "type": "boolean"
+          },
+          "logIndex": {
+            "type": "string"
+          },
+          "transactionIndex": {
+            "type": "string"
+          },
+          "transactionHash": {
             "type": "string"
           },
           "blockHash": {
             "type": "string"
           },
-          "transactionHash": {
+          "blockNumber": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "data": {
             "type": "string"
           },
           "topics": {
@@ -203,15 +215,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "logIndex": {
-            "type": "number"
-          },
-          "transactionIndex": {
-            "type": "number"
-          },
-          "blockNumber": {
-            "type": "number"
           }
         }
       },
@@ -529,21 +532,10 @@
             "nullable": false
           },
           "from": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
+            "type": "string"
           },
           "to": {
-            "oneOf": [
-              {
-                "type": "string"
-              }
-            ]
+            "type": "string"
           },
           "value": {
             "oneOf": [
@@ -618,8 +610,9 @@
         "additionalProperties": true,
         "properties": {
           "status": {
-            "type": "boolean",
-            "nullable": false
+            "type": "string",
+            "nullable": false,
+            "format": "bigint"
           },
           "transactionHash": {
             "type": "string",
@@ -829,14 +822,7 @@
             ]
           },
           "gas": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
+            "type": "string"
           },
           "gasPrice": {
             "oneOf": [

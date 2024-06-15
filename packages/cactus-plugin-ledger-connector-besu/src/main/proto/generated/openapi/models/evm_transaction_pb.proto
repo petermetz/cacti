@@ -19,7 +19,7 @@ message EvmTransactionPB {
 
   string hash = 3195150;
 
-  float nonce = 105002991;
+  string nonce = 105002991;
 
   optional google.protobuf.Any blockHash = 335211324;
 
@@ -35,7 +35,7 @@ message EvmTransactionPB {
 
   string gasPrice = 5271059;
 
-  float gas = 102105;
+  string gas = 102105;
 
   string input = 100358090;
 

@@ -58,16 +58,16 @@ export interface BesuTransactionConfig {
     'rawTransaction'?: string;
     /**
      * 
-     * @type {Web3BlockHeaderTimestamp}
+     * @type {string}
      * @memberof BesuTransactionConfig
      */
-    'from'?: Web3BlockHeaderTimestamp;
+    'from'?: string;
     /**
      * 
-     * @type {BesuTransactionConfigTo}
+     * @type {string}
      * @memberof BesuTransactionConfig
      */
-    'to'?: BesuTransactionConfigTo;
+    'to'?: string;
     /**
      * 
      * @type {Web3BlockHeaderTimestamp}
@@ -94,16 +94,16 @@ export interface BesuTransactionConfig {
     'nonce'?: number;
     /**
      * 
-     * @type {BesuTransactionConfigTo}
+     * @type {BesuTransactionConfigData}
      * @memberof BesuTransactionConfig
      */
-    'data'?: BesuTransactionConfigTo;
+    'data'?: BesuTransactionConfigData;
 }
 /**
- * @type BesuTransactionConfigTo
+ * @type BesuTransactionConfigData
  * @export
  */
-export type BesuTransactionConfigTo = string;
+export type BesuTransactionConfigData = string;
 
 /**
  * 
@@ -352,49 +352,61 @@ export interface EvmLog {
      * @type {string}
      * @memberof EvmLog
      */
-    'address': string;
+    'id'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof EvmLog
+     */
+    'removed'?: boolean;
     /**
      * 
      * @type {string}
      * @memberof EvmLog
      */
-    'data': string;
+    'logIndex'?: string;
     /**
      * 
      * @type {string}
      * @memberof EvmLog
      */
-    'blockHash': string;
+    'transactionIndex'?: string;
     /**
      * 
      * @type {string}
      * @memberof EvmLog
      */
-    'transactionHash': string;
+    'transactionHash'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmLog
+     */
+    'blockHash'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmLog
+     */
+    'blockNumber'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmLog
+     */
+    'address'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvmLog
+     */
+    'data'?: string;
     /**
      * 
      * @type {Array<string>}
      * @memberof EvmLog
      */
-    'topics': Array<string>;
-    /**
-     * 
-     * @type {number}
-     * @memberof EvmLog
-     */
-    'logIndex': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof EvmLog
-     */
-    'transactionIndex': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof EvmLog
-     */
-    'blockNumber': number;
+    'topics'?: Array<string>;
 }
 /**
  * 
@@ -410,10 +422,10 @@ export interface EvmTransaction {
     'hash'?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof EvmTransaction
      */
-    'nonce'?: number;
+    'nonce'?: string;
     /**
      * 
      * @type {any}
@@ -458,10 +470,10 @@ export interface EvmTransaction {
     'gasPrice'?: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof EvmTransaction
      */
-    'gas'?: number;
+    'gas'?: string;
     /**
      * 
      * @type {string}
@@ -616,11 +628,17 @@ export interface GetPastLogsV1Request {
 export interface GetPastLogsV1Response {
     /**
      * 
-     * @type {Array<EvmLog>}
+     * @type {Array<GetPastLogsV1ResponseLogsInner>}
      * @memberof GetPastLogsV1Response
      */
-    'logs': Array<EvmLog>;
+    'logs': Array<GetPastLogsV1ResponseLogsInner>;
 }
+/**
+ * @type GetPastLogsV1ResponseLogsInner
+ * @export
+ */
+export type GetPastLogsV1ResponseLogsInner = EvmLog | string;
+
 /**
  * 
  * @export
@@ -703,10 +721,10 @@ export interface InvokeContractV1Request {
     'value'?: Web3BlockHeaderTimestamp;
     /**
      * 
-     * @type {Web3BlockHeaderTimestamp}
+     * @type {string}
      * @memberof InvokeContractV1Request
      */
-    'gas'?: Web3BlockHeaderTimestamp;
+    'gas'?: string;
     /**
      * 
      * @type {Web3BlockHeaderTimestamp}
@@ -1242,10 +1260,10 @@ export interface Web3TransactionReceipt {
 
     /**
      * 
-     * @type {boolean}
+     * @type {string}
      * @memberof Web3TransactionReceipt
      */
-    'status': boolean;
+    'status': string;
     /**
      * 
      * @type {string}

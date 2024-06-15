@@ -6,20 +6,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import http from "http";
 import { Server as SocketIoServer } from "socket.io";
-import { Account } from "web3-core";
+import { Web3Account } from "web3-eth-accounts";
 
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import {
-  EthContractInvocationType,
-  Web3SigningCredentialType,
-  PluginLedgerConnectorBesu,
-  PluginFactoryLedgerConnector,
-  ReceiptType,
-  InvokeContractV1Request,
-  BesuApiClientOptions,
-  BesuApiClient,
-  GetBesuRecordV1Request,
-} from "../../../../../main/typescript/public-api";
 import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
 import {
   BesuTestLedger,
@@ -31,8 +20,20 @@ import {
   Servers,
   LoggerProvider,
 } from "@hyperledger/cactus-common";
-import HelloWorldContractJson from "../../../../solidity/hello-world-contract/HelloWorld.json";
+
 import { Constants, PluginImportType } from "@hyperledger/cactus-core-api";
+import HelloWorldContractJson from "../../../../solidity/hello-world-contract/HelloWorld.json";
+import {
+  EthContractInvocationType,
+  Web3SigningCredentialType,
+  PluginLedgerConnectorBesu,
+  PluginFactoryLedgerConnector,
+  ReceiptType,
+  InvokeContractV1Request,
+  BesuApiClientOptions,
+  BesuApiClient,
+  GetBesuRecordV1Request,
+} from "../../../../../main/typescript/public-api";
 
 const logLevel: LogLevelDesc = "INFO";
 
@@ -49,7 +50,7 @@ describe("PluginLedgerConnectorBesu", () => {
   };
   let server: http.Server;
   let connector: PluginLedgerConnectorBesu;
-  let testEthAccount: Account;
+  let testEthAccount: Web3Account;
   let web3: Web3;
   let keychainPlugin: PluginKeychainMemory;
   let contractAddress: string;
@@ -89,7 +90,7 @@ describe("PluginLedgerConnectorBesu", () => {
     };
 
     web3 = new Web3(rpcApiHttpHost);
-    testEthAccount = web3.eth.accounts.create(uuidv4());
+    testEthAccount = web3.eth.accounts.create();
 
     const keychainEntryKey = uuidv4();
     const keychainEntryValue = testEthAccount.privateKey;
@@ -171,7 +172,7 @@ describe("PluginLedgerConnectorBesu", () => {
 
     const balance = await web3.eth.getBalance(testEthAccount.address);
     expect(balance).toBeTruthy();
-    expect(parseInt(balance, 10)).toEqual(10e9);
+    expect(balance).toEqual(10e9);
   });
 
   it("deploys contract", async () => {
@@ -215,7 +216,7 @@ describe("PluginLedgerConnectorBesu", () => {
   });
 
   test("getBesuRecord test 1", async () => {
-    const testEthAccount2 = web3.eth.accounts.create(uuidv4());
+    const testEthAccount2 = web3.eth.accounts.create();
 
     const { rawTransaction } = await web3.eth.accounts.signTransaction(
       {
@@ -273,7 +274,7 @@ describe("PluginLedgerConnectorBesu", () => {
         invocationType: EthContractInvocationType.Send,
         methodName: "setName",
         params: [newName],
-        gas: 1000000,
+        gas: BigInt(1000000).toString(10),
         signingCredential: {
           ethAccount: testEthAccount.address,
           secret: testEthAccount.privateKey,
@@ -300,7 +301,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getName",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -319,7 +320,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Send,
       methodName: "deposit",
       params: [],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,
@@ -336,7 +337,7 @@ describe("PluginLedgerConnectorBesu", () => {
       invocationType: EthContractInvocationType.Call,
       methodName: "getNameByIndex",
       params: [0],
-      gas: 1000000,
+      gas: BigInt(1000000).toString(10),
       signingCredential: {
         ethAccount: testEthAccount.address,
         secret: testEthAccount.privateKey,

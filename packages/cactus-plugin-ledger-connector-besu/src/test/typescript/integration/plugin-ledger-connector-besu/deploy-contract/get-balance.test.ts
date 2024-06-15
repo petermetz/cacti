@@ -1,22 +1,24 @@
 import { v4 as uuidv4 } from "uuid";
 import "jest-extended";
-import { Account } from "web3-core";
+import Web3 from "web3";
+import { Web3Account } from "web3-eth-accounts";
+
 import { PluginRegistry } from "@hyperledger/cactus-core";
+import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
+import { BesuTestLedger } from "@hyperledger/cactus-test-tooling";
+import { LogLevelDesc } from "@hyperledger/cactus-common";
+import { PluginImportType } from "@hyperledger/cactus-core-api";
+
+import HelloWorldContractJson from "../../../../solidity/hello-world-contract/HelloWorld.json";
 import {
   PluginLedgerConnectorBesu,
   PluginFactoryLedgerConnector,
   GetBalanceV1Request,
 } from "../../../../../main/typescript/public-api";
-import { PluginKeychainMemory } from "@hyperledger/cactus-plugin-keychain-memory";
-import { BesuTestLedger } from "@hyperledger/cactus-test-tooling";
-import { LogLevelDesc } from "@hyperledger/cactus-common";
-import HelloWorldContractJson from "../../../../solidity/hello-world-contract/HelloWorld.json";
-import Web3 from "web3";
-import { PluginImportType } from "@hyperledger/cactus-core-api";
 
 const testcase = "can get balance of an account";
 describe(testcase, () => {
-  const logLevel: LogLevelDesc = "TRACE";
+  const logLevel: LogLevelDesc = "INFO";
   const besuTestLedger = new BesuTestLedger();
 
   let rpcApiHttpHost: string,
@@ -24,7 +26,7 @@ describe(testcase, () => {
     web3: Web3,
     keychainPlugin: PluginKeychainMemory,
     firstHighNetWorthAccount: string,
-    testEthAccount: Account,
+    testEthAccount: Web3Account,
     keychainEntryKey: string,
     keychainEntryValue: string;
 
@@ -36,7 +38,7 @@ describe(testcase, () => {
     await besuTestLedger.start();
     web3 = new Web3(rpcApiHttpHost);
     firstHighNetWorthAccount = besuTestLedger.getGenesisAccountPubKey();
-    testEthAccount = web3.eth.accounts.create(uuidv4());
+    testEthAccount = web3.eth.accounts.create();
 
     keychainEntryKey = uuidv4();
     keychainEntryValue = testEthAccount.privateKey;
