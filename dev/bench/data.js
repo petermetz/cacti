@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1718728664851,
+  "lastUpdate": 1718729506324,
   "repoUrl": "https://github.com/petermetz/cacti",
   "entries": {
     "Benchmark": [
@@ -390,6 +390,37 @@ window.BENCHMARK_DATA = {
             "range": "±1.59%",
             "unit": "ops/sec",
             "extra": "181 samples"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "peter.somogyvari@accenture.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "committer": {
+            "email": "petermetz@users.noreply.github.com",
+            "name": "Peter Somogyvari",
+            "username": "petermetz"
+          },
+          "distinct": true,
+          "id": "fff9e8647ca16458b8b0a4654036aff95b855fc0",
+          "message": "chore(release): publish v2.0.0-rc.1\n\nSigned-off-by: Peter Somogyvari <peter.somogyvari@accenture.com>\nSigned-off-by: Sandeep Nishad <sandeep.nishad1@ibm.com>",
+          "timestamp": "2024-06-18T09:19:03-07:00",
+          "tree_id": "8e1100f6bfbb07df1402e719de51a82d68ee99f5",
+          "url": "https://github.com/petermetz/cacti/commit/fff9e8647ca16458b8b0a4654036aff95b855fc0"
+        },
+        "date": 1718729503624,
+        "tool": "benchmarkjs",
+        "benches": [
+          {
+            "name": "plugin-ledger-connector-besu_HTTP_GET_getOpenApiSpecV1",
+            "value": 712,
+            "range": "±3.14%",
+            "unit": "ops/sec",
+            "extra": "178 samples"
           }
         ]
       }
