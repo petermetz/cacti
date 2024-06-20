@@ -1,6 +1,6 @@
 {
   "name": "@hyperledger/cacti-example-harmonia-plugin",
-  "version": "2.0.0-alpha.2",
+  "version": "2.0.0-rc.1",
   "description": "An example business logic plugin implementation for Cacti",
   "keywords": [
     "Hyperledger",
@@ -55,13 +55,13 @@
     "webpack:dev:web": "webpack --env=dev --target=web --config ../../webpack.config.js"
   },
   "dependencies": {
-    "@hyperledger/cactus-api-client": "2.0.0-alpha.2",
-    "@hyperledger/cactus-common": "2.0.0-alpha.2",
-    "@hyperledger/cactus-core": "2.0.0-alpha.2",
-    "@hyperledger/cactus-core-api": "2.0.0-alpha.2",
-    "@hyperledger/cactus-plugin-keychain-memory": "2.0.0-alpha.2",
-    "@hyperledger/cactus-plugin-ledger-connector-besu": "2.0.0-alpha.2",
-    "@hyperledger/cactus-plugin-ledger-connector-corda": "2.0.0-alpha.2",
+    "@hyperledger/cactus-api-client": "2.0.0-rc.1",
+    "@hyperledger/cactus-common": "2.0.0-rc.1",
+    "@hyperledger/cactus-core": "2.0.0-rc.1",
+    "@hyperledger/cactus-core-api": "2.0.0-rc.1",
+    "@hyperledger/cactus-plugin-keychain-memory": "2.0.0-rc.1",
+    "@hyperledger/cactus-plugin-ledger-connector-besu": "2.0.0-rc.1",
+    "@hyperledger/cactus-plugin-ledger-connector-corda": "2.0.0-rc.1",
     "async-exit-hook": "2.0.1",
     "axios": "1.6.1",
     "express": "4.18.2",

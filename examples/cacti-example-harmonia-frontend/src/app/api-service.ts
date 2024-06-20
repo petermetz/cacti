@@ -17,7 +17,7 @@ import {
   Harmonia_R3_Swap_common_BASE64,
   Harmonia_R3_Swap_contracts_BASE64,
   Harmonia_R3_Swap_workflows_BASE64,
-} from "src/resources/large-constants";
+} from "../resources/large-constants";
 import { Logger, LoggerProvider } from "@hyperledger/cactus-common";
 
 @Injectable({ providedIn: "root" })

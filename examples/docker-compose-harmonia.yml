@@ -7,7 +7,9 @@ services:
   #   build: ./cacti-example-harmonia-frontend/
 
   cacti-api-server:
-    image: ghcr.io/hyperledger/cactus-cmd-api-server:v2.0.0-rc.1
+    build:
+      context: ../
+      dockerfile: ./packages/cactus-cmd-api-server/Dockerfile
     network_mode: host
     depends_on:
       - ledger-besu
@@ -25,12 +27,14 @@ services:
     - 'PLUGINS=[{"packageName": "@hyperledger/cactus-plugin-ledger-connector-besu", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": {"rpcApiHttpHost": "http://127.0.0.1:8545", "rpcApiWsHost": "ws://127.0.0.1:8546", "instanceId": "some-unique-besu-connector-instance-id"}}, {"packageName": "@hyperledger/cactus-plugin-keychain-memory", "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",  "options": { "version": "2.0.0-dev.94", "keychainId": "keychain-id-1", "instanceId": "keychain-instance-id-1"}}]'
 
   connector-corda-jvm:
-    image: cccs
+    build:
+      context: ../packages/cactus-plugin-ledger-connector-corda/src/main-server/
+      dockerfile: Dockerfile
     network_mode: host
     depends_on: 
       - ledger-corda
     environment:
-      - SPRING_APPLICATION_JSON={"logging":{"level":{"root":"INFO","net.corda":"INFO","org.hyperledger.cactus":"DEBUG"}},"cactus":{"corda":{"node":{"host":"127.0.0.1"},"rpc":{"port":10008,"username":"user1","password":"password"}}}}
+      - SPRING_APPLICATION_JSON={"logging":{"level":{"root":"INFO","net.corda":"INFO","org.hyperledger.cactus":"DEBUG"}},"cactus":{"corda":{"node":{"host":"127.0.0.1"},"rpc":{"port":10006,"username":"user1","password":"test"}}}}
     # ports:
       # - 8080:8080
 
@@ -42,7 +46,9 @@ services:
       - 8546:8546 # RPC - WS
 
   ledger-corda:
-    image: ghcr.io/hyperledger/cactus-corda-4-8-all-in-one-obligation:2023-11-03-86d6b38
+    build:
+      context: ../tools/docker/corda-all-in-one/corda-v4_12/
+      dockerfile: Dockerfile
     network_mode: host
     privileged: true
     # ports:

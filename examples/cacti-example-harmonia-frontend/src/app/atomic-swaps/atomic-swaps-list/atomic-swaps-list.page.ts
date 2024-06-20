@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 
 import { Logger, LoggerProvider } from "@hyperledger/cactus-common";
-import { ApiService } from "src/app/api-service";
+import { ApiService } from "../../api-service";
 
 @Component({
   selector: "app-atomic-swaps-list",
