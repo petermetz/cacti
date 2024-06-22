@@ -37,9 +37,12 @@ test("BEFORE " + testCase, async (t: Test) => {
 
 test(testCase, async (t: Test) => {
   const ledger = new CordaTestLedger({
-    imageName: "ghcr.io/hyperledger/cactus-corda-4-8-all-in-one-flowdb",
-    imageVersion: "2021-11-23--feat-1493",
+    // imageName: "ghcr.io/hyperledger/cactus-corda-4-8-all-in-one-flowdb",
+    // imageVersion: "2021-11-23--feat-1493",
+    imageName: "caio48-flowdb",
+    imageVersion: "latest",
     logLevel,
+    rpcPortA: 10006, // @see: ./tools/docker/corda-all-in-one/corda-v4_8-flowdb/build.gradle
   });
   t.ok(ledger, "CordaTestLedger v4.8 instantaited OK");
 
@@ -48,7 +51,7 @@ test(testCase, async (t: Test) => {
     await ledger.destroy();
     await pruneDockerAllIfGithubAction({ logLevel });
   });
-  const ledgerContainer = await ledger.start();
+  const ledgerContainer = await ledger.start(true);
   t.ok(
     ledgerContainer,
     "CordaTestLedger v4.8 container truthy post-start() OK",
@@ -66,12 +69,12 @@ test(testCase, async (t: Test) => {
   t.comment(`Internal IP (based on default gateway): ${internalIp}`);
 
   const partyARpcUsername = "user1";
-  const partyARpcPassword = "password";
+  const partyARpcPassword = "test";
   const springAppConfig = {
     logging: {
       level: {
-        root: "INFO",
-        "net.corda": "INFO",
+        root: "WARN",
+        "net.corda": "DEBUG",
         "org.hyperledger.cactus": "DEBUG",
       },
     },
@@ -92,8 +95,10 @@ test(testCase, async (t: Test) => {
 
   const connector = new CordaConnectorContainer({
     logLevel,
-    imageName: "ghcr.io/hyperledger/cactus-connector-corda-server",
-    imageVersion: "2021-11-23--feat-1493",
+    // imageName: "ghcr.io/hyperledger/cactus-connector-corda-server",
+    // imageVersion: "2022-05-26-0ff7407--pr-2021",
+    imageName: "cccs",
+    imageVersion: "latest",
     envVars: [envVarSpringAppJson],
   });
   t.ok(CordaConnectorContainer, "CordaConnectorContainer instantiated OK");
@@ -106,7 +111,7 @@ test(testCase, async (t: Test) => {
     }
   });
 
-  const connectorContainer = await connector.start();
+  const connectorContainer = await connector.start(true);
   t.ok(connectorContainer, "CordaConnectorContainer started OK");
 
   await connector.logDebugPorts();
