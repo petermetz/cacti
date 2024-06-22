@@ -37,14 +37,14 @@ const logLevel: LogLevelDesc = "TRACE";
 
 // Skipping this until we figure out how to make the test case stable
 // https://github.com/hyperledger/cactus/issues/1598
-test.skip("Tests are passing on the JVM side", async (t: Test) => {
+test("Tests are passing on the JVM side", async (t: Test) => {
   test.onFailure(async () => {
     await Containers.logDiagnostics({ logLevel });
   });
 
   const ledger = new CordaTestLedger({
     imageName: "ghcr.io/hyperledger/cactus-corda-4-8-all-in-one-obligation",
-    imageVersion: "2021-08-31--feat-889",
+    imageVersion: "2023-11-03-86d6b38",
     logLevel,
   });
   t.ok(ledger, "CordaTestLedger v4.8 instantaited OK");
@@ -111,7 +111,7 @@ test.skip("Tests are passing on the JVM side", async (t: Test) => {
   const connector = new CordaConnectorContainer({
     logLevel,
     imageName: "ghcr.io/hyperledger/cactus-connector-corda-server",
-    imageVersion: "2021-11-23--feat-1493",
+    imageVersion: "2023-08-25-ea5522b",
     envVars: [envVarSpringAppJson],
   });
   t.ok(CordaConnectorContainer, "CordaConnectorContainer instantiated OK");

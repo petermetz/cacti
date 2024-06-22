@@ -11,7 +11,6 @@ import {
   SampleCordappEnum,
   CordaConnectorContainer,
 } from "@hyperledger/cactus-test-tooling";
-import { Configuration } from "@hyperledger/cactus-core-api";
 
 import {
   CordappDeploymentConfig,
@@ -19,17 +18,15 @@ import {
   DeployContractJarsV1Request,
   FlowInvocationType,
   InvokeContractV1Request,
-  JvmTypeKind,
 } from "../../../main/typescript/generated/openapi/typescript-axios/index";
+import { Configuration } from "@hyperledger/cactus-core-api";
 
-import {
-  createJvmCordaIdentityParty,
-  createJvmCordaUniqueIdentifier,
-} from "../../../main/typescript/public-api";
-import { createJvmCordaAmount } from "../../../main/typescript/public-api";
+import { createJvmBoolean } from "../../../main/typescript/public-api";
+import { createJvmLong } from "../../../main/typescript/jvm/serde/factory/create-jvm-long";
+import { createJvmCordaIdentityParty } from "../../../main/typescript/jvm/serde/factory/create-jvm-corda-identity-party";
 
 const testCase = "Tests are passing on the JVM side";
-const logLevel: LogLevelDesc = "INFO";
+const logLevel: LogLevelDesc = "TRACE";
 
 test.onFailure(async () => {
   await Containers.logDiagnostics({ logLevel });
@@ -43,31 +40,40 @@ test("BEFORE " + testCase, async (t: Test) => {
 
 test(testCase, async (t: Test) => {
   const ledger = new CordaTestLedger({
-    imageName: "ghcr.io/hyperledger/cactus-corda-4-7-all-in-one-obligation",
-    imageVersion: "2023-06-28-5946399",
+    imageName: "caio412",
+    imageVersion: "latest",
     logLevel,
+    rpcPortNotary: 10003,
+    rpcPortA: 10006,
+    rpcPortB: 10009,
   });
-  t.ok(ledger, "CordaTestLedger instantaited OK");
+  t.ok(ledger, "CordaTestLedger v4.12 instantaited OK");
 
   test.onFinish(async () => {
     await ledger.stop();
     await ledger.destroy();
     await pruneDockerAllIfGithubAction({ logLevel });
   });
-  const ledgerContainer = await ledger.start();
-  t.ok(ledgerContainer, "CordaTestLedger container truthy post-start() OK");
+  const ledgerContainer = await ledger.start(true);
+  t.ok(
+    ledgerContainer,
+    "CordaTestLedger v4.12 container truthy post-start() OK",
+  );
 
   await ledger.logDebugPorts();
   const partyARpcPort = await ledger.getRpcAPublicPort();
+  // const partyARpcPort = 33467;
+  // const partyARpcPort = 20006;
 
   const jarFiles = await ledger.pullCordappJars(
-    SampleCordappEnum.ADVANCED_OBLIGATION,
+    SampleCordappEnum.ADVANCED_NEGOTIATION,
   );
   t.comment(`Fetched ${jarFiles.length} cordapp jars OK`);
 
   const internalIpOrUndefined = await internalIpV4();
   t.ok(internalIpOrUndefined, "Determined LAN IPv4 address successfully OK");
   const internalIp = internalIpOrUndefined as string;
+  // const internalIp = "127.0.0.1";
   t.comment(`Internal IP (based on default gateway): ${internalIp}`);
 
   const springAppConfig = {
@@ -81,7 +87,7 @@ test(testCase, async (t: Test) => {
       corda: {
         node: { host: internalIp },
         // TODO: parse the gradle build files to extract the credentials?
-        rpc: { port: partyARpcPort, username: "user1", password: "password" },
+        rpc: { port: partyARpcPort, username: "user1", password: "test" },
       },
     },
   };
@@ -91,10 +97,17 @@ test(testCase, async (t: Test) => {
 
   const connector = new CordaConnectorContainer({
     logLevel,
+    // imageName: "ghcr.io/hyperledger/cactus-connector-corda-server",
+    // imageVersion: "2021-11-23--feat-1493",
+    // imageName: "cactus-connector-corda-server",
     imageName: "cccs",
     imageVersion: "latest",
     envVars: [envVarSpringAppJson],
   });
+  // Set to true if you are testing an image that you've built locally and have not
+  // yet uploaded to the container registry where it would be publicly available.
+  // Do not forget to set it back to `false` afterwards!
+  const skipContainerImagePull = true;
   t.ok(CordaConnectorContainer, "CordaConnectorContainer instantiated OK");
 
   test.onFinish(async () => {
@@ -105,7 +118,7 @@ test(testCase, async (t: Test) => {
     }
   });
 
-  const connectorContainer = await connector.start(true);
+  const connectorContainer = await connector.start(skipContainerImagePull);
   t.ok(connectorContainer, "CordaConnectorContainer started OK");
 
   await connector.logDebugPorts();
@@ -152,41 +165,36 @@ test(testCase, async (t: Test) => {
 
   const networkMapRes = await apiClient.networkMapV1();
 
-  const partyA = networkMapRes.data.find((it) =>
-    it.legalIdentities.some((it2) => it2.name.organisation === "ParticipantA"),
+  const partyB = networkMapRes.data.find((it) =>
+    it.legalIdentities.some((it2) => it2.name.organisation === "PartyB"),
   );
 
-  const partyB = networkMapRes.data.find((it) =>
-    it.legalIdentities.some((it2) => it2.name.organisation === "ParticipantB"),
-  );
+  if (process.env.VERBOSE === "true") {
+    const networkMapJson = JSON.stringify(networkMapRes.data, null, 4);
+    console.log("Corda Network Map Snapshot JSON:", networkMapJson);
+  }
+
+  if (!partyB) {
+    throw new Error("PartyB was falsy. Cannot continue the test.");
+  }
+
+  if (!partyB.legalIdentities[0]) {
+    throw new Error("PartyB had no legalIdentities. Cannot continue the test.");
+  }
+
+  createJvmCordaIdentityParty({ party: partyB.legalIdentities[0] });
 
   const req: InvokeContractV1Request = {
-    flowFullClassName: "net.corda.samples.obligation.flows.IOUIssueFlow",
+    flowFullClassName:
+      "net.corda.samples.negotiation.flows.ProposalFlow$Initiator",
     flowInvocationType: FlowInvocationType.TrackedFlowDynamic,
     params: [
-      {
-        jvmTypeKind: JvmTypeKind.Reference,
-        jvmType: {
-          fqClassName: "net.corda.samples.obligation.states.IOUState",
-        },
-
-        jvmCtorArgs: [
-          createJvmCordaAmount({ currencyCode: "USD", amount: 42 }),
-          createJvmCordaIdentityParty({
-            party: partyA!.legalIdentities[0],
-          }),
-          createJvmCordaIdentityParty({
-            party: partyB!.legalIdentities[0],
-          }),
-          createJvmCordaAmount({ currencyCode: "USD", amount: 42 }),
-          createJvmCordaUniqueIdentifier({
-            uniqueidentifier: "7fc2161e-f8d0-4c86-a596-08326bdafd56",
-          }),
-        ],
-      },
+      createJvmBoolean(true),
+      createJvmLong(42),
+      createJvmCordaIdentityParty({ party: partyB.legalIdentities[0] }),
     ],
     timeoutMs: 60000,
-  } as unknown as InvokeContractV1Request;
+  };
 
   const res = await apiClient.invokeContractV1(req);
   t.ok(res, "InvokeContractV1Request truthy OK");

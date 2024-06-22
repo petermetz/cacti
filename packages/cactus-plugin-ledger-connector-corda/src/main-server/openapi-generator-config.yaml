@@ -30,3 +30,9 @@ additionalProperties:
   # e: /kotlin-spring/src/test/kotlin/org/openapitools/api/ApiApiTest.kt: (47, 70): Suspend function 'cordaInvokeContractV1' should be called only from a coroutine or another suspend function
   #
   reactive: false
+
+  # annotationLibrary: none
+  # useSwaggerUI: "false"
+  # serializableModel: "true"
+  # beanValidations: "true"
+  useSpringBoot3: "true"

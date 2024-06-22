@@ -14,11 +14,12 @@ import jakarta.validation.Valid
 
 /**
  * 
- * @param errors 
+ * @param contractStateType Valid, fully qualified JVM class name which will be fed into Class.forName(...)
  */
-data class DeployContractJarsBadRequestV1Response(
+data class VaultQueryV1Request(
 
-    @get:JsonProperty("errors", required = true) val errors: kotlin.collections.List<kotlin.String>
+    @get:Size(min=1)
+    @get:JsonProperty("contractStateType") val contractStateType: kotlin.String? = null
 ) {
 
 }
