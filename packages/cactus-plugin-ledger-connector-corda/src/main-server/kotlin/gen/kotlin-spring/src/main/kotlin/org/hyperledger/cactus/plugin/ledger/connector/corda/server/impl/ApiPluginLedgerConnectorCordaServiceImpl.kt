@@ -1,7 +1,12 @@
 package org.hyperledger.cactus.plugin.ledger.connector.corda.server.impl
 
+// import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import net.corda.core.contracts.ContractState
 import net.corda.core.flows.FlowLogic
@@ -343,9 +348,10 @@ class ApiPluginLedgerConnectorCordaServiceImpl(
 
     override fun networkMapV1(body: Any?): List<NodeInfo> {
         val reader = mapper.readerFor(object : TypeReference<List<NodeInfo?>?>() {})
-
         val networkMapSnapshot = rpc.proxy.networkMapSnapshot()
-        val networkMapJson = writer.writeValueAsString(networkMapSnapshot)
+        val serializer = CordaNetworkMapSnapshotJsonSerializer(networkMapSnapshot)
+        val x = serializer.asListOfMaps()
+        val networkMapJson = writer.writeValueAsString(x)
         logger.trace("networkMapSnapshot=\n{}", networkMapJson)
 
         val nodeInfoList = reader.readValue<List<NodeInfo>>(networkMapJson)

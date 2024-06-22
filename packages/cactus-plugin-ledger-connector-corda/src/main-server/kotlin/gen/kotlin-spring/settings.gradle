@@ -12,4 +12,6 @@ pluginManagement {
         }
     }
 }
+
 rootProject.name = "cactus-connector-corda-server"
+rootProject.name = System.getProperty('rootProjectName') ?: rootProject.name
