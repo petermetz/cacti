@@ -1,61 +1,45 @@
+
+**/node_modules
+**/dist
+**/build
+**/*.tsbuildinfo
+**/.angular
+**/.build-cache
+**/target
+**/.gradle
+**/src/main/json/generated/build-info
+
+**/*.md
+**/*.log
+**/*.tgz
+
 .git
-*/*/node_modules
-*/*/dist
-*/*/build
+.github
+.vscode
+!.vscode/template.launch.json
 whitepaper
 docs
+docs-cactus
 contribs
 images
 tools
-packages/business-logic-plugin
-packages/config
-packages/ledger-plugin
-packages/cactus-ledger-plugin
-packages/routing-interface
-packages/copyStaticAssets.ts
-packages/jest.config.js
+logs
+bin
+.tmp
+.nyc_output
+.DS_Store
+coverage
+
+weaver/samples/fabric/satpsimpleasset
+examples/cactus-example-supply-chain-frontend/www
+examples/cactus-example-carbon-accounting-frontend/www
+
+examples/cactus-example-supply-chain-backend/Dockerfile
 
 .config.json
-.nyc_output/
-dist/
-.DS_Store
-node_modules/
-logs/
-jspm_packages/
-generated-sources/
-coverage/
-
-# Optional npm cache directory
 .npm
-
-# Optional eslint cache
 .eslintcache
-
-# Optional REPL history
 .node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
 .yarn-integrity
-
-# next.js build output
 .next
-
-# vscode files
-.vscode/*
-!.vscode/template.launch.json
-
-# Introperability App specifics
-examples/simple-asset-transfer/fabric/**/hfc-key-store/
-
-bin/
-.tmp/
-lerna-debug.log
-cactus-openapi-spec.json
-cactus-openapi-spec-*.json
 .npmrc
-*.log
-
-examples/*/Dockerfile
