@@ -30,6 +30,7 @@
 # Build the docker image and tag it as "scaeb" for supply chain app example backend
 DOCKER_BUILDKIT=1 docker build --file \
   ./examples/cactus-example-supply-chain-backend/Dockerfile \
+  --progress=plain \
   . \
   --tag scaeb \
   --tag ghcr.io/hyperledger/cactus-example-supply-chain-app:$(git describe --contains --all HEAD)_$(git rev-parse --short HEAD)_$(date -u +"%Y-%m-%dT%H-%M-%SZ")
@@ -46,6 +47,7 @@ Building the image with a specific npm package version:
 
 ```sh
 DOCKER_BUILDKIT=1 docker build \
+  --progress=plain \
   --build-arg NPM_PKG_VERSION=jwt-supply-chain \
   --file ./examples/cactus-example-supply-chain-backend/Dockerfile \
   --tag scaeb \

@@ -54,28 +54,16 @@ RUN source ~/.bashrc && \
     npm run init-registries
 
 RUN source ~/.bashrc && \
-    yarn install --mode=skip-build
-
-RUN mkdir -p ${APP}packages/cactus-cmd-socketio-server/dist
-RUN mkdir -p ${APP}packages/cactus-core-api/dist
-
-RUN source ~/.bashrc && \
-    yarn tsc && pwd && pwd && pwd && whoami && whoami
-
-RUN ls -alt ${APP}
-RUN ls -alt ${APP}yarn.lock
-
-RUN ls -alt ${APP}packages/
-RUN ls -alt ${APP}packages/cactus-core-api/
-RUN ls -alt ${APP}packages/cactus-cmd-socketio-server/
-RUN ls -alt ${APP}packages/cactus-cmd-socketio-server/dist
-RUN ls -alt ${APP}packages/cactus-core-api/dist
+    yarn install
 
 RUN source ~/.bashrc && \
     npm run configure
 
 RUN source ~/.bashrc && \
     yarn build:dev
+
+RUN source ~/.bashrc && \
+    yarn workspaces focus @hyperledger/cactus-example-supply-chain-backend --production
 
 SHELL ["/bin/bash", "--login", "-c"]
 
@@ -146,6 +134,16 @@ EXPOSE 3200
 
 # RUN rm -rf /var/cache/apt/archives /var/lib/apt/lists
 
+
+RUN rm -rf examples/cactus-example-carbon-accounting-*
+RUN rm -rf examples/cactus-example-cbdc-bridging*
+RUN rm -rf weaver/
+RUN rm -rf packages/cactus-plugin-htlc-eth-besu/
+RUN rm -rf packages/cactus-plugin-htlc-eth-besu-erc20
+RUN rm -rf examples/cactus-example-supply-chain-frontend/.angular/cache/
+RUN rm -rf .yarn/cache/
+RUN rm -rf examples/cactus-example-supply-chain-frontend/node_modules/  
+
 FROM cruizba/ubuntu-dind:jammy-24.0.7 as runner
 
 USER root
@@ -172,6 +170,31 @@ RUN source ~/.bashrc && \
 COPY --from=builder --chown=${APP_USER}:${APP_USER} ${APP} /usr/src/app
 COPY examples/cactus-example-supply-chain-backend/supervisord.conf /etc/supervisord.conf
 COPY --chown=${APP_USER}:${APP_USER} ./examples/cactus-example-supply-chain-backend/healthcheck.sh /
+
+
+ENV AUTHORIZATION_CONFIG_JSON="{}"
+ENV AUTHORIZATION_PROTOCOL=NONE
+ENV COCKPIT_WWW_ROOT=/usr/src/app/examples/cactus-example-supply-chain-frontend/www/
+ENV COCKPIT_TLS_ENABLED=false
+ENV COCKPIT_CORS_DOMAIN_CSV=\*
+ENV COCKPIT_MTLS_ENABLED=false
+ENV COCKPIT_TLS_CERT_PEM=-
+ENV COCKPIT_TLS_KEY_PEM=-
+ENV COCKPIT_TLS_CLIENT_CA_PEM=-
+ENV COCKPIT_HOST=0.0.0.0
+ENV COCKPIT_PORT=3000
+ENV API_MTLS_ENABLED=false
+ENV API_TLS_ENABLED=false
+ENV API_CORS_DOMAIN_CSV=\*
+ENV API_TLS_CERT_PEM=-
+ENV API_TLS_CLIENT_CA_PEM=-
+ENV API_TLS_KEY_PEM=-
+ENV API_HOST=0.0.0.0
+ENV API_PORT=4000
+ENV GRPC_TLS_ENABLED=false
+ENV LOG_LEVEL=TRACE
+
+USER root
 
 # Extend the parent image's entrypoint
 # https://superuser.com/questions/1459466/can-i-add-an-additional-docker-entrypoint-script
