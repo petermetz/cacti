@@ -136,6 +136,22 @@ RUN rm -rf tools
 RUN rm -rf examples/cactus-example-supply-chain-frontend/.angular/cache/
 RUN rm -rf examples/cactus-example-supply-chain-frontend/node_modules/
 
+RUN source ~/.bashrc && \
+    npm i -g @vercel/ncc
+
+RUN source ~/.bashrc && \
+    ncc build \
+        ./examples/cactus-example-supply-chain-backend/dist/lib/main/typescript/supply-chain-app-cli.js \
+        --out=./dist/ncc/ \
+        --external fabric-common \
+        --external fabric-ca-client \
+        --external fabric-network
+
+USER root
+RUN mv ./dist/ncc /opt/cacti/
+RUN chown -R ${APP_USER}:${APP_USER} /opt/cacti/
+
+
 FROM cruizba/ubuntu-dind:jammy-24.0.7 as runner
 
 USER root
@@ -158,10 +174,18 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | b
 
 RUN source ~/.bashrc && \
     nvm install 18.18.2
-
-COPY --from=builder --chown=${APP_USER}:${APP_USER} ${APP} /usr/src/app
+    
+COPY --from=builder --chown=${APP_USER}:${APP_USER} ${APP}examples/cactus-example-supply-chain-frontend/www ${APP}examples/cactus-example-supply-chain-frontend/www 
+COPY --from=builder --chown=${APP_USER}:${APP_USER} /opt/cacti /opt/cacti
 COPY examples/cactus-example-supply-chain-backend/supervisord.conf /etc/supervisord.conf
-COPY --chown=${APP_USER}:${APP_USER} ./examples/cactus-example-supply-chain-backend/healthcheck.sh /
+
+WORKDIR /opt/cacti/
+RUN source ~/.bashrc && \
+        npm i fabric-common fabric-network fabric-ca-client
+    
+# COPY --from=builder --chown=${APP_USER}:${APP_USER} ${APP} /usr/src/app
+# COPY examples/cactus-example-supply-chain-backend/supervisord.conf /etc/supervisord.conf
+# COPY --chown=${APP_USER}:${APP_USER} ./examples/cactus-example-supply-chain-backend/healthcheck.sh /
 
 
 ENV AUTHORIZATION_CONFIG_JSON="{}"
