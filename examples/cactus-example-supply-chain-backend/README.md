@@ -35,7 +35,6 @@ DOCKER_BUILDKIT=1 docker build \
   --progress=plain \
   . \
   --tag scaeb
-```
 
 # Run the built image with ports mapped to the host machine as you see fit
 # The --privileged flag is required because we use Docker-in-Docker for pulling
