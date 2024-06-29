@@ -28,7 +28,14 @@
 # Change directories to the project root
 
 # Build the docker image and tag it as "scaeb" for supply chain app example backend
-DOCKER_BUILDKIT=1 docker build -f ./examples/cactus-example-supply-chain-backend/Dockerfile . -t scaeb
+
+```sh
+DOCKER_BUILDKIT=1 docker build \
+  --file ./examples/cactus-example-supply-chain-backend/Dockerfile \
+  --progress=plain \
+  . \
+  --tag scaeb
+```
 
 # Run the built image with ports mapped to the host machine as you see fit
 # The --privileged flag is required because we use Docker-in-Docker for pulling
@@ -42,6 +49,7 @@ Building the image with a specific npm package version:
 
 ```sh
 DOCKER_BUILDKIT=1 docker build \
+  --progress=plain \
   --build-arg NPM_PKG_VERSION=jwt-supply-chain \
   --file ./examples/cactus-example-supply-chain-backend/Dockerfile \
   --tag scaeb \
