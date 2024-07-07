@@ -47,3 +47,6 @@ export {
 } from "./http/express-http-verb-method-name";
 
 export { isGrpcStatusObjectWithCode } from "./grpc/is-grpc-status-object-with-code";
+
+export { isLogLevelDesc } from "./logging/is-log-level-desc";
+export { LOG_LEVEL_NAMES } from "./logging/is-log-level-desc";

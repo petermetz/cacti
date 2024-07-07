@@ -100,7 +100,8 @@
     "socket.io": "4.6.2",
     "socket.io-client-fixed-types": "4.5.4",
     "typescript-optional": "2.0.1",
-    "uuid": "10.0.0"
+    "uuid": "10.0.0",
+    "yargs": "17.7.2"
   },
   "devDependencies": {
     "@bufbuild/buf": "1.30.0",
