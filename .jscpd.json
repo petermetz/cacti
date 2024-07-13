@@ -1,0 +1,8 @@
+{
+  "format": ["typescript"],
+  "ignore": ["**/generated/**", "**/node_modules/**", "**/dist/**"],
+  "reporters": ["console", "html"],
+  "gitignore": true,
+  "output": "./dist/report/jscpd/",
+  "minLines": 10
+}
