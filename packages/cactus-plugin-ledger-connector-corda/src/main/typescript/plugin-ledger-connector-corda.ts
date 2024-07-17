@@ -3,6 +3,8 @@ import type { Server as SecureServer } from "https";
 import type { Config as SshConfig } from "node-ssh";
 import type { Express } from "express";
 import urlcat from "urlcat";
+import { None, Option } from "ts-results";
+
 import OAS from "../json/openapi.json";
 import { BadRequestError, GatewayTimeoutError } from "http-errors-enhanced-cjs";
 
@@ -182,6 +184,14 @@ export class PluginLedgerConnectorCorda
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public deployContract(): Promise<any> {

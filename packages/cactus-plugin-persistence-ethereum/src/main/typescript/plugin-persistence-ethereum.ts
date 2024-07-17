@@ -1,6 +1,7 @@
 /**
  * Main logic of persistence plugin for ethereum data.
  */
+import { None, Option } from "ts-results";
 
 import {
   Checks,
@@ -566,6 +567,14 @@ export class PluginPersistenceEthereum
     );
     await this.refreshMonitoredTokens();
     this.isConnected = true;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   /**

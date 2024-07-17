@@ -55,3 +55,4 @@ export { isIPluginCrpcService } from "./plugin/crpc-service/i-plugin-crpc-servic
 
 export { createAjvTypeGuard } from "./open-api/create-ajv-type-guard";
 export { createIsJwsGeneralTypeGuard } from "./open-api/create-is-jws-general-type-guard";
+export { IPluginMsgV1 } from "./plugin/i-plugin-msg-v1";

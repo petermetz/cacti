@@ -3,6 +3,7 @@
  */
 
 import type { Express } from "express";
+import { None, Option } from "ts-results";
 import type {
   Server as SocketIoServer,
   Socket as SocketIoSocket,
@@ -151,6 +152,14 @@ export class PluginLedgerConnectorIroha2
   public async onPluginInit(): Promise<unknown> {
     // Nothing to do...
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   /**

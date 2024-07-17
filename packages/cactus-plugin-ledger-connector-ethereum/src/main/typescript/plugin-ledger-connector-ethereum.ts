@@ -2,7 +2,7 @@ import type {
   Server as SocketIoServer,
   Socket as SocketIoSocket,
 } from "socket.io";
-
+import { None, Option } from "ts-results";
 import { Express } from "express";
 import Web3, {
   Contract,
@@ -298,6 +298,14 @@ export class PluginLedgerConnectorEthereum
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   async registerWebServices(

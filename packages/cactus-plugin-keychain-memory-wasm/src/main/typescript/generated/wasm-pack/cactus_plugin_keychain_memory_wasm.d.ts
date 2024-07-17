@@ -42,6 +42,14 @@ export class PluginKeychainMemoryWasm {
 */
   onPluginInit(): Promise<any>;
 /**
+* @returns {Promise<any>}
+*/
+  getOutBox(): Promise<any>;
+/**
+* @returns {Promise<any>}
+*/
+  getInBox(): Promise<any>;
+/**
 * @param {string} key
 * @returns {Promise<any>}
 */

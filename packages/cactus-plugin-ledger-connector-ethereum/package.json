@@ -81,6 +81,7 @@
     "rxjs": "7.8.1",
     "sanitize-html": "2.12.1",
     "socket.io-client-fixed-types": "4.5.4",
+    "ts-results": "3.3.0",
     "typescript-optional": "2.0.1",
     "web3": "4.4.0",
     "web3-eth": "4.4.0",

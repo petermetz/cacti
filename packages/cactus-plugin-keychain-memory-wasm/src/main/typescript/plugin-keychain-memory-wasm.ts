@@ -1,4 +1,5 @@
 import { Express } from "express";
+import { None, Option } from "ts-results";
 
 import { Checks } from "@hyperledger/cactus-common";
 import { Logger, LogLevelDesc } from "@hyperledger/cactus-common";
@@ -117,6 +118,14 @@ export class PluginKeychainMemoryWasm
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   async get(key: string): Promise<string> {

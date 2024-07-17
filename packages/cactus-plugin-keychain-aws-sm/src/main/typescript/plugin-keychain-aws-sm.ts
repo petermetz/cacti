@@ -4,6 +4,7 @@ import {
   SecretsManager,
   Credentials,
 } from "aws-sdk";
+import { None, Option } from "ts-results";
 
 import type { Express } from "express";
 
@@ -222,6 +223,14 @@ export class PluginKeychainAwsSm
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public async shutdown(): Promise<void> {

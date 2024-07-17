@@ -4,6 +4,7 @@ import "jest-extended";
 import { PluginRegistry } from "../../../main/typescript/public-api";
 
 import { ICactusPlugin, IPluginKeychain } from "@hyperledger/cactus-core-api";
+import { None } from "ts-results";
 
 describe("PluginRegistry", () => {
   const keychainId = uuidv4();
@@ -28,6 +29,12 @@ describe("PluginRegistry", () => {
 
     onPluginInit: async () => {
       throw new Error("not sure how this works");
+    },
+    getOutBox: async () => {
+      return None;
+    },
+    getInBox: async () => {
+      return None;
     },
   };
 

@@ -74,6 +74,7 @@
     "run-time-error-cjs": "1.4.0",
     "rxjs": "7.8.1",
     "socket.io-client-fixed-types": "4.5.4",
+    "ts-results": "3.3.0",
     "typescript-optional": "2.0.1",
     "web3": "1.6.1",
     "web3-core": "1.6.1",

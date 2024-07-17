@@ -5,6 +5,7 @@ import { Certificate } from "@fidm/x509";
 import { Express } from "express";
 import { RuntimeError } from "run-time-error-cjs";
 import "multer";
+import { None, Option } from "ts-results";
 import temp from "temp";
 import {
   NodeSSH,
@@ -314,6 +315,14 @@ export class PluginLedgerConnectorFabric
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public async getConsensusAlgorithmFamily(): Promise<ConsensusAlgorithmFamily> {

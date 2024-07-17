@@ -57,6 +57,18 @@ impl PluginKeychainMemoryWasm {
         js_sys::Promise::resolve(&"Initialization OK".into())
     }
 
+    // We have to allow snake case because the JS side expects it.
+    #[allow(non_snake_case)]
+    pub fn getOutBox(&self) -> js_sys::Promise {
+        js_sys::Promise::resolve(&"mockOutBox".into())
+    }
+
+    // We have to allow snake case because the JS side expects it.
+    #[allow(non_snake_case)]
+    pub fn getInBox(&self) -> js_sys::Promise {
+        js_sys::Promise::resolve(&"mockInbox".into())
+    }
+
     pub fn get(&self, key: &str) -> js_sys::Promise {
         let value = self.data.get(key);
         js_sys::Promise::resolve(&value.into())
@@ -90,8 +102,8 @@ impl PluginFactoryKeychain {
         PluginFactoryKeychain {}
     }
 
-    pub fn create(&self, options_raw: &JsValue) -> PluginKeychainMemoryWasm {
-        let options: PluginKeychainMemoryWasmOptions = options_raw.into_serde().unwrap();
+    pub fn create(&self, options_raw: JsValue) -> PluginKeychainMemoryWasm {
+        let options: PluginKeychainMemoryWasmOptions = serde_wasm_bindgen::from_value(options_raw).unwrap();
         PluginKeychainMemoryWasm::new(options)
     }
 }

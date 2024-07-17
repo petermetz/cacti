@@ -7,7 +7,7 @@ import {
   ServiceUnavailableError,
 } from "http-errors-enhanced-cjs";
 
-import { PrometheusExporter } from "./prometheus-exporter/prometheus-exporter";
+import { None, Option } from "ts-results";
 import {
   GetPrometheusMetricsEndpoint,
   IGetPrometheusMetricsEndpointOptions,
@@ -89,6 +89,7 @@ import {
   IInvokeContractEndpointOptions,
   InvokeContractEndpoint,
 } from "./web-services/invoke-contract-endpoint";
+import { PrometheusExporter } from "./prometheus-exporter/prometheus-exporter";
 
 export interface IPluginLedgerConnectorPolkadotOptions
   extends ICactusPluginOptions {
@@ -284,6 +285,14 @@ export class PluginLedgerConnectorPolkadot
       const rex = newRex(`Could not create API. Inner exception:`, ex);
       throw new InternalServerError(rex.toJSON());
     }
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public async getConsensusAlgorithmFamily(): Promise<ConsensusAlgorithmFamily> {

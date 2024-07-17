@@ -2,6 +2,7 @@
 import type { Server } from "http";
 import type { Server as SecureServer } from "https";
 import { Optional } from "typescript-optional";
+import { None, Option } from "ts-results";
 import type { Express } from "express";
 import { v4 as uuidV4 } from "uuid";
 import { Knex } from "knex";
@@ -225,6 +226,14 @@ export abstract class PluginSatpGateway
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   async registerWebServices(app: Express): Promise<IWebServiceEndpoint[]> {

@@ -1,3 +1,7 @@
+import { Observable, Subject } from "rxjs";
+import { Option } from "ts-results";
+import { IPluginMsgV1 } from "./i-plugin-msg-v1";
+
 /**
  * The common interface definition that plugin classes can use to inherit from
  * when defining their own options interface for their constructors.
@@ -69,12 +73,17 @@ export interface ICactusPlugin {
    */
   getPackageName(): string;
 
+  getOutBox(): Promise<Option<Observable<IPluginMsgV1<unknown>>>>;
+  getInBox(): Promise<Option<Subject<IPluginMsgV1<unknown>>>>;
+
   onPluginInit(): Promise<unknown>;
 }
 
 export function isICactusPlugin(x: unknown): x is ICactusPlugin {
   return (
     !!x &&
+    typeof (x as ICactusPlugin).getOutBox === "function" &&
+    typeof (x as ICactusPlugin).getInBox === "function" &&
     typeof (x as ICactusPlugin).getPackageName === "function" &&
     typeof (x as ICactusPlugin).getInstanceId === "function" &&
     typeof (x as ICactusPlugin).onPluginInit === "function"

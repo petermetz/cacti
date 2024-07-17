@@ -69,6 +69,7 @@
     "express": "4.19.2",
     "joi": "17.13.3",
     "openapi-types": "12.1.3",
+    "ts-results": "3.3.0",
     "typescript-optional": "2.0.1"
   },
   "devDependencies": {

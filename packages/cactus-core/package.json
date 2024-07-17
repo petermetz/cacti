@@ -60,6 +60,7 @@
     "http-errors-enhanced-cjs": "2.0.1",
     "run-time-error-cjs": "1.4.0",
     "safe-stable-stringify": "2.4.3",
+    "ts-results": "3.3.0",
     "typescript-optional": "2.0.1"
   },
   "devDependencies": {

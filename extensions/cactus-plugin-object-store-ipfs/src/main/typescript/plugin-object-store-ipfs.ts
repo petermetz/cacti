@@ -1,5 +1,6 @@
 import path from "path";
 import type { Express } from "express";
+import { None, Option } from "ts-results";
 import { RuntimeError } from "run-time-error-cjs";
 import {
   Logger,
@@ -106,6 +107,14 @@ export class PluginObjectStoreIpfs implements IPluginObjectStore {
 
   public async onPluginInit(): Promise<unknown> {
     return this.initIpfs();
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public async registerWebServices(

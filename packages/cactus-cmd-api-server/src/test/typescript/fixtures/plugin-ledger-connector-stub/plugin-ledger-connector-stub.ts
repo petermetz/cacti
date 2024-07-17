@@ -1,4 +1,5 @@
 import { Express } from "express";
+import { None, Option } from "ts-results";
 
 import {
   ConsensusAlgorithmFamily,
@@ -73,6 +74,14 @@ export class PluginLedgerConnectorStub
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public async shutdown(): Promise<void> {

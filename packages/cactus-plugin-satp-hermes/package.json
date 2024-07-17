@@ -66,6 +66,7 @@
     "secp256k1": "4.0.3",
     "socket.io": "4.6.2",
     "sqlite3": "5.1.5",
+    "ts-results": "3.3.0",
     "typescript-optional": "2.0.1",
     "uuid": "10.0.0",
     "web3": "1.6.1",

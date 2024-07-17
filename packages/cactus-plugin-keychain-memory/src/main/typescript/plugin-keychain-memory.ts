@@ -1,3 +1,5 @@
+import { None, Option } from "ts-results";
+
 import {
   Logger,
   Checks,
@@ -218,6 +220,14 @@ export class PluginKeychainMemory
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   async get(key: string): Promise<string> {

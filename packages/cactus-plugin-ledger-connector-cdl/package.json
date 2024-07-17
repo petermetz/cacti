@@ -59,7 +59,8 @@
     "@hyperledger/cactus-core": "2.0.0-rc.4",
     "@hyperledger/cactus-core-api": "2.0.0-rc.4",
     "axios": "1.7.7",
-    "sanitize-html": "2.12.1"
+    "sanitize-html": "2.12.1",
+    "ts-results": "3.3.0"
   },
   "devDependencies": {
     "@types/express": "4.17.21",

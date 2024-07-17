@@ -1,4 +1,5 @@
 import { Express } from "express";
+import { None, Option } from "ts-results";
 
 import OAS from "../json/openapi.json";
 
@@ -84,6 +85,14 @@ export class PluginHtlcEthBesu implements ICactusPlugin, IPluginWebService {
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   async registerWebServices(app: Express): Promise<IWebServiceEndpoint[]> {

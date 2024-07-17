@@ -6,6 +6,7 @@ import type { Express } from "express";
 import { v4 as uuidv4 } from "uuid";
 import type { Subscription } from "rxjs";
 import { Mutex } from "async-mutex";
+import { Option, None } from "ts-results";
 
 import {
   Checks,
@@ -289,6 +290,14 @@ export class PluginPersistenceFabric
         }
       }
     });
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public getInstanceId(): string {
