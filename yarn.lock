@@ -9096,6 +9096,7 @@ __metadata:
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
     stellar-plus: "npm:0.8.4"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -9398,6 +9399,7 @@ __metadata:
     semver: "npm:7.6.2"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    ts-results: "npm:3.3.0"
     tsx: "npm:4.16.2"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
@@ -9503,6 +9505,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     rxjs: "npm:7.8.1"
     socket.io: "npm:4.6.2"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
   languageName: unknown
   linkType: soft
@@ -9525,6 +9528,7 @@ __metadata:
     node-mocks-http: "npm:1.14.0"
     run-time-error-cjs: "npm:1.4.0"
     safe-stable-stringify: "npm:2.4.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -9588,6 +9592,7 @@ __metadata:
     axios: "npm:1.6.0"
     express: "npm:4.19.2"
     openapi-types: "npm:12.1.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -9844,6 +9849,7 @@ __metadata:
     express: "npm:4.19.2"
     openapi-types: "npm:12.1.3"
     run-time-error-cjs: "npm:1.4.0"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -9922,6 +9928,7 @@ __metadata:
     key-encoder: "npm:2.0.3"
     merkletreejs: "npm:0.3.11"
     socket.io: "npm:4.6.2"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
     web3: "npm:1.6.1"
@@ -9945,6 +9952,7 @@ __metadata:
     jose: "npm:4.15.5"
     json-stable-stringify: "npm:1.0.1"
     prom-client: "npm:15.1.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -9975,6 +9983,7 @@ __metadata:
     run-time-error-cjs: "npm:1.4.0"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
     web3-eth-abi: "npm:4.2.1"
@@ -9995,6 +10004,7 @@ __metadata:
     express: "npm:4.19.2"
     joi: "npm:17.13.3"
     openapi-types: "npm:12.1.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
   languageName: unknown
   linkType: soft
@@ -10019,6 +10029,7 @@ __metadata:
     forge-std: "https://github.com/foundry-rs/forge-std.git#66bf4e2c92cf507531599845e8d5a08cc2e3b5bb"
     joi: "npm:17.13.3"
     openapi-types: "npm:12.1.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     web3js-quorum: "npm:22.4.0"
   languageName: unknown
@@ -10044,6 +10055,7 @@ __metadata:
     internal-ip: "npm:6.2.0"
     openapi-types: "npm:12.1.3"
     prom-client: "npm:15.1.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -10068,6 +10080,7 @@ __metadata:
     http-status-codes: "npm:2.1.4"
     internal-ip: "npm:6.2.0"
     openapi-types: "npm:12.1.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -10093,6 +10106,7 @@ __metadata:
     http-status-codes: "npm:2.1.4"
     internal-ip: "npm:6.2.0"
     openapi-types: "npm:12.1.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -10113,7 +10127,9 @@ __metadata:
     del-cli: "npm:5.1.0"
     express: "npm:4.19.2"
     prom-client: "npm:15.1.3"
+    ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
+    wasm-pack: "npm:0.13.0"
   languageName: unknown
   linkType: soft
 
@@ -10137,6 +10153,7 @@ __metadata:
     npm-run-all2: "npm:6.1.2"
     prom-client: "npm:15.1.3"
     rxjs: "npm:7.8.1"
+    ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
   languageName: unknown
   linkType: soft
@@ -10163,6 +10180,7 @@ __metadata:
     node-vault: "npm:0.9.22"
     openapi-types: "npm:12.1.3"
     prom-client: "npm:15.1.3"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -10196,6 +10214,7 @@ __metadata:
     rxjs: "npm:7.8.1"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
   languageName: unknown
   linkType: soft
@@ -10238,6 +10257,7 @@ __metadata:
     rxjs: "npm:7.8.1"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    ts-results: "npm:3.3.0"
     tsx: "npm:4.16.2"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
@@ -10265,6 +10285,7 @@ __metadata:
     express: "npm:4.19.2"
     jest-extended: "npm:4.0.1"
     sanitize-html: "npm:2.12.1"
+    ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
   languageName: unknown
   linkType: soft
@@ -10292,6 +10313,7 @@ __metadata:
     prom-client: "npm:15.1.3"
     rxjs: "npm:7.8.1"
     temp: "npm:0.9.4"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -10329,6 +10351,7 @@ __metadata:
     sanitize-html: "npm:2.12.1"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
     web3: "npm:4.4.0"
@@ -10392,6 +10415,7 @@ __metadata:
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
     temp: "npm:0.9.4"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
     ws-identity-client: "npm:1.0.2"
@@ -10461,6 +10485,7 @@ __metadata:
     sanitize-html: "npm:2.12.1"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    ts-results: "npm:3.3.0"
     undici: "npm:6.19.2"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -10503,6 +10528,7 @@ __metadata:
     run-time-error: "npm:1.4.0"
     supertest: "npm:6.1.6"
     temp: "npm:0.9.1"
+    ts-results: "npm:3.3.0"
     tslint: "npm:6.1.3"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
@@ -10526,6 +10552,7 @@ __metadata:
     rxjs: "npm:7.8.1"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
   languageName: unknown
   linkType: soft
@@ -10575,6 +10602,7 @@ __metadata:
     openapi-types: "npm:12.1.3"
     prom-client: "npm:15.1.3"
     run-time-error-cjs: "npm:1.4.0"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
     web3: "npm:1.6.1"
@@ -10605,6 +10633,7 @@ __metadata:
     kubo-rpc-client-esm-cjs: "npm:3.0.1"
     multiformats: "npm:11.0.2"
     run-time-error-cjs: "npm:1.4.0"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -10635,6 +10664,7 @@ __metadata:
     run-time-error-cjs: "npm:1.4.0"
     rxjs: "npm:7.8.1"
     socket.io: "npm:4.6.2"
+    ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
     web3: "npm:4.0.3"
     web3-eth-accounts: "npm:4.0.3"
@@ -10664,7 +10694,9 @@ __metadata:
     pg: "npm:8.8.0"
     run-time-error-cjs: "npm:1.4.0"
     rxjs: "npm:7.8.1"
+    safe-stable-stringify: "npm:2.4.3"
     socket.io: "npm:4.6.2"
+    ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
   languageName: unknown
   linkType: soft
@@ -10699,6 +10731,7 @@ __metadata:
     secp256k1: "npm:4.0.3"
     socket.io: "npm:4.6.2"
     sqlite3: "npm:5.1.5"
+    ts-results: "npm:3.3.0"
     typescript: "npm:5.5.2"
     typescript-optional: "npm:2.0.1"
     uuid: "npm:10.0.0"
@@ -21165,6 +21198,17 @@ __metadata:
   version: 2.2.0
   resolution: "binary-extensions@npm:2.2.0"
   checksum: 10/ccd267956c58d2315f5d3ea6757cf09863c5fc703e50fbeb13a7dc849b812ef76e3cf9ca8f35a0c48498776a7478d7b4a0418e1e2b8cb9cb9731f2922aaad7f8
+  languageName: node
+  linkType: hard
+
+"binary-install@npm:^1.0.1":
+  version: 1.1.0
+  resolution: "binary-install@npm:1.1.0"
+  dependencies:
+    axios: "npm:^0.26.1"
+    rimraf: "npm:^3.0.2"
+    tar: "npm:^6.1.11"
+  checksum: 10/78121e9c32981c101cc090f1564fbd0453d976a1b40c599a5ca623184d739b0a7c49f5ba5f91c05142eb6ff9b2816959bb9e09a3aecd12e4e3e82398bed9b8f0
   languageName: node
   linkType: hard
 
@@ -51157,6 +51201,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-results@npm:3.3.0":
+  version: 3.3.0
+  resolution: "ts-results@npm:3.3.0"
+  checksum: 10/127371a096d0ec0d31ee813ae7e160fb7c4e2535c063a154e969389f746a319cf9612f21402aaa2a563cd0d8b6aee8604e955c0d2971b1803979e6f5300e98ea
+  languageName: node
+  linkType: hard
+
 "tsconfig-paths@npm:^3.14.2":
   version: 3.14.2
   resolution: "tsconfig-paths@npm:3.14.2"
@@ -52771,6 +52822,17 @@ __metadata:
   dependencies:
     makeerror: "npm:1.0.12"
   checksum: 10/ad7a257ea1e662e57ef2e018f97b3c02a7240ad5093c392186ce0bcf1f1a60bbadd520d073b9beb921ed99f64f065efb63dfc8eec689a80e569f93c1c5d5e16c
+  languageName: node
+  linkType: hard
+
+"wasm-pack@npm:0.13.0":
+  version: 0.13.0
+  resolution: "wasm-pack@npm:0.13.0"
+  dependencies:
+    binary-install: "npm:^1.0.1"
+  bin:
+    wasm-pack: run.js
+  checksum: 10/74a18296adb29714fe393fe7824afb07392edb86f74afa0e3fa47a254e56921f105e68b8d80a887250ede6949c70eeae09381a5631444b0b280d9780e7de8f86
   languageName: node
   linkType: hard
 

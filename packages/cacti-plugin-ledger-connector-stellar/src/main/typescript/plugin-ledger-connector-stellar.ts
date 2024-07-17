@@ -2,6 +2,7 @@ import type { Server as SocketIoServer } from "socket.io";
 import type { Socket as SocketIoSocket } from "socket.io";
 import type { Express } from "express";
 import { InternalServerError } from "http-errors-enhanced-cjs";
+import { None, Option } from "ts-results";
 
 import OAS from "../json/openapi.json";
 
@@ -188,6 +189,14 @@ export class PluginLedgerConnectorStellar
   public async onPluginInit(): Promise<void> {
     this.log.info("ENTER onPluginInit();");
     this.log.info("EXIT onPluginInit();");
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public async shutdown(): Promise<void> {

@@ -5,6 +5,7 @@ import type {
 import type { Express } from "express";
 import * as path from "node:path";
 import * as os from "node:os";
+import { None, Option } from "ts-results";
 import { AskarModule } from "@aries-framework/askar";
 import {
   Agent,
@@ -167,6 +168,14 @@ export class PluginLedgerConnectorAries
         await this.addAriesAgent(agentConfig);
       }
     }
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   async registerWebServices(

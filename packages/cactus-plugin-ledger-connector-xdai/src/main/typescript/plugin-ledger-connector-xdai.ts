@@ -3,7 +3,7 @@ import { Server as SecureServer } from "https";
 
 import type { Express } from "express";
 import Web3 from "web3";
-
+import { None, Option } from "ts-results";
 import type { Contract } from "web3-eth-contract";
 import type { TransactionReceipt } from "web3-eth";
 
@@ -154,6 +154,14 @@ export class PluginLedgerConnectorXdai
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public async shutdown(): Promise<void> {

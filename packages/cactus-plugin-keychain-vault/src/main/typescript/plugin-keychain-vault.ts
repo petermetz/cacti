@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import Vault from "node-vault";
 import HttpStatus from "http-status-codes";
+import { None, Option } from "ts-results";
 
 import OAS from "../json/openapi.json";
 
@@ -204,6 +205,14 @@ export class PluginKeychainVault implements IPluginWebService, IPluginKeychain {
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public getEncryptionAlgorithm(): string {

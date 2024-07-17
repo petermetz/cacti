@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import sanitizeHtml from "sanitize-html";
+import { None, Option } from "ts-results";
 
 import {
   Checks,
@@ -104,6 +105,14 @@ export class PluginLedgerConnectorCDL
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   async registerWebServices(app: Express): Promise<IWebServiceEndpoint[]> {

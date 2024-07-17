@@ -1,3 +1,5 @@
+import { None, Option } from "ts-results";
+
 import type { Server as SocketIoServer } from "socket.io";
 import type { Socket as SocketIoSocket } from "socket.io";
 import type { Express } from "express";
@@ -203,6 +205,14 @@ export class PluginLedgerConnectorBesu
 
   public async onPluginInit(): Promise<void> {
     this.web3Quorum = Web3JsQuorum(this.web3);
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public async shutdown(): Promise<void> {

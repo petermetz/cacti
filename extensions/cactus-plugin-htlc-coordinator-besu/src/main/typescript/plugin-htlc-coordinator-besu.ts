@@ -1,5 +1,6 @@
 import { Server } from "http";
 import { Server as SecureServer } from "https";
+import { None, Option } from "ts-results";
 import { v4 as uuidv4 } from "uuid";
 import type { Express } from "express";
 import { promisify } from "util";
@@ -87,6 +88,14 @@ export class PluginHTLCCoordinatorBesu
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   public getOpenApiSpec(): unknown {

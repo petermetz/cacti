@@ -8,6 +8,7 @@ import {
   Secp256k1Keys,
 } from "@hyperledger/cactus-common";
 import { v4 as uuidV4 } from "uuid";
+import { None, Option } from "ts-results";
 import {
   ICactusPlugin,
   ICactusPluginOptions,
@@ -150,6 +151,14 @@ export class PluginBungeeHermes implements ICactusPlugin, IPluginWebService {
 
   public async onPluginInit(): Promise<unknown> {
     return;
+  }
+
+  public async getOutBox(): Promise<Option<never>> {
+    return None;
+  }
+
+  public async getInBox(): Promise<Option<never>> {
+    return None;
   }
 
   async registerWebServices(app: Express): Promise<IWebServiceEndpoint[]> {

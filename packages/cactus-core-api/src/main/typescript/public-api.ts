@@ -52,3 +52,5 @@ export { isIPluginGrpcService } from "./plugin/grpc-service/i-plugin-grpc-servic
 export { ICrpcSvcRegistration } from "./plugin/crpc-service/i-plugin-crpc-service";
 export { IPluginCrpcService } from "./plugin/crpc-service/i-plugin-crpc-service";
 export { isIPluginCrpcService } from "./plugin/crpc-service/i-plugin-crpc-service";
+
+export { IPluginMsgV1 } from "./plugin/i-plugin-msg-v1";

@@ -20,4 +20,3 @@ export async function createPluginFactory(
 }
 
 export * as wasm from "./generated/wasm-pack/cactus_plugin_keychain_memory_wasm";
-// export * as wasm_bg from "./generated/wasm-pack/cactus_plugin_keychain_memory_wasm_bg.wasm";

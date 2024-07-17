@@ -72,6 +72,7 @@
     "rxjs": "7.8.1",
     "socket.io-client-fixed-types": "4.5.4",
     "stellar-plus": "0.8.4",
+    "ts-results": "3.3.0",
     "typescript-optional": "2.0.1"
   },
   "devDependencies": {
