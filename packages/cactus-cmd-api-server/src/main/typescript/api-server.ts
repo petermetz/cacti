@@ -81,6 +81,8 @@ import {
   GetOpenApiSpecV1Endpoint,
   IGetOpenApiSpecV1EndpointOptions,
 } from "./web-services/get-open-api-spec-v1-endpoint";
+import { IPluginMsgVersion } from "@hyperledger/cactus-core-api/src/main/typescript/plugin/i-plugin-msg-v1";
+import { Subscription } from "rxjs";
 
 export interface IApiServerConstructorOptions {
   readonly pluginManagerOptions?: { pluginsPath: string };
@@ -898,6 +900,49 @@ export class ApiServer {
     await Promise.all(tasksDone);
 
     return out;
+  }
+
+  async createMessagingSubscriptionsOfPlugins(): Promise<Subscription[]> {
+    const fn = `${this.className}#createMessagingSubscriptionsOfPlugins()`;
+    const { log } = this;
+    const pluginRegistry = await this.getOrInitPluginRegistry();
+
+    log.debug("Creating plugin messaging subscrpitions...");
+
+    const plugins = pluginRegistry.getPlugins();
+
+    const subs: Subscription[] = [];
+
+    const tasksDone = plugins.map(async (x: ICactusPlugin) => {
+      const outBoxOrNone = await x.getOutBox();
+      if (outBoxOrNone.some) {
+        const outBox = outBoxOrNone.val;
+        const sub = outBox.subscribe((next) => log.debug("next: %o", next));
+        subs.push(sub);
+      } else {
+        this.log.debug("%s skipping %s outBox", fn, x.getPackageName());
+      }
+
+      const inBoxOrNone = await x.getInBox();
+      if (inBoxOrNone.some) {
+        const inBox = inBoxOrNone.val;
+        inBox.next({
+          createAt: new Date().toJSON(),
+          data: { msg: "Hello" },
+          recipients: [],
+          sender: x.getPackageName().concat("#").concat(x.getInstanceId()),
+          version: IPluginMsgVersion.ONE,
+        });
+      } else {
+        this.log.debug("%s skipping %s outBox", fn, x.getPackageName());
+      }
+
+      log.info("%s processed msg subs for: %s", fn, x.getPackageName());
+    });
+
+    await Promise.all(tasksDone);
+
+    return subs;
   }
 
   async startApiServer(): Promise<AddressInfo> {
