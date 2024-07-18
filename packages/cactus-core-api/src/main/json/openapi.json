@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Hyperledger Core API",
+    "title": "Hyperledger Cacti Core API",
     "description": "Contains/describes the core API types for Cactus. Does not describe actual endpoints on its own as this is left to the implementing plugins who can import and re-use commonly needed type definitions from this specification. One example of said commonly used type definitions would be the types related to consortium management, cactus nodes, ledgers, etc..",
     "version": "2.0.0-rc.4",
     "license": {
@@ -11,6 +11,31 @@
   },
   "components": {
     "schemas": {
+      "P2pMsgCode": {
+        "type": "string",
+        "enum": [
+          "org.hyperledger.cacti.api.p2pmsgcode.default"
+        ],
+        "x-enum-varnames": ["Default"]
+      },
+      "P2pMsgV1": {
+        "required": ["id"],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 256,
+            "description": "Globally unique identifier of the message."
+          },
+          "code":{
+            "$ref": "#/components/schemas/P2pMsgCode"
+          },
+          "data": {
+            
+          }
+        }
+      },
       "Constants": {
         "type": "string",
         "enum": ["/api/v1/async/socket-io/connect"],

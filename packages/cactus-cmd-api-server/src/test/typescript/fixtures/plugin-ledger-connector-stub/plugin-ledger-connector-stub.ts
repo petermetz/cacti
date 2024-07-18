@@ -1,5 +1,8 @@
+import { randomUUID } from "node:crypto";
 import { Express } from "express";
-import { None, Option } from "ts-results";
+import { Option, Some } from "ts-results";
+import { Observable, ReplaySubject, Subject } from "rxjs";
+import { StringValue } from "google-protobuf/google/protobuf/wrappers_pb";
 
 import {
   ConsensusAlgorithmFamily,
@@ -8,6 +11,7 @@ import {
   IPluginWebService,
   ICactusPlugin,
   ICactusPluginOptions,
+  P2pMsgV1,
 } from "@hyperledger/cactus-core-api";
 
 import {
@@ -40,7 +44,8 @@ export class PluginLedgerConnectorStub
 {
   private readonly instanceId: string;
   private readonly log: Logger;
-  private readonly pluginRegistry: PluginRegistry;
+  private readonly inbox: Subject<P2pMsgV1>;
+  private readonly outbox: Subject<P2pMsgV1>;
   private endpoints: IWebServiceEndpoint[] | undefined;
 
   public static readonly CLASS_NAME = "PluginLedgerConnectorStub";
@@ -50,17 +55,33 @@ export class PluginLedgerConnectorStub
   }
 
   constructor(public readonly options: IPluginLedgerConnectorStubOptions) {
-    const fnTag = `${this.className}#constructor()`;
-    Checks.truthy(options, `${fnTag} arg options`);
-    Checks.truthy(options.instanceId, `${fnTag} options.instanceId`);
-    Checks.truthy(options.pluginRegistry, `${fnTag} options.pluginRegistry`);
+    const fn = `${this.className}#constructor()`;
+    Checks.truthy(options, `${fn} arg options`);
+    Checks.truthy(options.instanceId, `${fn} options.instanceId`);
+    Checks.truthy(options.pluginRegistry, `${fn} options.pluginRegistry`);
 
     const level = this.options.logLevel || "INFO";
     const label = this.className;
     this.log = LoggerProvider.getOrCreate({ level, label });
 
+    this.inbox = new ReplaySubject(1);
+    this.outbox = new ReplaySubject(1);
+
+    this.inbox.subscribe((msg: P2pMsgV1) => {
+      this.log.debug("inbox p2p msg received: %o", msg);
+      const data = new StringValue();
+      data.setValue("Hello! The time is: " + new Date().toISOString());
+      const replyMsg = new P2pMsgV1({
+        id: randomUUID(),
+        msgType: "server-1",
+        data: data as any,
+        sender: this.getInstanceId(),
+        createdAt: new Date().toISOString(),
+      });
+      this.outbox.next(replyMsg);
+    });
+
     this.instanceId = options.instanceId;
-    this.pluginRegistry = options.pluginRegistry;
     this.log.debug(`Instantiated ${this.className} OK`);
   }
 
@@ -76,12 +97,12 @@ export class PluginLedgerConnectorStub
     return;
   }
 
-  public async getOutBox(): Promise<Option<never>> {
-    return None;
+  public async getOutBox(): Promise<Option<Observable<P2pMsgV1>>> {
+    return Some(this.outbox);
   }
 
-  public async getInBox(): Promise<Option<never>> {
-    return None;
+  public async getInBox(): Promise<Option<Subject<P2pMsgV1>>> {
+    return Some(this.inbox);
   }
 
   public async shutdown(): Promise<void> {
@@ -134,15 +155,27 @@ export class PluginLedgerConnectorStub
   public async getConsensusAlgorithmFamily(): Promise<ConsensusAlgorithmFamily> {
     return ConsensusAlgorithmFamily.Authority;
   }
+
   public async hasTransactionFinality(): Promise<boolean> {
     const currentConsensusAlgorithmFamily =
       await this.getConsensusAlgorithmFamily();
 
     return consensusHasTransactionFinality(currentConsensusAlgorithmFamily);
   }
+
   public async transact(req: unknown): Promise<unknown> {
     const fnTag = `${this.className}#transact()`;
     Checks.truthy(req, `${fnTag} req`);
+    const data = new StringValue();
+    data.setValue("Hello! The time is: " + new Date().toISOString());
+    const newMsg = new P2pMsgV1({
+      id: randomUUID(),
+      msgType: this.className,
+      data: data as any,
+      sender: this.getInstanceId(),
+      createdAt: new Date().toISOString(),
+    });
+    this.outbox.next(newMsg);
     return req;
   }
 

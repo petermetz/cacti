@@ -81,7 +81,7 @@
     "openapi-types": "12.1.3",
     "prom-client": "15.1.3",
     "run-time-error-cjs": "1.4.0",
-    "rxjs": "7.8.1",
+    "rxjs": "8.0.0-alpha.14",
     "sanitize-filename": "1.6.3",
     "sanitize-html": "2.12.1",
     "secp256k1": "4.0.3",

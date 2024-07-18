@@ -68,7 +68,7 @@
     "@ionic/angular": "8.2.5",
     "net-browserify": "0.2.4",
     "run-time-error": "1.4.0",
-    "rxjs": "7.8.1",
+    "rxjs": "8.0.0-alpha.14",
     "tls-browserify": "0.2.2",
     "tslib": "2.6.2",
     "uuid": "10.0.0",

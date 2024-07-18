@@ -9138,7 +9138,7 @@ __metadata:
     openapi-types: "npm:12.1.3"
     prom-client: "npm:15.1.3"
     run-time-error-cjs: "npm:1.4.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
     stellar-plus: "npm:0.8.4"
@@ -9374,7 +9374,7 @@ __metadata:
     http-status-codes: "npm:2.3.0"
     jsonwebtoken: "npm:9.0.0"
     lodash: "npm:4.17.21"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     socket.io-client-fixed-types: "npm:4.5.4"
   languageName: unknown
   linkType: soft
@@ -9447,7 +9447,7 @@ __metadata:
     prom-client: "npm:15.1.3"
     protobufjs: "npm:7.4.0"
     run-time-error-cjs: "npm:1.4.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     safe-stable-stringify: "npm:2.4.3"
     semver: "npm:7.6.2"
     socket.io: "npm:4.6.2"
@@ -9559,7 +9559,9 @@ __metadata:
     grpc_tools_node_protoc_ts: "npm:5.3.3"
     make-dir-cli: "npm:3.1.0"
     npm-run-all: "npm:4.1.5"
+    rxjs: "npm:8.0.0-alpha.14"
     socket.io: "npm:4.6.2"
+    ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
   languageName: unknown
   linkType: soft
@@ -9581,6 +9583,7 @@ __metadata:
     http-errors-enhanced-cjs: "npm:2.0.1"
     node-mocks-http: "npm:1.14.0"
     run-time-error-cjs: "npm:1.4.0"
+    rxjs: "npm:8.0.0-alpha.14"
     safe-stable-stringify: "npm:2.4.3"
     ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
@@ -9685,7 +9688,7 @@ __metadata:
     net-browserify: "npm:0.2.4"
     os-browserify: "npm:0.3.0"
     path-browserify: "npm:1.0.1"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     tls-browserify: "npm:0.2.2"
     tslib: "npm:2.6.2"
     zone.js: "npm:0.13.1"
@@ -9945,7 +9948,7 @@ __metadata:
     os-browserify: "npm:0.3.0"
     path-browserify: "npm:1.0.1"
     run-time-error: "npm:1.4.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     tls-browserify: "npm:0.2.2"
     tslib: "npm:2.6.2"
     uuid: "npm:10.0.0"
@@ -10206,7 +10209,7 @@ __metadata:
     express: "npm:4.19.2"
     npm-run-all2: "npm:6.1.2"
     prom-client: "npm:15.1.3"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
   languageName: unknown
@@ -10265,7 +10268,7 @@ __metadata:
     express: "npm:4.19.2"
     jest: "npm:29.6.2"
     jest-extended: "npm:4.0.1"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
     ts-results: "npm:3.3.0"
@@ -10308,7 +10311,7 @@ __metadata:
     prom-client: "npm:15.1.3"
     protobufjs: "npm:7.4.0"
     run-time-error-cjs: "npm:1.4.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
     ts-results: "npm:3.3.0"
@@ -10367,7 +10370,7 @@ __metadata:
     node-fetch: "npm:2.7.0"
     node-ssh: "npm:13.1.0"
     prom-client: "npm:15.1.3"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     temp: "npm:0.9.4"
     ts-results: "npm:3.3.0"
     typescript-optional: "npm:2.0.1"
@@ -10404,7 +10407,7 @@ __metadata:
     minimist: "npm:1.2.8"
     prom-client: "npm:15.1.3"
     run-time-error-cjs: "npm:1.4.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     sanitize-html: "npm:2.12.1"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
@@ -10465,7 +10468,7 @@ __metadata:
     openapi-types: "npm:12.1.3"
     prom-client: "npm:15.1.3"
     run-time-error-cjs: "npm:1.4.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     sanitize-filename: "npm:1.6.3"
     sanitize-html: "npm:2.12.1"
     secp256k1: "npm:4.0.3"
@@ -10502,7 +10505,7 @@ __metadata:
     hada: "npm:0.0.8"
     jest: "npm:29.6.2"
     jest-extended: "npm:4.0.1"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     sanitize-html: "npm:2.12.1"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
@@ -10570,7 +10573,7 @@ __metadata:
     body-parser: "npm:1.20.2"
     cbor: "npm:9.0.1"
     express: "npm:4.19.2"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
     ts-results: "npm:3.3.0"
@@ -10657,7 +10660,7 @@ __metadata:
     npm-run-all: "npm:4.1.5"
     pg: "npm:8.8.0"
     run-time-error-cjs: "npm:1.4.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     socket.io: "npm:4.6.2"
     ts-results: "npm:3.3.0"
     uuid: "npm:10.0.0"
@@ -10690,7 +10693,7 @@ __metadata:
     jest-extended: "npm:4.0.1"
     pg: "npm:8.8.0"
     run-time-error-cjs: "npm:1.4.0"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
     safe-stable-stringify: "npm:2.4.3"
     socket.io: "npm:4.6.2"
     ts-results: "npm:3.3.0"
@@ -11013,7 +11016,7 @@ __metadata:
     "@hyperledger/cactus-plugin-ledger-connector-iroha2": "npm:2.0.0-rc.4"
     "@hyperledger/cactus-plugin-ledger-connector-sawtooth": "npm:2.0.0-rc.4"
     jest-extended: "npm:4.0.1"
-    rxjs: "npm:7.8.1"
+    rxjs: "npm:8.0.0-alpha.14"
   peerDependencies:
     "@hyperledger/cactus-api-client": 2.x
     "@hyperledger/cactus-plugin-ledger-connector-besu": 2.x
@@ -47364,6 +47367,13 @@ __metadata:
   dependencies:
     tslib: "npm:^2.1.0"
   checksum: 10/b10cac1a5258f885e9dd1b70d23c34daeb21b61222ee735d2ec40a8685bdca40429000703a44f0e638c27a684ac139e1c37e835d2a0dc16f6fc061a138ae3abb
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:8.0.0-alpha.14":
+  version: 8.0.0-alpha.14
+  resolution: "rxjs@npm:8.0.0-alpha.14"
+  checksum: 10/6f36ae01780bc6a7e6b287a3c09bf1888422f253ac9f260a2fb4a51465e1e28d543507f48f36d20ed6d4f2cb2069ae4ae5604b2ec4ed861ea6935be2357ead2e
   languageName: node
   linkType: hard
 

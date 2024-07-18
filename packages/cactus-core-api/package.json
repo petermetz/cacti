@@ -53,6 +53,7 @@
     "proto:protoc-gen-ts": "run-s proto:protoc-gen-ts:make-dir proto:protoc-gen-ts:grpc_tools_node_protoc",
     "proto:protoc-gen-ts:make-dir": "make-dir ./src/main/typescript/generated/proto/protoc-gen-ts/weaver/common/protos/",
     "proto:protoc-gen-ts:grpc_tools_node_protoc": "yarn run grpc_tools_node_protoc --plugin=protoc-gen-ts=../../node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:./src/main/typescript/generated/proto/protoc-gen-ts/weaver/common/protos/ --proto_path ./src/main/proto/weaver/common/protos/ ./src/main/proto/weaver/common/protos/common/*.proto ./src/main/proto/weaver/common/protos/corda/*.proto ./src/main/proto/weaver/common/protos/driver/*.proto ./src/main/proto/weaver/common/protos/networks/*.proto ./src/main/proto/weaver/common/protos/relay/*.proto",
+    "proto:crpc": "yarn run --top-level buf generate --debug --verbose --template=./buf.gen.yaml --output ./src/main/typescript/generated/proto/crpc/ ./src/main/proto/p2p/",
     "watch": "npm-watch",
     "webpack": "npm-run-all webpack:dev",
     "webpack:dev": "npm-run-all webpack:dev:node webpack:dev:web",
@@ -66,7 +67,9 @@
     "ajv-draft-04": "1.0.0",
     "ajv-formats": "3.0.1",
     "axios": "1.7.7",
-    "google-protobuf": "3.21.4"
+    "google-protobuf": "3.21.4",
+    "rxjs": "8.0.0-alpha.14",
+    "ts-results": "3.3.0"
   },
   "devDependencies": {
     "@bufbuild/protobuf": "1.10.0",
