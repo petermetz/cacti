@@ -29,3 +29,9 @@ export { stringifyBigIntReplacer } from "./web-services/stringify-big-int-replac
 export { IConfigureExpressAppContext } from "./web-services/configure-express-app-base";
 export { configureExpressAppBase } from "./web-services/configure-express-app-base";
 export { CACTI_CORE_CONFIGURE_EXPRESS_APP_BASE_MARKER } from "./web-services/configure-express-app-base";
+
+export {
+  ICreateP2pMsgServiceImplOptions,
+  P2pMsgServiceImpl,
+  createP2pMsgServiceImpl,
+} from "./p2p/crpc-services/create-p2p-msg-service-impl";

@@ -1,16 +1,16 @@
-import type { AddressInfo } from "net";
+import os from "node:os";
+import path from "node:path";
+import type { AddressInfo } from "node:net";
+import tls from "node:tls";
+import { Server, createServer } from "node:http";
+import type { Server as SecureServer } from "node:https";
+import { createServer as createSecureServer } from "node:https";
 import { Http2Server, Http2ServerRequest } from "node:http2";
 import { Http2ServerResponse } from "node:http2";
-import type { Server as SecureServer } from "https";
 import type { Request, Response, RequestHandler } from "express";
 import type { ServerOptions as SocketIoServerOptions } from "socket.io";
 import type { Socket as SocketIoSocket } from "socket.io";
 import exitHook, { IAsyncExitHookDoneCallback } from "async-exit-hook";
-import os from "os";
-import path from "path";
-import tls from "tls";
-import { Server, createServer } from "http";
-import { createServer as createSecureServer } from "https";
 import { RuntimeError } from "run-time-error-cjs";
 import { gte } from "semver";
 import lmify from "lmify";
@@ -49,9 +49,11 @@ import {
   isIPluginGrpcService,
   isIPluginCrpcService,
   ICrpcSvcRegistration,
+  P2pMsgService,
 } from "@hyperledger/cactus-core-api";
 
 import {
+  createP2pMsgServiceImpl,
   PluginRegistry,
   registerWebServiceEndpoint,
 } from "@hyperledger/cactus-core";
@@ -81,8 +83,6 @@ import {
   GetOpenApiSpecV1Endpoint,
   IGetOpenApiSpecV1EndpointOptions,
 } from "./web-services/get-open-api-spec-v1-endpoint";
-import { IPluginMsgVersion } from "@hyperledger/cactus-core-api/src/main/typescript/plugin/i-plugin-msg-v1";
-import { Subscription } from "rxjs";
 
 export interface IApiServerConstructorOptions {
   readonly pluginManagerOptions?: { pluginsPath: string };
@@ -741,7 +741,11 @@ export class ApiServer {
     const fnTag = `${this.className}#registerCrpcServices()}`;
     const { log } = this;
 
+    const crpcP2pSvcRegistration = await this.createCrpcServicesP2p();
+
     const crpcSvcRegistrations = await this.createCrpcServicesOfPlugins();
+    crpcSvcRegistrations.push(crpcP2pSvcRegistration);
+
     const crpcSvcRegCount = crpcSvcRegistrations.length;
 
     log.debug("%s Obtained %o Crpc registrations.", fnTag, crpcSvcRegCount);
@@ -902,47 +906,27 @@ export class ApiServer {
     return out;
   }
 
-  async createMessagingSubscriptionsOfPlugins(): Promise<Subscription[]> {
-    const fn = `${this.className}#createMessagingSubscriptionsOfPlugins()`;
+  async createCrpcServicesP2p(): Promise<ICrpcSvcRegistration<ServiceType>> {
+    const fn = `${this.className}#createCrpcServicesP2p()`;
     const { log } = this;
+    log.trace("%s ENTER", fn);
+
     const pluginRegistry = await this.getOrInitPluginRegistry();
 
-    log.debug("Creating plugin messaging subscrpitions...");
-
-    const plugins = pluginRegistry.getPlugins();
-
-    const subs: Subscription[] = [];
-
-    const tasksDone = plugins.map(async (x: ICactusPlugin) => {
-      const outBoxOrNone = await x.getOutBox();
-      if (outBoxOrNone.some) {
-        const outBox = outBoxOrNone.val;
-        const sub = outBox.subscribe((next) => log.debug("next: %o", next));
-        subs.push(sub);
-      } else {
-        this.log.debug("%s skipping %s outBox", fn, x.getPackageName());
-      }
-
-      const inBoxOrNone = await x.getInBox();
-      if (inBoxOrNone.some) {
-        const inBox = inBoxOrNone.val;
-        inBox.next({
-          createAt: new Date().toJSON(),
-          data: { msg: "Hello" },
-          recipients: [],
-          sender: x.getPackageName().concat("#").concat(x.getInstanceId()),
-          version: IPluginMsgVersion.ONE,
-        });
-      } else {
-        this.log.debug("%s skipping %s outBox", fn, x.getPackageName());
-      }
-
-      log.info("%s processed msg subs for: %s", fn, x.getPackageName());
+    const logLevel = this.options.config.logLevel || "WARN";
+    const implementation = await createP2pMsgServiceImpl({
+      logLevel,
+      pluginRegistry,
     });
 
-    await Promise.all(tasksDone);
+    const crpcSvcRegistration: ICrpcSvcRegistration<ServiceType> = {
+      definition: P2pMsgService,
+      serviceName: P2pMsgService.typeName,
+      implementation,
+    };
 
-    return subs;
+    this.log.trace("%s EXIT: %o", fn, crpcSvcRegistration);
+    return crpcSvcRegistration;
   }
 
   async startApiServer(): Promise<AddressInfo> {

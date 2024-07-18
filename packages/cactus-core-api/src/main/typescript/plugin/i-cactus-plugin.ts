@@ -1,6 +1,6 @@
 import { Observable, Subject } from "rxjs";
 import { Option } from "ts-results";
-import { IPluginMsgV1 } from "./i-plugin-msg-v1";
+import { P2pMsgV1 } from "../public-api";
 
 /**
  * The common interface definition that plugin classes can use to inherit from
@@ -73,8 +73,8 @@ export interface ICactusPlugin {
    */
   getPackageName(): string;
 
-  getOutBox(): Promise<Option<Observable<IPluginMsgV1<unknown>>>>;
-  getInBox(): Promise<Option<Subject<IPluginMsgV1<unknown>>>>;
+  getOutBox(): Promise<Option<Observable<P2pMsgV1>>>;
+  getInBox(): Promise<Option<Subject<P2pMsgV1>>>;
 
   onPluginInit(): Promise<unknown>;
 }

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package cacti.api.p2p.v1;
+
+import "google/protobuf/any.proto";
+
+message P2pMsgV1 {
+  string id = 100;
+  string msgType = 200;
+  string createdAt = 300;
+  google.protobuf.Any data = 400;
+  string sender = 500;
+}
+
+service P2pMsgService {
+  rpc SendReceive(stream P2pMsgV1) returns (stream P2pMsgV1) {}
+}

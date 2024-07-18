@@ -1,8 +1,12 @@
-export enum IPluginMsgVersion {
+export enum P2pMsgVersion {
   ONE = 1,
 }
 
-export interface IPluginMsgV1<T> {
+export interface IP2pMsgV1<T> {
+  /**
+   * A globally unique identifier of this message.
+   */
+  readonly id: Readonly<string>;
   /**
    * An ISO timestamp with timezone included such as this:
    * ```js
@@ -24,7 +28,7 @@ export interface IPluginMsgV1<T> {
    */
   readonly sender: Readonly<string>;
 
-  readonly version: IPluginMsgVersion.ONE;
+  readonly version: P2pMsgVersion.ONE;
 
   readonly data: T;
 }
