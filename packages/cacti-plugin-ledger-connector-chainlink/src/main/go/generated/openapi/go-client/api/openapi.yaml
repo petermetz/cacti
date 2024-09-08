@@ -1,0 +1,151 @@
+openapi: 3.0.3
+info:
+  description: Can perform basic tasks on a Chainlink ledger
+  license:
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  title: Hyperledger Cacti Plugin - Connector Chainlink
+  version: 2.0.0
+servers:
+- description: Local development environment.
+  url: http://127.0.0.1:4000
+paths:
+  /api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-chainlink/get-subscription-info:
+    post:
+      operationId: getSubscriptionInfoV1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetSubscriptionInfoV1Request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSubscriptionInfoV1Response'
+          description: Success
+        "401":
+          description: Unauthorized
+      security: []
+      summary: You can request details for a given subscription (on the network on
+        which it has been created) using this service. This is a read-only interaction
+        with the ledger.
+      x-hyperledger-cacti:
+        http:
+          verbLowerCase: get
+          path: /api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-chainlink/get-subscription-info
+  /api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-chainlink/get-open-api-spec:
+    get:
+      operationId: getOpenApiSpecV1
+      parameters: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: string
+          description: OK
+        "401":
+          description: Unauthorized request received.
+      security: []
+      summary: Retrieves the .json file that contains the OpenAPI specification for
+        the plugin.
+      x-hyperledger-cacti:
+        http:
+          verbLowerCase: get
+          path: /api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-chainlink/get-open-api-spec
+components:
+  schemas:
+    WatchBlocksV1:
+      enum:
+      - org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Subscribe
+      - org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Next
+      - org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Unsubscribe
+      - org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Error
+      - org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Complete
+      type: string
+      x-enum-varnames:
+      - Subscribe
+      - Next
+      - Unsubscribe
+      - Error
+      - Complete
+    WatchBlocksV1Request:
+      properties:
+        event:
+          $ref: '#/components/schemas/WatchBlocksV1'
+      required:
+      - event
+      type: object
+    WatchBlocksV1Progress:
+      properties:
+        data:
+          additionalProperties: true
+          type: object
+      required:
+      - data
+      type: object
+    GetSubscriptionInfoV1Request:
+      additionalProperties: false
+      example:
+        subscriptionId: subscriptionId
+      properties:
+        subscriptionId:
+          format: bigint
+          type: string
+      required:
+      - subscriptionId
+      type: object
+    SubscriptionInfo:
+      example:
+        owner: owner
+        balance: balance
+        flags: flags
+        proposedOwner: proposedOwner
+        consumers:
+        - consumers
+        - consumers
+        blockedBalance: blockedBalance
+      properties:
+        balance:
+          format: bigint
+          type: string
+        owner:
+          type: string
+        blockedBalance:
+          format: bigint
+          type: string
+        proposedOwner:
+          type: string
+        consumers:
+          items:
+            type: string
+          type: array
+        flags:
+          type: string
+      required:
+      - balance
+      - blockedBalance
+      - consumers
+      - flags
+      - owner
+      - proposedOwner
+      type: object
+    GetSubscriptionInfoV1Response:
+      additionalProperties: false
+      example:
+        subscriptionInfo:
+          owner: owner
+          balance: balance
+          flags: flags
+          proposedOwner: proposedOwner
+          consumers:
+          - consumers
+          - consumers
+          blockedBalance: blockedBalance
+      properties:
+        subscriptionInfo:
+          $ref: '#/components/schemas/SubscriptionInfo'
+      type: object
