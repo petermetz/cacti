@@ -1,0 +1,223 @@
+{
+  "openapi": "3.0.3",
+  "servers": [
+    {
+      "description": "Local Development Server",
+      "url": "http://cacti.local:3000"
+    }
+  ],
+  "info": {
+    "title": "Hyperledger Cacti Plugin - Connector Celo",
+    "description": "Can perform basic tasks on a Celo ledger",
+    "version": "2.0.0",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "components": {
+    "schemas": {
+      "Web3SigningCredentialPrivateKeyHex": {
+        "type": "object",
+        "required": ["type", "ethAccount", "secret"],
+        "properties": {
+          "ethAccount": {
+            "type": "string",
+            "description": "The ethereum account (public key) that the credential belongs to. Basically the username in the traditional terminology of authentication.",
+            "minLength": 32,
+            "maxLength": 64,
+            "nullable": false
+          },
+          "secret": {
+            "type": "string",
+            "description": "The HEX encoded private key of an eth account.",
+            "minLength": 0,
+            "maxLength": 65535
+          }
+        }
+      },
+      "DeployContractV1Request": {
+        "type": "object",
+        "required": [
+          "chainId",
+          "contractName",
+          "contractAbi",
+          "bytecode",
+          "web3SigningCredential",
+          "constructorArgs"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "chainId": {
+            "type": "number",
+            "description": "The chainId to specify when executing the contract  deployment transaction on the Celo ledger.",
+            "nullable": false
+          },
+          "contractName": {
+            "type": "string",
+            "description": "The contract name for retrieve the contracts json on the keychain.",
+            "minLength": 1,
+            "maxLength": 100,
+            "nullable": false
+          },
+          "contractAbi": {
+            "description": "The application binary interface of the solidity contract",
+            "type": "array",
+            "items": {},
+            "nullable": false
+          },
+          "contractJSONString": {
+            "description": "For use when not using keychain, pass the contract in as this string variable",
+            "nullable": false,
+            "type": "string"
+          },
+          "constructorArgs": {
+            "type": "array",
+            "items": {},
+            "default": []
+          },
+          "web3SigningCredential": {
+            "$ref": "#/components/schemas/Web3SigningCredentialPrivateKeyHex",
+            "nullable": false
+          },
+          "bytecode": {
+            "type": "string",
+            "nullable": false,
+            "minLength": 1,
+            "maxLength": 24576,
+            "description": "See https://ethereum.stackexchange.com/a/47556 regarding the maximum length of the bytecode"
+          },
+          "gas": {
+            "type": "number",
+            "nullable": false
+          },
+          "gasPrice": {
+            "type": "string",
+            "nullable": false
+          },
+          "timeoutMs": {
+            "type": "number",
+            "description": "The amount of milliseconds to wait for a transaction receipt with theaddress of the contract(which indicates successful deployment) beforegiving up and crashing.",
+            "minimum": 0,
+            "default": 60000,
+            "nullable": false
+          }
+        }
+      },
+      "DeployContractV1Response": {
+        "type": "object",
+        "required": ["txReceipt"],
+        "properties": {
+          "txReceipt": {
+            "type": "object"
+          }
+        }
+      },
+      "WatchBlocksV1": {
+        "type": "string",
+        "enum": [
+          "org.hyperledger.cactus.api.async.celo.WatchBlocksV1.Subscribe",
+          "org.hyperledger.cactus.api.async.celo.WatchBlocksV1.Next",
+          "org.hyperledger.cactus.api.async.celo.WatchBlocksV1.Unsubscribe",
+          "org.hyperledger.cactus.api.async.celo.WatchBlocksV1.Error",
+          "org.hyperledger.cactus.api.async.celo.WatchBlocksV1.Complete"
+        ],
+        "x-enum-varnames": [
+          "Subscribe",
+          "Next",
+          "Unsubscribe",
+          "Error",
+          "Complete"
+        ]
+      },
+      "WatchBlocksV1Request": {
+        "type": "object",
+        "required": ["event"],
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/WatchBlocksV1"
+          }
+        }
+      },
+      "WatchBlocksV1Progress": {
+        "type": "object",
+        "required": ["block"],
+        "description": "FIXME - the payload is not well defined",
+        "properties": {
+          "block": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-celo/get-open-api-spec": {
+      "get": {
+        "security": [],
+        "x-hyperledger-cacti": {
+          "http": {
+            "verbLowerCase": "get",
+            "path": "/api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-celo/get-open-api-spec"
+          }
+        },
+        "operationId": "getOpenApiSpecV1",
+        "summary": "Retrieves the .json file that contains the OpenAPI specification for the plugin.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-celo/deploy-contract": {
+      "post": {
+        "x-hyperledger-cacti": {
+          "http": {
+            "verbLowerCase": "post",
+            "path": "/api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-celo/deploy-contract"
+          }
+        },
+        "operationId": "deployContractV1",
+        "summary": "Deploys the bytecode of a Solidity contract without the need of keychain",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeployContractV1Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeployContractV1Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  }
+}
