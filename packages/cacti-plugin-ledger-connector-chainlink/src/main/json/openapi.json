@@ -1,0 +1,184 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Hyperledger Cacti Plugin - Connector Chainlink",
+    "description": "Can perform basic tasks on a Chainlink ledger",
+    "version": "2.0.0",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "servers": [
+    {
+      "description": "Local development environment.",
+      "url": "http://127.0.0.1:4000",
+      "variables": {}
+    }
+  ],
+  "components": {
+    "schemas": {
+      "WatchBlocksV1": {
+        "type": "string",
+        "enum": [
+          "org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Subscribe",
+          "org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Next",
+          "org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Unsubscribe",
+          "org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Error",
+          "org.hyperledger.cactus.api.async.besu.WatchBlocksV1.Complete"
+        ],
+        "x-enum-varnames": [
+          "Subscribe",
+          "Next",
+          "Unsubscribe",
+          "Error",
+          "Complete"
+        ]
+      },
+      "WatchBlocksV1Request": {
+        "type": "object",
+        "required": ["event"],
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/WatchBlocksV1"
+          }
+        }
+      },
+      "WatchBlocksV1Progress": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "GetSubscriptionInfoV1Request": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subscriptionId"],
+        "properties": {
+          "subscriptionId": {
+            "type": "string",
+            "format": "bigint"
+          }
+        }
+      },
+      "SubscriptionInfo": {
+        "type": "object",
+        "required": [
+          "balance",
+          "owner",
+          "blockedBalance",
+          "proposedOwner",
+          "consumers",
+          "flags"
+        ],
+        "properties": {
+          "balance": {
+            "type": "string",
+            "format": "bigint"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "blockedBalance": {
+            "type": "string",
+            "format": "bigint"
+          },
+          "proposedOwner": {
+            "type": "string"
+          },
+          "consumers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "flags": {
+            "type": "string"
+          }
+        }
+      },
+      "GetSubscriptionInfoV1Response": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "subscriptionInfo": {
+            "$ref": "#/components/schemas/SubscriptionInfo"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-chainlink/get-subscription-info": {
+      "post": {
+        "operationId": "getSubscriptionInfoV1",
+        "summary": "You can request details for a given subscription (on the network on which it has been created) using this service. This is a read-only interaction with the ledger.",
+        "security": [],
+        "x-hyperledger-cacti": {
+          "http": {
+            "verbLowerCase": "get",
+            "path": "/api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-chainlink/get-subscription-info"
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSubscriptionInfoV1Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetSubscriptionInfoV1Request"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-chainlink/get-open-api-spec": {
+      "get": {
+        "security": [],
+        "x-hyperledger-cacti": {
+          "http": {
+            "verbLowerCase": "get",
+            "path": "/api/v1/plugins/@hyperledger/cacti-plugin-ledger-connector-chainlink/get-open-api-spec"
+          }
+        },
+        "operationId": "getOpenApiSpecV1",
+        "summary": "Retrieves the .json file that contains the OpenAPI specification for the plugin.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized request received."
+          }
+        }
+      }
+    }
+  }
+}

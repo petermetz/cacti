@@ -232,7 +232,7 @@ DOCKER_BUILDKIT=1 docker build \
   ./packages/cactus-cmd-api-server \
    --tag cas \
    --tag cmd-api-server \
-   --tag ghcr.io/hyperledger/cactus-cmd-api-server:$(date +"%Y-%m-%dT%H-%M-%S" --utc)-dev-$(git rev-parse --short HEAD)
+   --tag ghcr.io/hyperledger-cacti/cactus-cmd-api-server:$(date +"%Y-%m-%dT%H-%M-%S" --utc)-dev-$(git rev-parse --short HEAD)
 ```
 
 ### Running the container image locally

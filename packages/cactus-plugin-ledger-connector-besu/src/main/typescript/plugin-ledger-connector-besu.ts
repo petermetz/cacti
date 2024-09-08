@@ -679,7 +679,7 @@ export class PluginLedgerConnectorBesu
       logLevel: this.logLevel,
     };
     this.log.debug("Invoking deployContractV1NoKeychain()...");
-    const res = deployContractV1NoKeychain(ctx, req);
+    const res = await deployContractV1NoKeychain(ctx, req);
     this.log.debug("Ran deployContractV1NoKeychain() OK");
     return res;
   }

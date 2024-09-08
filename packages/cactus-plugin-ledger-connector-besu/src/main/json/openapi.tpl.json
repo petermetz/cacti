@@ -731,7 +731,7 @@
             "type": "string",
             "nullable": false,
             "minLength": 1,
-            "maxLength": 49154,
+            "maxLength": 9949154,
             "description": "See https://ethereum.stackexchange.com/a/47556 regarding the maximum length of the bytecode. 2 + (24576 * 2) = 49154 meaning that hex stores each byte in 2 characters and that there is a 0x prefix (2 characters) which does not count towards the EVM 24576 bytecode limit."
           },
           "keychainId": {
@@ -798,7 +798,7 @@
             "type": "string",
             "nullable": false,
             "minLength": 1,
-            "maxLength": 49154,
+            "maxLength": 9949154,
             "description": "See https://ethereum.stackexchange.com/a/47556 regarding the maximum length of the bytecode. 2 + (24576 * 2) = 49154 meaning that hex stores each byte in 2 characters and that there is a 0x prefix (2 characters) which does not count towards the EVM 24576 bytecode limit."
           },
           "gas": {

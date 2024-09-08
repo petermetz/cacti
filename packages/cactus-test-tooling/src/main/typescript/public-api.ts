@@ -175,6 +175,13 @@ export {
   SubstrateTestLedger,
 } from "./substrate-test-ledger/substrate-test-ledger";
 
+export {
+  CHAINLINK_TEST_LEDGER_DEFAULT_OPTIONS,
+  CHAINLINK_TEST_LEDGER_OPTIONS_JOI_SCHEMA,
+  ChainlinkTestLedger,
+  IChainlinkTestLedgerConstructorOptions,
+} from "./chainlink/chainlink-test-ledger";
+
 export { Streams } from "./common/streams";
 
 export { isRunningInGithubAction } from "./github-actions/is-running-in-github-action";

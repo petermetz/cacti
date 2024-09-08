@@ -59,7 +59,13 @@
       "path": "./packages/cactus-plugin-ledger-connector-aries/tsconfig.json"
     },
     {
+      "path": "./packages/cacti-plugin-ledger-connector-celo/tsconfig.json"
+    },
+    {
       "path": "./packages/cactus-plugin-ledger-connector-besu/tsconfig.json"
+    },
+    {
+      "path": "./packages/cacti-plugin-ledger-connector-chainlink/tsconfig.json"
     },
     {
       "path": "./packages/cactus-plugin-ledger-connector-polkadot/tsconfig.json"
@@ -110,7 +116,13 @@
       "path": "./packages/cactus-test-plugin-keychain-memory/tsconfig.json"
     },
     {
+      "path": "./packages/cacti-test-plugin-ledger-connector-celo/tsconfig.json"
+    },
+    {
       "path": "./packages/cactus-test-plugin-ledger-connector-besu/tsconfig.json"
+    },
+    {
+      "path": "./packages/cacti-test-plugin-ledger-connector-chainlink/tsconfig.json"
     },
     {
       "path": "./packages/cactus-test-plugin-ledger-connector-ethereum/tsconfig.json"

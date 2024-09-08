@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "models/watch_blocks_v1_progress_pb.proto";
+import "models/watch_blocks_v1_request_pb.proto";
+
+package org.hyperledger.cacti.plugin.ledger.connector.chainlink.services.chainlinkservice;
+
+service ChainlinkGrpcSvcStreams {
+    rpc GetOpenApiV1(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc WatchBlocksV1(stream WatchBlocksV1RequestPB) returns (stream WatchBlocksV1ProgressPB) {};
+}

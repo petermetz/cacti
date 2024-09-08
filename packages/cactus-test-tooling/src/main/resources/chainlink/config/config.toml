@@ -1,0 +1,61 @@
+Log.Level = 'info'
+
+[Insecure]
+DevWebServer = false # Default is false
+OCRDevelopmentMode = false # Default
+InfiniteDepthQueries = false # Default
+DisableRateLimiting = false # Default
+
+[WebServer]
+AuthenticationMethod = 'local' # Default
+AllowOrigins = 'http://localhost:3000,http://localhost:6688' # Default
+BridgeCacheTTL = '0s' # Default
+# BridgeResponseURL = 'https://my-chainlink-node.example.com:6688' # Example
+HTTPWriteTimeout = '10s' # Default
+HTTPPort = 6688 # Default
+SecureCookies = true # Default
+SessionTimeout = '15m' # Default
+SessionReaperExpiration = '240h' # Default
+HTTPMaxSize = '32768b' # Default
+StartTimeout = '15s' # Default
+ListenIP = '0.0.0.0' # Default
+
+[WebServer.TLS]
+HTTPSPort=0
+
+[Database]
+# URL = 'postgres://chainlink_user:chainlink_pass@postgres:5432/chainlink_db?sslmode=disable'
+DefaultIdleInTxSessionTimeout = '1h' # Default
+DefaultLockTimeout = '15s' # Default
+DefaultQueryTimeout = '10s' # Default
+LogQueries = true # Default is false
+MaxIdleConns = 10 # Default
+MaxOpenConns = 100 # Default
+MigrateOnStartup = true # Default
+
+
+[[EVM]]
+ChainID = '1337' # Required
+
+[[EVM.Nodes]]
+Name = 'besu-1' # Required
+WSURL = 'ws://besu:8546'
+HTTPURL = 'http://besu:8545' # Required
+
+# [Blockchain]
+#   [Ethereum]
+#     URL = "http://besu:8545"
+#     ChainID = "1337"
+#     LinkContractAddress = "0x0"  # Replace with the actual LINK token contract address
+
+# [Job]
+#   MinPayment = "0.1"
+
+
+# [[EVM]]
+# ChainID = '1' # Required
+
+# [[EVM.Nodes]]
+# Name = 'fake' # Required
+# WSURL = 'wss://foo.bar/ws'
+# HTTPURL = 'https://foo.bar' # Required
