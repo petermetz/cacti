@@ -55,7 +55,7 @@
     "webpack:dev:web": "webpack --env=dev --target=web --config ../../webpack.config.js",
     "forge": "forge build ./src/solidity/main/*.sol --out ./src/solidity/main/generated",
     "forge:test": "forge build ./src/solidity/test/*.sol --out ./src/solidity/test/generated",
-    "forge:all": "run-s 'forge' 'forge:test'"
+    "forge:all": "yarn run --top-level run-s 'forge' 'forge:test'"
   },
   "dependencies": {
     "@foundry-rs/hardhat-forge": "0.1.17",

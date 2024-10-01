@@ -117,7 +117,7 @@ export class GatewayOrchestrator {
           routes: this.handlers
             .get(stage)!
             .setupRouter.bind(this.handlers.get(stage)!),
-        }),
+        }) as any, // FIXME(petermetz)
       );
     }
   }
