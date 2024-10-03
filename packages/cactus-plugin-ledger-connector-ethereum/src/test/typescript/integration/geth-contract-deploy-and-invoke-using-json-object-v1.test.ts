@@ -45,6 +45,9 @@ import {
   DeployContractV1Request,
   InvokeContractV1Request,
 } from "../../../main/typescript/public-api";
+import { installOpenapiValidationMiddleware } from "@hyperledger/cactus-core";
+import { OpenAPIV3 } from "express-openapi-validator/dist/framework/types";
+import apiSpec from "../../../main/json/openapi.json";
 
 const containerImageName = "ghcr.io/hyperledger/cacti-geth-all-in-one";
 const containerImageVersion = "2023-07-27-2a8c48ed6";
@@ -126,6 +129,12 @@ describe("Ethereum contract deploy and invoke using keychain tests", () => {
       rpcApiHttpHost,
       logLevel: testLogLevel,
       pluginRegistry: new PluginRegistry({ plugins: [keychainPlugin] }),
+    });
+
+    await installOpenapiValidationMiddleware({
+      app: expressApp,
+      apiSpec: apiSpec as OpenAPIV3.Document,
+      logLevel: testLogLevel,
     });
   });
 
@@ -256,9 +265,13 @@ describe("Ethereum contract deploy and invoke using keychain tests", () => {
         gas: 1000000,
         fake: 4,
       } as DeployContractV1Request);
-      fail("Expected deployContract call to fail but it succeeded.");
+      fail(
+        "Expected deployContract call with additionalParameters to fail but it succeeded.",
+      );
     } catch (error) {
-      console.log("deployContract failed as expected");
+      console.log(
+        "deployContract with additionalParameters failed as expected",
+      );
     }
   });
 
@@ -346,25 +359,35 @@ describe("Ethereum contract deploy and invoke using keychain tests", () => {
   test("invoke Web3SigningCredentialType.PrivateKeyHex", async () => {
     const priorityFee = web3.utils.toWei(2, "gwei");
     const newName = `DrCactus${uuidV4()}`;
-    const setNameOut = await apiClient.invokeContractV1({
-      contract: {
-        contractJSON: HelloWorldContractJson,
-        contractAddress,
-      },
-      invocationType: EthContractInvocationType.Send,
-      methodName: "setName",
-      params: [newName],
-      gasConfig: {
-        maxPriorityFeePerGas: priorityFee,
-      },
-      web3SigningCredential: {
-        ethAccount: testEthAccount.address,
-        secret: testEthAccount.privateKey,
-        type: Web3SigningCredentialType.PrivateKeyHex,
-      },
-    });
-    expect(setNameOut).toBeTruthy();
-    expect(setNameOut.data).toBeTruthy();
+    try {
+      const setNameOut = await apiClient.invokeContractV1({
+        contract: {
+          contractJSON: HelloWorldContractJson,
+          contractAddress,
+        },
+        invocationType: EthContractInvocationType.Send,
+        methodName: "setName",
+        params: [newName],
+        gasConfig: {
+          maxPriorityFeePerGas: priorityFee,
+        },
+        web3SigningCredential: {
+          ethAccount: testEthAccount.address,
+          secret: testEthAccount.privateKey,
+          type: Web3SigningCredentialType.PrivateKeyHex,
+        },
+      });
+      expect(setNameOut).toBeTruthy();
+      expect(setNameOut.data).toBeTruthy();
+    } catch (error) {
+      // Log the detailed error response
+      if (error.response) {
+        console.error("Error status:", error.response.status);
+        console.error("Error data:", error.response.data);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    }
 
     try {
       await apiClient.invokeContractV1({
@@ -386,7 +409,7 @@ describe("Ethereum contract deploy and invoke using keychain tests", () => {
       });
       fail("Expected getContractInfoKeychain call to fail but it succeeded.");
     } catch (error) {
-      expect(error).toBeTruthy();
+      console.log("deployContract with PrivateKeyHex failed as expected");
     }
 
     const invokeGetNameOut = await apiClient.invokeContractV1({

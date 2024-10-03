@@ -441,6 +441,7 @@
             "$ref": "#/components/schemas/Web3SigningCredential"
           },
           "contract": {
+            "type": "object",
             "oneOf": [
               {
                 "$ref": "#/components/schemas/ContractJsonDefinition"

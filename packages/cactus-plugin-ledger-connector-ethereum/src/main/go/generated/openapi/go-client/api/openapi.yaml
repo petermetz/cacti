@@ -1002,6 +1002,7 @@ components:
       oneOf:
       - $ref: '#/components/schemas/ContractJsonDefinition'
       - $ref: '#/components/schemas/ContractKeychainDefinition'
+      type: object
     InvokeContractV1Request_contract:
       oneOf:
       - $ref: '#/components/schemas/DeployedContractJsonDefinition'
