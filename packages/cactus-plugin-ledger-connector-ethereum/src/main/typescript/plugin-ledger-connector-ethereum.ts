@@ -887,24 +887,30 @@ export class PluginLedgerConnectorEthereum
       data: txConfig.data,
     };
 
+    let isEip1559GasCfg = false;
+    let isLegacyGasCfg = false;
+
     // Apply gas config to the transaction
-    if (txConfig.gasConfig) {
-      if (isGasTransactionConfigLegacy(txConfig.gasConfig)) {
-        if (isGasTransactionConfigEIP1559(txConfig.gasConfig)) {
-          throw new RuntimeError(
-            `Detected mixed gasConfig! Use either legacy or EIP-1559 mode. gasConfig - ${JSON.stringify(
-              txConfig.gasConfig,
-            )}`,
-          );
-        }
-        tx.maxPriorityFeePerGas = txConfig.gasConfig.gasPrice;
-        tx.maxFeePerGas = txConfig.gasConfig.gasPrice;
-        tx.gasLimit = txConfig.gasConfig.gas;
-      } else {
-        tx.maxPriorityFeePerGas = txConfig.gasConfig.maxPriorityFeePerGas;
-        tx.maxFeePerGas = txConfig.gasConfig.maxFeePerGas;
-        tx.gasLimit = txConfig.gasConfig.gasLimit;
-      }
+    if (isGasTransactionConfigLegacy(txConfig.gasConfig)) {
+      isLegacyGasCfg = true;
+      tx.maxPriorityFeePerGas = txConfig.gasConfig.gasPrice;
+      tx.maxFeePerGas = txConfig.gasConfig.gasPrice;
+      tx.gasLimit = txConfig.gasConfig.gas;
+    }
+
+    if (isGasTransactionConfigEIP1559(txConfig.gasConfig)) {
+      isEip1559GasCfg = true;
+      tx.maxPriorityFeePerGas = txConfig.gasConfig.maxPriorityFeePerGas;
+      tx.maxFeePerGas = txConfig.gasConfig.maxFeePerGas;
+      tx.gasLimit = txConfig.gasConfig.gasLimit;
+    }
+
+    if (isEip1559GasCfg && isLegacyGasCfg) {
+      throw new RuntimeError(
+        `Detected mixed gasConfig! Use either legacy or EIP-1559 mode. gasConfig - ${JSON.stringify(
+          txConfig.gasConfig,
+        )}`,
+      );
     }
 
     if (tx.maxPriorityFeePerGas && !tx.maxFeePerGas) {

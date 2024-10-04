@@ -35,6 +35,8 @@ import {
   PluginLedgerConnectorEthereum,
   Web3SigningCredentialType,
   DefaultApi as EthereumApi,
+  GasTransactionConfigKind,
+  GasTransactionConfig,
 } from "../../../main/typescript/public-api";
 
 const containerImageName = "ghcr.io/hyperledger/cacti-geth-all-in-one";
@@ -145,9 +147,10 @@ describe("Running ethereum transactions with different gas configurations", () =
           to: testEthAccount.address,
           value: transferValue,
           gasConfig: {
+            kind: GasTransactionConfigKind.GasTransactionConfigLegacy,
             gas: "300000",
             maxFeePerGas: maxFee,
-          },
+          } as GasTransactionConfig,
         },
       });
       fail(
@@ -179,6 +182,7 @@ describe("Running ethereum transactions with different gas configurations", () =
         to: testEthAccount.address,
         value: transferValue,
         gasConfig: {
+          kind: GasTransactionConfigKind.GasTransactionConfigLegacy,
           gasPrice: maxFee,
         },
       },
@@ -204,6 +208,7 @@ describe("Running ethereum transactions with different gas configurations", () =
         to: testEthAccount.address,
         value: transferValue,
         gasConfig: {
+          kind: GasTransactionConfigKind.GasTransactionConfigLegacy,
           gas: "300000",
         },
       },
@@ -232,6 +237,7 @@ describe("Running ethereum transactions with different gas configurations", () =
         to: testEthAccount.address,
         value: transferValue,
         gasConfig: {
+          kind: GasTransactionConfigKind.GasTransactionConfigLegacy,
           gas: "300000",
           gasPrice: maxFee,
         },
@@ -261,6 +267,7 @@ describe("Running ethereum transactions with different gas configurations", () =
         to: testEthAccount.address,
         value: transferValue,
         gasConfig: {
+          kind: GasTransactionConfigKind.GasTransactionConfigEip1559,
           maxFeePerGas: maxFee,
         },
       },
@@ -286,6 +293,7 @@ describe("Running ethereum transactions with different gas configurations", () =
         to: testEthAccount.address,
         value: transferValue,
         gasConfig: {
+          kind: GasTransactionConfigKind.GasTransactionConfigEip1559,
           maxPriorityFeePerGas: web3.utils.toWei(2, "gwei"),
         },
       },
@@ -313,6 +321,7 @@ describe("Running ethereum transactions with different gas configurations", () =
         to: testEthAccount.address,
         value: transferValue,
         gasConfig: {
+          kind: GasTransactionConfigKind.GasTransactionConfigEip1559,
           maxFeePerGas: maxFee,
           maxPriorityFeePerGas: priorityFee,
         },

@@ -307,7 +307,7 @@ export interface EthereumTransactionConfig {
  * Transaction gas settings.
  * @export
  */
-export type GasTransactionConfig = GasTransactionConfigEIP1559 | GasTransactionConfigLegacy;
+export type GasTransactionConfig = { kind: 'GasTransactionConfigEIP1559' } & GasTransactionConfigEIP1559 | { kind: 'GasTransactionConfigLegacy' } & GasTransactionConfigLegacy;
 
 /**
  * Transaction gas settings in networks after EIP-1559 (London fork).
@@ -315,6 +315,12 @@ export type GasTransactionConfig = GasTransactionConfigEIP1559 | GasTransactionC
  * @interface GasTransactionConfigEIP1559
  */
 export interface GasTransactionConfigEIP1559 {
+    /**
+     * 
+     * @type {GasTransactionConfigKind}
+     * @memberof GasTransactionConfigEIP1559
+     */
+    'kind': GasTransactionConfigKind;
     /**
      * A maximum amount of gas a user is willing to provide for the execution of the transaction.
      * @type {string}
@@ -334,12 +340,34 @@ export interface GasTransactionConfigEIP1559 {
      */
     'maxPriorityFeePerGas'?: string;
 }
+
+
+/**
+ * 
+ * @export
+ * @enum {string}
+ */
+
+export const GasTransactionConfigKind = {
+    GasTransactionConfigLegacy: 'GasTransactionConfigLegacy',
+    GasTransactionConfigEip1559: 'GasTransactionConfigEIP1559'
+} as const;
+
+export type GasTransactionConfigKind = typeof GasTransactionConfigKind[keyof typeof GasTransactionConfigKind];
+
+
 /**
  * Transaction gas settings in networks before EIP-1559 (London fork).
  * @export
  * @interface GasTransactionConfigLegacy
  */
 export interface GasTransactionConfigLegacy {
+    /**
+     * 
+     * @type {GasTransactionConfigKind}
+     * @memberof GasTransactionConfigLegacy
+     */
+    'kind': GasTransactionConfigKind;
     /**
      * A maximum amount of gas a user is willing to provide for the execution of the transaction. (gasLimit)
      * @type {string}
@@ -353,6 +381,8 @@ export interface GasTransactionConfigLegacy {
      */
     'gasPrice'?: string;
 }
+
+
 /**
  * 
  * @export

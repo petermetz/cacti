@@ -99,6 +99,7 @@ Class | Method | HTTP request | Description
  - [EthereumTransactionConfig](docs/EthereumTransactionConfig.md)
  - [GasTransactionConfig](docs/GasTransactionConfig.md)
  - [GasTransactionConfigEIP1559](docs/GasTransactionConfigEIP1559.md)
+ - [GasTransactionConfigKind](docs/GasTransactionConfigKind.md)
  - [GasTransactionConfigLegacy](docs/GasTransactionConfigLegacy.md)
  - [InvokeContractV1Request](docs/InvokeContractV1Request.md)
  - [InvokeContractV1RequestContract](docs/InvokeContractV1RequestContract.md)

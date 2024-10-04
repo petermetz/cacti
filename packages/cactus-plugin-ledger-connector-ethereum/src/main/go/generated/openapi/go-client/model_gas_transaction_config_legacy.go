@@ -19,6 +19,7 @@ var _ MappedNullable = &GasTransactionConfigLegacy{}
 
 // GasTransactionConfigLegacy Transaction gas settings in networks before EIP-1559 (London fork).
 type GasTransactionConfigLegacy struct {
+	Kind GasTransactionConfigKind `json:"kind"`
 	// A maximum amount of gas a user is willing to provide for the execution of the transaction. (gasLimit)
 	Gas *string `json:"gas,omitempty"`
 	// A price (in Wei) a user is willing to pay for each unit of gas used during the execution of the transaction. In EIP-1559 (London fork) networks, it will be set as both maxFeePerGas and maxPriorityFeePerGas.
@@ -29,8 +30,9 @@ type GasTransactionConfigLegacy struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewGasTransactionConfigLegacy() *GasTransactionConfigLegacy {
+func NewGasTransactionConfigLegacy(kind GasTransactionConfigKind) *GasTransactionConfigLegacy {
 	this := GasTransactionConfigLegacy{}
+	this.Kind = kind
 	return &this
 }
 
@@ -40,6 +42,30 @@ func NewGasTransactionConfigLegacy() *GasTransactionConfigLegacy {
 func NewGasTransactionConfigLegacyWithDefaults() *GasTransactionConfigLegacy {
 	this := GasTransactionConfigLegacy{}
 	return &this
+}
+
+// GetKind returns the Kind field value
+func (o *GasTransactionConfigLegacy) GetKind() GasTransactionConfigKind {
+	if o == nil {
+		var ret GasTransactionConfigKind
+		return ret
+	}
+
+	return o.Kind
+}
+
+// GetKindOk returns a tuple with the Kind field value
+// and a boolean to check if the value has been set.
+func (o *GasTransactionConfigLegacy) GetKindOk() (*GasTransactionConfigKind, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Kind, true
+}
+
+// SetKind sets field value
+func (o *GasTransactionConfigLegacy) SetKind(v GasTransactionConfigKind) {
+	o.Kind = v
 }
 
 // GetGas returns the Gas field value if set, zero value otherwise.
@@ -116,6 +142,7 @@ func (o GasTransactionConfigLegacy) MarshalJSON() ([]byte, error) {
 
 func (o GasTransactionConfigLegacy) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	toSerialize["kind"] = o.Kind
 	if !IsNil(o.Gas) {
 		toSerialize["gas"] = o.Gas
 	}

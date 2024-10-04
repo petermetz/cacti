@@ -19,6 +19,7 @@ var _ MappedNullable = &GasTransactionConfigEIP1559{}
 
 // GasTransactionConfigEIP1559 Transaction gas settings in networks after EIP-1559 (London fork).
 type GasTransactionConfigEIP1559 struct {
+	Kind GasTransactionConfigKind `json:"kind"`
 	// A maximum amount of gas a user is willing to provide for the execution of the transaction.
 	GasLimit *string `json:"gasLimit,omitempty"`
 	// A maximum fee (including the base fee and the tip) a user is willing to pay per unit of gas.
@@ -31,8 +32,9 @@ type GasTransactionConfigEIP1559 struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewGasTransactionConfigEIP1559() *GasTransactionConfigEIP1559 {
+func NewGasTransactionConfigEIP1559(kind GasTransactionConfigKind) *GasTransactionConfigEIP1559 {
 	this := GasTransactionConfigEIP1559{}
+	this.Kind = kind
 	return &this
 }
 
@@ -42,6 +44,30 @@ func NewGasTransactionConfigEIP1559() *GasTransactionConfigEIP1559 {
 func NewGasTransactionConfigEIP1559WithDefaults() *GasTransactionConfigEIP1559 {
 	this := GasTransactionConfigEIP1559{}
 	return &this
+}
+
+// GetKind returns the Kind field value
+func (o *GasTransactionConfigEIP1559) GetKind() GasTransactionConfigKind {
+	if o == nil {
+		var ret GasTransactionConfigKind
+		return ret
+	}
+
+	return o.Kind
+}
+
+// GetKindOk returns a tuple with the Kind field value
+// and a boolean to check if the value has been set.
+func (o *GasTransactionConfigEIP1559) GetKindOk() (*GasTransactionConfigKind, bool) {
+	if o == nil {
+		return nil, false
+	}
+	return &o.Kind, true
+}
+
+// SetKind sets field value
+func (o *GasTransactionConfigEIP1559) SetKind(v GasTransactionConfigKind) {
+	o.Kind = v
 }
 
 // GetGasLimit returns the GasLimit field value if set, zero value otherwise.
@@ -150,6 +176,7 @@ func (o GasTransactionConfigEIP1559) MarshalJSON() ([]byte, error) {
 
 func (o GasTransactionConfigEIP1559) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	toSerialize["kind"] = o.Kind
 	if !IsNil(o.GasLimit) {
 		toSerialize["gasLimit"] = o.GasLimit
 	}

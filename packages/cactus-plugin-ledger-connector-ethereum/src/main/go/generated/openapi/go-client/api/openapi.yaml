@@ -279,9 +279,34 @@ components:
       - encodeABI
       - estimateGas
       type: string
+    GasTransactionConfigKind:
+      enum:
+      - GasTransactionConfigLegacy
+      - GasTransactionConfigEIP1559
+      type: string
+    GasTransactionConfig:
+      description: Transaction gas settings.
+      discriminator:
+        mapping:
+          GasTransactionConfigLegacy: '#/components/schemas/GasTransactionConfigLegacy'
+          GasTransactionConfigEIP1559: '#/components/schemas/GasTransactionConfigEIP1559'
+        propertyName: kind
+      example:
+        kind: null
+      oneOf:
+      - $ref: '#/components/schemas/GasTransactionConfigLegacy'
+      - $ref: '#/components/schemas/GasTransactionConfigEIP1559'
+      properties:
+        kind:
+          $ref: '#/components/schemas/GasTransactionConfigKind'
+      required:
+      - kind
+      type: object
     GasTransactionConfigLegacy:
       description: Transaction gas settings in networks before EIP-1559 (London fork).
       properties:
+        kind:
+          $ref: '#/components/schemas/GasTransactionConfigKind'
         gas:
           description: A maximum amount of gas a user is willing to provide for the
             execution of the transaction. (gasLimit)
@@ -291,10 +316,14 @@ components:
             \ gas used during the execution of the transaction. In EIP-1559 (London\
             \ fork) networks, it will be set as both maxFeePerGas and maxPriorityFeePerGas."
           type: string
+      required:
+      - kind
       type: object
     GasTransactionConfigEIP1559:
       description: Transaction gas settings in networks after EIP-1559 (London fork).
       properties:
+        kind:
+          $ref: '#/components/schemas/GasTransactionConfigKind'
         gasLimit:
           description: A maximum amount of gas a user is willing to provide for the
             execution of the transaction.
@@ -309,16 +338,13 @@ components:
           description: A maximum tip amount a user is willing to pay per unit of gas.
           nullable: false
           type: string
-      type: object
-    GasTransactionConfig:
-      description: Transaction gas settings.
-      oneOf:
-      - $ref: '#/components/schemas/GasTransactionConfigLegacy'
-      - $ref: '#/components/schemas/GasTransactionConfigEIP1559'
+      required:
+      - kind
       type: object
     EthereumTransactionConfig:
       example:
-        gasConfig: null
+        gasConfig:
+          kind: null
         rawTransaction: rawTransaction
         data: data
         from: from
@@ -520,7 +546,8 @@ components:
       example:
         timeoutMs: 0.08008281904610115
         transactionConfig:
-          gasConfig: null
+          gasConfig:
+            kind: null
           rawTransaction: rawTransaction
           data: data
           from: from
@@ -577,7 +604,8 @@ components:
     DeployContractV1Request:
       additionalProperties: false
       example:
-        gasConfig: null
+        gasConfig:
+          kind: null
         constructorArgs:
         - ""
         - ""
@@ -609,7 +637,8 @@ components:
     InvokeContractV1Request:
       additionalProperties: false
       example:
-        gasConfig: null
+        gasConfig:
+          kind: null
         invocationType: null
         timeoutMs: 0.08008281904610115
         contract: null

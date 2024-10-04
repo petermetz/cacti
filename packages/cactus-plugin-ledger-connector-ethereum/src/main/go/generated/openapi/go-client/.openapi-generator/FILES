@@ -18,6 +18,7 @@ model_eth_contract_invocation_web3_method.go
 model_ethereum_transaction_config.go
 model_gas_transaction_config.go
 model_gas_transaction_config_eip1559.go
+model_gas_transaction_config_kind.go
 model_gas_transaction_config_legacy.go
 model_invoke_contract_v1_request.go
 model_invoke_contract_v1_request_contract.go

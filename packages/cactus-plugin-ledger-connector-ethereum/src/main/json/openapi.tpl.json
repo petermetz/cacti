@@ -136,11 +136,46 @@
         "type": "string",
         "enum": ["send", "call", "encodeABI", "estimateGas"]
       },
+      "GasTransactionConfigKind": {
+        "type": "string",
+        "enum": [
+          "GasTransactionConfigLegacy",
+          "GasTransactionConfigEIP1559"
+        ]
+      },
+      "GasTransactionConfig": {
+        "type": "object",
+        "description": "Transaction gas settings.",
+        "required": ["kind"],
+        "discriminator": {
+          "propertyName": "kind",
+          "mapping": {
+            "GasTransactionConfigLegacy": "#/components/schemas/GasTransactionConfigLegacy",
+            "GasTransactionConfigEIP1559": "#/components/schemas/GasTransactionConfigEIP1559"
+          }
+        },
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/GasTransactionConfigKind"
+          }
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GasTransactionConfigLegacy"
+          },
+          {
+            "$ref": "#/components/schemas/GasTransactionConfigEIP1559"
+          }
+        ]
+      },
       "GasTransactionConfigLegacy": {
         "type": "object",
         "description": "Transaction gas settings in networks before EIP-1559 (London fork).",
-        "required": [],
+        "required": ["kind"],
         "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/GasTransactionConfigKind"
+          },
           "gas": {
             "type": "string",
             "description": "A maximum amount of gas a user is willing to provide for the execution of the transaction. (gasLimit)"
@@ -154,8 +189,11 @@
       "GasTransactionConfigEIP1559": {
         "type": "object",
         "description": "Transaction gas settings in networks after EIP-1559 (London fork).",
-        "required": [],
+        "required": ["kind"],
         "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/GasTransactionConfigKind"
+          },
           "gasLimit": {
             "type": "string",
             "description": "A maximum amount of gas a user is willing to provide for the execution of the transaction.",
@@ -173,22 +211,8 @@
           }
         }
       },
-      "GasTransactionConfig": {
-        "type": "object",
-        "description": "Transaction gas settings.",
-        "required": [],
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/GasTransactionConfigLegacy"
-          },
-          {
-            "$ref": "#/components/schemas/GasTransactionConfigEIP1559"
-          }
-        ]
-      },
       "EthereumTransactionConfig": {
         "type": "object",
-        "required": [],
         "properties": {
           "rawTransaction": {
             "type": "string",

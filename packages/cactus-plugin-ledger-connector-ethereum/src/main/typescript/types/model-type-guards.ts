@@ -3,7 +3,6 @@ import {
   ContractJsonDefinition,
   ContractKeychainDefinition,
   DeployedContractJsonDefinition,
-  GasTransactionConfig,
   GasTransactionConfigEIP1559,
   GasTransactionConfigLegacy,
   Web3SigningCredentialCactiKeychainRef,
@@ -49,8 +48,11 @@ export function isWeb3SigningCredentialCactiKeychainRef(x?: {
 }
 
 export function isGasTransactionConfigLegacy(
-  gasConfig: GasTransactionConfig,
+  gasConfig: unknown,
 ): gasConfig is GasTransactionConfigLegacy {
+  if (!gasConfig || typeof gasConfig !== "object") {
+    return false;
+  }
   const typedGasConfig = gasConfig as GasTransactionConfigLegacy;
   return (
     typeof typedGasConfig.gas !== "undefined" ||
@@ -59,8 +61,11 @@ export function isGasTransactionConfigLegacy(
 }
 
 export function isGasTransactionConfigEIP1559(
-  gasConfig: GasTransactionConfig,
+  gasConfig: unknown,
 ): gasConfig is GasTransactionConfigEIP1559 {
+  if (!gasConfig || typeof gasConfig !== "object") {
+    return false;
+  }
   const typedGasConfig = gasConfig as GasTransactionConfigEIP1559;
   return (
     typeof typedGasConfig.gasLimit !== "undefined" ||

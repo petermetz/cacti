@@ -15,6 +15,7 @@ import {
   Web3SigningCredentialType,
   Web3SigningCredentialPrivateKeyHex,
   Web3SigningCredentialNone,
+  GasTransactionConfigKind,
 } from "../../../main/typescript/public-api";
 
 describe("Type guards for OpenAPI spec model type definitions", () => {
@@ -104,6 +105,7 @@ describe("Type guards for OpenAPI spec model type definitions", () => {
     expect(
       isGasTransactionConfigEIP1559({
         gasPrice: "1234",
+        kind: GasTransactionConfigKind.GasTransactionConfigEip1559,
       }),
     ).toBe(false);
     expect(isGasTransactionConfigEIP1559({})).toBe(false);
