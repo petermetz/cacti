@@ -17,6 +17,9 @@ import { deployBesuOnRamp } from "./deploy-besu-on-ramp";
 import { linkUSDValue } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 
 import * as RouterContract from "../../../json/ccip/besu/router-contract.json";
+import { deployBesuCommitStoreHelper } from "./deploy-besu-commit-store-helper";
+import { deployBesuOffRamp } from "./deploy-besu-off-ramp";
+import { deployBesuMaybeRevertMessageReceiver } from "./deploy-besu-maybe-revert-message-receiver";
 
 /**
  * Mimics the functionality of the integration tests of the Chainlink node at
@@ -33,125 +36,240 @@ import * as RouterContract from "../../../json/ccip/besu/router-contract.json";
 export async function deployBesuCcipContracts(opts: {
   readonly logLevel?: Readonly<LogLevelDesc>;
   readonly web3SigningCredential: Readonly<Web3SigningCredential>;
-  readonly apiClient: Readonly<BesuApiClient>;
+  readonly srcApiClient: Readonly<BesuApiClient>;
+  readonly dstApiClient: Readonly<BesuApiClient>;
 }): Promise<{
-  readonly mockRmnAddr: Readonly<string>;
-  readonly rmnProxyAddr: Readonly<string>;
-  readonly tokenAdminRegistryAddr: Readonly<string>;
-  readonly linkTokenAddr: Readonly<string>;
-  readonly weth9Addr: Readonly<string>;
-  readonly routerAddr: Readonly<string>;
-  readonly linkPoolAddr: Readonly<string>;
-  readonly weth9PoolAddr: Readonly<string>;
-  readonly priceRegistryAddr: Readonly<string>;
-  readonly offRampAddr: Readonly<string>;
+  readonly srcMockRmnAddr: Readonly<string>;
+  readonly srcRmnProxyAddr: Readonly<string>;
+  readonly srcTokenAdminRegistryAddr: Readonly<string>;
+  readonly srcLinkTokenAddr: Readonly<string>;
+  readonly srcCustomLinkTokenAddr: Readonly<string>;
+  readonly srcWeth9Addr: Readonly<string>;
+  readonly srcRouterAddr: Readonly<string>;
+  readonly srcLinkPoolAddr: Readonly<string>;
+  readonly srcWeth9PoolAddr: Readonly<string>;
+  readonly srcPriceRegistryAddr: Readonly<string>;
+  readonly dstMockRmnAddr: Readonly<string>;
+  readonly dstRmnProxyAddr: Readonly<string>;
+  readonly dstTokenAdminRegistryAddr: Readonly<string>;
+  readonly dstLinkTokenAddr: Readonly<string>;
+  readonly dstCustomLinkTokenAddr: Readonly<string>;
+  readonly dstWeth9Addr: Readonly<string>;
+  readonly dstRouterAddr: Readonly<string>;
+  readonly dstWeth9PoolAddr: Readonly<string>;
+  readonly dstLinkPoolAddr: Readonly<string>;
+  readonly dstPriceRegistryAddr: Readonly<string>;
+  readonly dstCommitStoreHelperAddr: Readonly<string>;
+  readonly dstOffRampAddr: Readonly<string>;
+  readonly dstMaybeRevertMessageReceiver1Addr: Readonly<string>;
+  readonly dstMaybeRevertMessageReceiver2Addr: Readonly<string>;
 }> {
-  const { logLevel = "WARN", apiClient, web3SigningCredential } = opts;
+  const {
+    logLevel = "WARN",
+    srcApiClient,
+    dstApiClient,
+    web3SigningCredential,
+  } = opts;
 
   const log = LoggerProvider.getOrCreate({
     label: "deployBesuCcipContracts()",
     level: logLevel,
   });
 
-  const { contractAddress: mockRmnAddr } = await deployBesuMockRmn({
-    web3SigningCredential,
-    apiClient,
-    logLevel,
-  });
-
-  const { contractAddress: rmnProxyAddr } = await deployBesuRmnProxy({
-    armSourceAddress: mockRmnAddr,
-    web3SigningCredential,
-    apiClient,
-    logLevel,
-  });
-
-  const { contractAddress: tokenAdminRegistryAddr } =
-    await deployBesuTokenAdminRegistry({
-      web3SigningCredential,
-      apiClient,
-      logLevel,
-    });
-
-  const { contractAddress: linkTokenAddr } = await deployBesuLinkToken({
-    web3SigningCredential,
-    apiClient,
-    logLevel,
-  });
-
-  const { contractAddress: weth9Addr } = await deployBesuWeth9({
-    web3SigningCredential,
-    apiClient,
-    logLevel,
-  });
-
-  const { contractAddress: routerAddr } = await deployBesuRouter({
-    armProxyAddr: rmnProxyAddr,
-    weth9Addr,
-    web3SigningCredential,
-    apiClient,
-    logLevel,
-  });
-
-  const { contractAddress: linkPoolAddr } =
-    await deployBesuLockReleaseTokenPool({
-      armProxyAddr: rmnProxyAddr,
-      acceptLiquidity: true,
-      linkTokenAddr,
-      routerAddr,
-      tokenDecimals: 18,
-      web3SigningCredential,
-      apiClient,
-      logLevel,
-    });
-
-  const { contractAddress: weth9PoolAddr } =
-    await deployBesuLockReleaseTokenPool({
-      armProxyAddr: rmnProxyAddr,
-      acceptLiquidity: true,
-      linkTokenAddr: weth9Addr,
-      routerAddr,
-      tokenDecimals: 18,
-      web3SigningCredential,
-      apiClient,
-      logLevel,
-    });
-
-  const { contractAddress: priceRegistryAddr } = await deployBesuPriceRegistry({
-    feeTokens: [linkTokenAddr, weth9Addr],
-    priceUpdaters: [],
-    stalenessThreshold: 60 * 60 * 24 * 14, // two weeks
-    web3SigningCredential,
-    apiClient,
-    logLevel,
-  });
-
   // spells "fabric" in ASCII
+  // 112568449526115n as a decimal number
   const destChainSelector = BigInt(
     "0b011001100110000101100010011100100110100101100011",
   );
+
+  const sourceChainSelector = 1337;
+
+  const { contractAddress: srcMockRmnAddr } = await deployBesuMockRmn({
+    web3SigningCredential,
+    apiClient: srcApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: dstMockRmnAddr } = await deployBesuMockRmn({
+    web3SigningCredential,
+    apiClient: dstApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: srcRmnProxyAddr } = await deployBesuRmnProxy({
+    armSourceAddress: srcMockRmnAddr,
+    web3SigningCredential,
+    apiClient: srcApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: dstRmnProxyAddr } = await deployBesuRmnProxy({
+    armSourceAddress: dstMockRmnAddr,
+    web3SigningCredential,
+    apiClient: dstApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: srcTokenAdminRegistryAddr } =
+    await deployBesuTokenAdminRegistry({
+      web3SigningCredential,
+      apiClient: srcApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: dstTokenAdminRegistryAddr } =
+    await deployBesuTokenAdminRegistry({
+      web3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: srcLinkTokenAddr } = await deployBesuLinkToken({
+    web3SigningCredential,
+    apiClient: srcApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: srcCustomLinkTokenAddr } = await deployBesuLinkToken(
+    {
+      web3SigningCredential,
+      apiClient: srcApiClient,
+      logLevel,
+    },
+  );
+
+  const { contractAddress: srcWeth9Addr } = await deployBesuWeth9({
+    web3SigningCredential,
+    apiClient: srcApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: dstLinkTokenAddr } = await deployBesuLinkToken({
+    web3SigningCredential,
+    apiClient: dstApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: dstCustomLinkTokenAddr } = await deployBesuLinkToken(
+    {
+      web3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    },
+  );
+
+  const { contractAddress: dstWeth9Addr } = await deployBesuWeth9({
+    web3SigningCredential,
+    apiClient: dstApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: srcRouterAddr } = await deployBesuRouter({
+    armProxyAddr: srcRmnProxyAddr,
+    weth9Addr: srcWeth9Addr,
+    web3SigningCredential,
+    apiClient: srcApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: dstRouterAddr } = await deployBesuRouter({
+    armProxyAddr: dstRmnProxyAddr,
+    weth9Addr: dstWeth9Addr,
+    web3SigningCredential,
+    apiClient: dstApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: srcLinkPoolAddr } =
+    await deployBesuLockReleaseTokenPool({
+      armProxyAddr: srcRmnProxyAddr,
+      acceptLiquidity: true,
+      linkTokenAddr: srcLinkTokenAddr,
+      routerAddr: srcRouterAddr,
+      tokenDecimals: 18,
+      web3SigningCredential,
+      apiClient: srcApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: srcWeth9PoolAddr } =
+    await deployBesuLockReleaseTokenPool({
+      armProxyAddr: srcRmnProxyAddr,
+      acceptLiquidity: true,
+      linkTokenAddr: srcWeth9Addr,
+      routerAddr: srcRouterAddr,
+      tokenDecimals: 18,
+      web3SigningCredential,
+      apiClient: srcApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: dstLinkPoolAddr } =
+    await deployBesuLockReleaseTokenPool({
+      armProxyAddr: dstRmnProxyAddr,
+      acceptLiquidity: true,
+      linkTokenAddr: dstLinkTokenAddr,
+      routerAddr: dstRouterAddr,
+      tokenDecimals: 18,
+      web3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: dstWeth9PoolAddr } =
+    await deployBesuLockReleaseTokenPool({
+      armProxyAddr: dstRmnProxyAddr,
+      acceptLiquidity: true,
+      linkTokenAddr: dstWeth9Addr,
+      routerAddr: dstRouterAddr,
+      tokenDecimals: 18,
+      web3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: srcPriceRegistryAddr } =
+    await deployBesuPriceRegistry({
+      feeTokens: [srcLinkTokenAddr, srcWeth9Addr],
+      priceUpdaters: [],
+      stalenessThreshold: 60 * 60 * 24 * 14, // two weeks
+      web3SigningCredential,
+      apiClient: srcApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: dstPriceRegistryAddr } =
+    await deployBesuPriceRegistry({
+      feeTokens: [dstLinkTokenAddr, dstWeth9Addr],
+      priceUpdaters: [],
+      stalenessThreshold: 60 * 60 * 24 * 14, // two weeks
+      web3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    });
+
   const maxNopFeesJuels = BigInt(100_000) * BigInt(1e9);
 
-  const { contractAddress: onRampAddr } = await deployBesuOnRamp({
+  const { contractAddress: srcOnRampAddr } = await deployBesuOnRamp({
     staticConfig: {
       chainSelector: 1337n,
       defaultTxGasLimit: 200_000n,
       destChainSelector,
-      linkToken: linkTokenAddr,
+      linkToken: srcLinkTokenAddr,
       maxNopFeesJuels,
       prevOnRamp: "0x0000000000000000000000000000000000000000",
-      rmnProxy: rmnProxyAddr,
-      tokenAdminRegistry: tokenAdminRegistryAddr,
+      rmnProxy: srcRmnProxyAddr,
+      tokenAdminRegistry: srcTokenAdminRegistryAddr,
     },
     dynamicConfig: {
-      router: routerAddr,
+      router: srcRouterAddr,
       maxNumberOfTokensPerMsg: 5,
       destGasOverhead: 350_000,
       destGasPerPayloadByte: 16,
       destDataAvailabilityOverheadGas: 33_596,
       destGasPerDataAvailabilityByte: 16,
       destDataAvailabilityMultiplierBps: 6840, // 0.684
-      priceRegistry: priceRegistryAddr,
+      priceRegistry: srcPriceRegistryAddr,
       maxDataBytes: 1e5,
       maxPerMsgGasLimit: 4_000_000,
       defaultTokenFeeUSDCents: 50,
@@ -164,14 +282,14 @@ export async function deployBesuCcipContracts(opts: {
     },
     feeTokenConfigArgs: [
       {
-        token: linkTokenAddr,
+        token: srcLinkTokenAddr,
         networkFeeUSDCents: 1_00,
         gasMultiplierWeiPerEth: 1e12,
         premiumMultiplierWeiPerEth: 9e10,
         enabled: true,
       },
       {
-        token: weth9Addr,
+        token: srcWeth9Addr,
         networkFeeUSDCents: 1_00,
         gasMultiplierWeiPerEth: 1e12,
         premiumMultiplierWeiPerEth: 1e12,
@@ -180,7 +298,7 @@ export async function deployBesuCcipContracts(opts: {
     ],
     tokenTransferFeeConfigArgs: [
       {
-        token: linkTokenAddr,
+        token: srcLinkTokenAddr,
         minFeeUSDCents: 50, // $0.5
         maxFeeUSDCents: 1_000_000_00, // $ 1 million
         deciBps: 5_0, // 5 bps
@@ -191,38 +309,101 @@ export async function deployBesuCcipContracts(opts: {
     ],
     nopAndWeight: [],
     web3SigningCredential,
-    apiClient,
+    apiClient: srcApiClient,
     logLevel,
   });
 
-  const rampUpdates = [{ destChainSelector, onRamp: onRampAddr }];
+  const rampUpdates = [{ destChainSelector, onRamp: srcOnRampAddr }];
   log.debug("Updating Ramp configuration in Router... %o", rampUpdates);
 
-  const applyRampUpdatesOut = await apiClient.invokeContractV1({
+  const applyRampUpdatesOut = await srcApiClient.invokeContractV1({
     invocationType: EthContractInvocationType.Send,
     methodName: "applyRampUpdates",
     params: [rampUpdates, [], []],
     signingCredential: web3SigningCredential,
     contractName: RouterContract.contractName,
     contractAbi: RouterContract.ABI,
-    contractAddress: routerAddr,
+    contractAddress: srcRouterAddr,
     gas: 9000000,
     gasPrice: 1000000,
   });
   log.debug("applyRampUpdatesOut.data=%o", applyRampUpdatesOut.data);
 
+  const { contractAddress: dstCommitStoreHelperAddr } =
+    await deployBesuCommitStoreHelper({
+      staticConfig: {
+        chainSelector: destChainSelector,
+        sourceChainSelector,
+        OnRamp: srcOnRampAddr,
+        ArmProxy: dstRmnProxyAddr,
+      },
+      web3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: dstOffRampAddr } = await deployBesuOffRamp({
+    staticConfig: {
+      prevOffRamp: "0x0000000000000000000000000000000000000000",
+      tokenAdminRegistry: dstTokenAdminRegistryAddr,
+      commitStore: dstCommitStoreHelperAddr,
+      chainSelector: destChainSelector,
+      sourceChainSelector,
+      OnRamp: srcOnRampAddr,
+      ArmProxy: dstRmnProxyAddr,
+    },
+    rateLimiterConfig: {
+      isEnabled: true,
+      capacity: linkUSDValue(100n),
+      rate: linkUSDValue(1n),
+    },
+    web3SigningCredential,
+    apiClient: dstApiClient,
+    logLevel,
+  });
+
+  const { contractAddress: dstMaybeRevertMessageReceiver1Addr } =
+    await deployBesuMaybeRevertMessageReceiver({
+      toRevert: false,
+      web3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: dstMaybeRevertMessageReceiver2Addr } =
+    await deployBesuMaybeRevertMessageReceiver({
+      toRevert: false,
+      web3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    });
+
   const out = {
-    mockRmnAddr,
-    rmnProxyAddr,
-    tokenAdminRegistryAddr,
-    linkTokenAddr,
-    weth9Addr,
-    routerAddr,
-    linkPoolAddr,
-    weth9PoolAddr,
-    priceRegistryAddr,
-    onRampAddr,
-    offRampAddr: "FIXME",
+    srcMockRmnAddr,
+    srcRmnProxyAddr,
+    srcTokenAdminRegistryAddr,
+    srcLinkTokenAddr,
+    srcCustomLinkTokenAddr,
+    srcWeth9Addr,
+    srcRouterAddr,
+    srcLinkPoolAddr,
+    srcWeth9PoolAddr,
+    srcPriceRegistryAddr,
+    srcOnRampAddr,
+    dstMockRmnAddr,
+    dstRmnProxyAddr,
+    dstTokenAdminRegistryAddr,
+    dstLinkTokenAddr,
+    dstCustomLinkTokenAddr,
+    dstWeth9Addr,
+    dstRouterAddr,
+    dstWeth9PoolAddr,
+    dstLinkPoolAddr,
+    dstPriceRegistryAddr,
+    dstCommitStoreHelperAddr,
+    dstOffRampAddr,
+    dstMaybeRevertMessageReceiver1Addr,
+    dstMaybeRevertMessageReceiver2Addr,
   };
 
   log.info("CCIP Solidity contracts to Besu ledger deployed OK: %o", out);

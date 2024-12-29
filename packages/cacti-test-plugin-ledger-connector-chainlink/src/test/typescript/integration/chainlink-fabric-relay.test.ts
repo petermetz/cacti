@@ -22,12 +22,18 @@ describe("PluginLedgerConnectorChainlink", () => {
     level: logLevel,
   });
 
-  const cactiHost = "http://127.0.0.1:4000";
+  const srcCactiHost = "http://127.0.0.1:4000";
   const besuApiClientOptions = new BesuApiClientOptions({
-    basePath: cactiHost,
+    basePath: srcCactiHost,
   });
 
-  const apiClient = new BesuApiClient(besuApiClientOptions);
+  const dstCactiHost = "http://127.0.0.1:5000";
+  const proxyApiClientOptions = new BesuApiClientOptions({
+    basePath: dstCactiHost,
+  });
+
+  const dstApiClient = new BesuApiClient(proxyApiClientOptions);
+  const srcApiClient = new BesuApiClient(besuApiClientOptions);
   let deploymentResult: any;
 
   beforeAll(async () => {
@@ -39,7 +45,8 @@ describe("PluginLedgerConnectorChainlink", () => {
     };
 
     deploymentResult = await deployBesuCcipContracts({
-      apiClient,
+      srcApiClient,
+      dstApiClient,
       web3SigningCredential,
       logLevel,
     });

@@ -39,9 +39,10 @@ services:
     image: hyperledger/besu:24.8.0
     container_name: besu
     environment:
+      BESU_NETWORK_ID: 1337
       # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
       # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
-      BESU_LOGGING: ALL
+      BESU_LOGGING: WARN
       BESU_NETWORK: dev # Equivalent to --network=dev
       BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
       BESU_RPC_WS_ENABLED: "true" # Equivalent to --rpc-ws-enabled
@@ -53,6 +54,26 @@ services:
     ports:
       - "8545:8545" # HTTP JSON-RPC
       - "8546:8546" # WebSocket JSON-RPC
+
+  proxy:
+    image: hyperledger/besu:24.8.0
+    container_name: proxy
+    environment:
+      # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
+      # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
+      BESU_NETWORK_ID: 112568449526115n
+      BESU_LOGGING: WARN
+      BESU_NETWORK: dev # Equivalent to --network=dev
+      BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
+      BESU_RPC_WS_ENABLED: "true" # Equivalent to --rpc-ws-enabled
+      BESU_HOST_WHITELIST: "*" # Equivalent to --host-whitelist=*
+      BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
+      BESU_MINER_ENABLED: "true" # Equivalent to --miner-enabled
+      BESU_MINER_COINBASE: "0x0000000000000000000000000000000000000000" # Miner coinbase address
+      BESU_MIN_GAS_PRICE: "0" # Equivalent to --min-gas-price=0
+    ports:
+      - "9545:9545" # HTTP JSON-RPC
+      - "9546:9546" # WebSocket JSON-RPC
 
   # Credentials
   # https://github.com/celo-org/celo-devchain/blob/main/src/utils.ts
@@ -81,7 +102,7 @@ services:
       - infra-init
 
     volumes:
-      - ${PWD}:/usr/src/cacti
+      - cactisrc:/usr/src/cacti
 
     # command: ["ls", "-al", "/usr/src/cacti/packages/cactus-plugin-keychain-memory/"]
 
@@ -152,9 +173,69 @@ services:
           }
         ]
 
+  cacti2:
+    container_name: cacti2
+    image: ghcr.io/hyperledger-cacti/cactus-cmd-api-server:2024-11-15t04-48-04-dev-c4e28fd06
+    restart: on-failure
+    # build:
+    #   context: ../../../../../../packages/cactus-cmd-api-server/
+    #   dockerfile: cmd-api-server.Dockerfile
+
+    depends_on:
+      - chainlink
+      - besu
+      - proxy
+      - celo
+      - infra-init
+
+    volumes:
+      - cactisrc:/usr/src/cacti
+
+    # command: ["ls", "-al", "/usr/src/cacti/packages/cactus-plugin-keychain-memory/"]
+
+    ports:
+      - 5000:5000
+
+    environment:
+      AUTHORIZATION_PROTOCOL: NONE
+      AUTHORIZATION_CONFIG_JSON: "{}"
+      API_MTLS_ENABLED: "false"
+      API_TLS_ENABLED: "false"
+      API_CORS_DOMAIN_CSV: \*
+      API_TLS_CERT_PEM: "-"
+      API_TLS_CLIENT_CA_PEM: "-"
+      API_TLS_KEY_PEM: "-"
+      API_HOST: 0.0.0.0
+      API_PORT: 5000
+      CRPC_HOST: 0.0.0.0
+      GRPC_TLS_ENABLED: false
+      LOG_LEVEL: DEBUG
+      PLUGINS: >-
+        [
+          {
+              "packageName": "@hyperledger/cactus-plugin-ledger-connector-besu",
+              "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", 
+              "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",
+              "options": {
+                  "packageSrc": "/usr/src/cacti/packages/cactus-plugin-ledger-connector-besu/",
+                  "rpcApiHttpHost": "http://besu:9545",
+                  "rpcApiWsHost": "ws://besu:9546",
+                  "instanceId": "plugin-connetor-besu-2"
+              }
+          }
+        ]
+
   # Race conditions seem to be causing trouble with the API server's initialization without this 10 second wait.
   infra-init:
     container_name: infra-init
     image: node:22.8.0-bookworm-slim
     # command: ["node", "-e", "console.log('hello world')"]
     command: ["sleep", "10"]
+
+volumes: 
+  cactisrc: 
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: /home/peter/a/cacti/
