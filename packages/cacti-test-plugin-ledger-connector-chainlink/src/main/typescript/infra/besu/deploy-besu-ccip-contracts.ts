@@ -30,6 +30,7 @@ import { floatOffRampPool } from "./float-off-ramp-pool";
 import { depositAndTransferWeth9 } from "./deposit-and-transfer-weth9";
 import { configureTokenPool } from "./configure-token-pool";
 import { updateRegistryPrices } from "./update-registry-prices";
+import { applyPriceUpdatersUpdates } from "./apply-price-updaters-updates";
 
 /**
  * Mimics the functionality of the integration tests of the Chainlink node at
@@ -577,6 +578,15 @@ export async function deployBesuCcipContracts(opts: {
     web3SigningCredential,
     apiClient: dstApiClient,
     logLevel,
+  });
+
+  await applyPriceUpdatersUpdates({
+    logLevel,
+    apiClient: dstApiClient,
+    priceRegistryAddr: dstPriceRegistryAddr,
+    priceUpdatersToAdd: [dstCommitStoreHelperAddr],
+    priceUpdatersToRemove: [],
+    web3SigningCredential,
   });
 
   const { contractAddress: dstMaybeRevertMessageReceiver1Addr } =
