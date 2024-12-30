@@ -1,7 +1,7 @@
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   EthContractInvocationType,
-  Web3SigningCredential,
+  Web3SigningCredentialPrivateKeyHex,
 } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { type BesuApiClient } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 
@@ -20,6 +20,8 @@ import * as RouterContract from "../../../json/ccip/besu/router-contract.json";
 import { deployBesuCommitStoreHelper } from "./deploy-besu-commit-store-helper";
 import { deployBesuOffRamp } from "./deploy-besu-off-ramp";
 import { deployBesuMaybeRevertMessageReceiver } from "./deploy-besu-maybe-revert-message-receiver";
+import { setAdminAndRegisterPool } from "./set-admin-and-register-pool";
+import { floatOffRampPool } from "./float-off-ramp-pool";
 
 /**
  * Mimics the functionality of the integration tests of the Chainlink node at
@@ -35,9 +37,12 @@ import { deployBesuMaybeRevertMessageReceiver } from "./deploy-besu-maybe-revert
  */
 export async function deployBesuCcipContracts(opts: {
   readonly logLevel?: Readonly<LogLevelDesc>;
-  readonly web3SigningCredential: Readonly<Web3SigningCredential>;
+  readonly web3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
   readonly srcApiClient: Readonly<BesuApiClient>;
   readonly dstApiClient: Readonly<BesuApiClient>;
+  readonly sourceFinalityDepth: Readonly<number>;
+  readonly destFinalityDepth: Readonly<number>;
+  readonly tokenDecimals: Readonly<number>;
 }): Promise<{
   readonly srcMockRmnAddr: Readonly<string>;
   readonly srcRmnProxyAddr: Readonly<string>;
@@ -186,11 +191,21 @@ export async function deployBesuCcipContracts(opts: {
       acceptLiquidity: true,
       linkTokenAddr: srcLinkTokenAddr,
       routerAddr: srcRouterAddr,
-      tokenDecimals: 18,
+      tokenDecimals: opts.tokenDecimals,
       web3SigningCredential,
       apiClient: srcApiClient,
       logLevel,
     });
+
+  await setAdminAndRegisterPool({
+    apiClient: srcApiClient,
+    evmAdminAccountAddr: web3SigningCredential.ethAccount,
+    poolAddr: srcLinkPoolAddr,
+    tokenAddr: srcLinkTokenAddr,
+    tokenAdminRegistryAddr: srcTokenAdminRegistryAddr,
+    web3SigningCredential,
+    logLevel,
+  });
 
   const { contractAddress: srcWeth9PoolAddr } =
     await deployBesuLockReleaseTokenPool({
@@ -198,11 +213,21 @@ export async function deployBesuCcipContracts(opts: {
       acceptLiquidity: true,
       linkTokenAddr: srcWeth9Addr,
       routerAddr: srcRouterAddr,
-      tokenDecimals: 18,
+      tokenDecimals: opts.tokenDecimals,
       web3SigningCredential,
       apiClient: srcApiClient,
       logLevel,
     });
+
+  await setAdminAndRegisterPool({
+    apiClient: srcApiClient,
+    evmAdminAccountAddr: web3SigningCredential.ethAccount,
+    poolAddr: srcWeth9PoolAddr,
+    tokenAddr: srcWeth9Addr,
+    tokenAdminRegistryAddr: srcTokenAdminRegistryAddr,
+    web3SigningCredential,
+    logLevel,
+  });
 
   const { contractAddress: dstLinkPoolAddr } =
     await deployBesuLockReleaseTokenPool({
@@ -210,11 +235,30 @@ export async function deployBesuCcipContracts(opts: {
       acceptLiquidity: true,
       linkTokenAddr: dstLinkTokenAddr,
       routerAddr: dstRouterAddr,
-      tokenDecimals: 18,
+      tokenDecimals: opts.tokenDecimals,
       web3SigningCredential,
       apiClient: dstApiClient,
       logLevel,
     });
+
+  await setAdminAndRegisterPool({
+    apiClient: dstApiClient,
+    evmAdminAccountAddr: web3SigningCredential.ethAccount,
+    poolAddr: dstLinkPoolAddr,
+    tokenAddr: dstLinkTokenAddr,
+    tokenAdminRegistryAddr: dstTokenAdminRegistryAddr,
+    web3SigningCredential,
+    logLevel,
+  });
+
+  await floatOffRampPool({
+    apiClient: dstApiClient,
+    evmAdminAccountAddr: web3SigningCredential.ethAccount,
+    poolAddr: dstLinkPoolAddr,
+    tokenAddr: dstLinkTokenAddr,
+    web3SigningCredential,
+    logLevel,
+  });
 
   const { contractAddress: dstWeth9PoolAddr } =
     await deployBesuLockReleaseTokenPool({
@@ -222,11 +266,21 @@ export async function deployBesuCcipContracts(opts: {
       acceptLiquidity: true,
       linkTokenAddr: dstWeth9Addr,
       routerAddr: dstRouterAddr,
-      tokenDecimals: 18,
+      tokenDecimals: opts.tokenDecimals,
       web3SigningCredential,
       apiClient: dstApiClient,
       logLevel,
     });
+
+  await setAdminAndRegisterPool({
+    apiClient: dstApiClient,
+    evmAdminAccountAddr: web3SigningCredential.ethAccount,
+    poolAddr: dstWeth9PoolAddr,
+    tokenAddr: dstWeth9Addr,
+    tokenAdminRegistryAddr: dstTokenAdminRegistryAddr,
+    web3SigningCredential,
+    logLevel,
+  });
 
   const { contractAddress: srcPriceRegistryAddr } =
     await deployBesuPriceRegistry({

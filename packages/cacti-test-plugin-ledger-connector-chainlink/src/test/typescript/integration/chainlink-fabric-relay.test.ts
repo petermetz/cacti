@@ -36,6 +36,14 @@ describe("PluginLedgerConnectorChainlink", () => {
   const srcApiClient = new BesuApiClient(besuApiClientOptions);
   let deploymentResult: any;
 
+  beforeAll(() => {
+    log.warn("Note: Overriding BigInt.prototype.toJSON() to call .toString()");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (BigInt.prototype as any).toJSON = function () {
+      return this.toString();
+    };
+  });
+
   beforeAll(async () => {
     const web3SigningCredential: Web3SigningCredential = {
       ethAccount: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
@@ -46,7 +54,10 @@ describe("PluginLedgerConnectorChainlink", () => {
 
     deploymentResult = await deployBesuCcipContracts({
       srcApiClient,
+      sourceFinalityDepth: 2,
       dstApiClient,
+      destFinalityDepth: 2,
+      tokenDecimals: 18, // If this is set to 15, deployments get reverted
       web3SigningCredential,
       logLevel,
     });

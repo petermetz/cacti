@@ -74,3 +74,4 @@ export { CcipOffRampBytecode } from "./impl/await-off-ramp-tx-v1/off-ramp-metada
 export { IEVM2EVMOnRampStaticConfig } from "./ccip/on-ramp/i-evm-2-evm-on-ramp-static-config";
 export { isIEVM2EVMOnRampStaticConfig } from "./ccip/on-ramp/i-evm-2-evm-on-ramp-static-config";
 export { linkUSDValue } from "./ccip/common/link-usd-value";
+export { linkValue } from "./ccip/common/link-value";

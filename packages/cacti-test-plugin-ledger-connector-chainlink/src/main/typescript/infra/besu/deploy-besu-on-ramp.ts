@@ -25,9 +25,6 @@ export async function deployBesuOnRamp(opts: {
 
   const { Bin: bytecode, ABI: contractAbi, contractName, gas } = OnRampContract;
 
-  (BigInt.prototype as any).toJSON = function () {
-    return this.toString();
-  };
   const res = await apiClient.deployContractSolBytecodeNoKeychainV1({
     bytecode,
     constructorArgs: [
