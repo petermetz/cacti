@@ -334,8 +334,8 @@ export async function deployBesuCcipContracts(opts: {
       staticConfig: {
         chainSelector: destChainSelector,
         sourceChainSelector,
-        OnRamp: srcOnRampAddr,
-        ArmProxy: dstRmnProxyAddr,
+        onRamp: srcOnRampAddr,
+        armProxy: dstRmnProxyAddr,
       },
       web3SigningCredential,
       apiClient: dstApiClient,
@@ -349,8 +349,8 @@ export async function deployBesuCcipContracts(opts: {
       commitStore: dstCommitStoreHelperAddr,
       chainSelector: destChainSelector,
       sourceChainSelector,
-      OnRamp: srcOnRampAddr,
-      ArmProxy: dstRmnProxyAddr,
+      onRamp: srcOnRampAddr,
+      rmnProxy: dstRmnProxyAddr,
     },
     rateLimiterConfig: {
       isEnabled: true,

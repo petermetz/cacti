@@ -12,6 +12,16 @@ docker compose \
     --build
 ```
 
+If you prefer to observe the logs from a text file then redirect it like this:
+
+```sh
+docker compose \
+	--project-directory packages/cactus-test-tooling/src/main/resources/chainlink/ \
+	--file packages/cactus-test-tooling/src/main/resources/chainlink/chainlink-aio.docker-compose.yaml \
+	up \
+	--build &> /tmp/chainlink.log
+```
+
 
 ```sh
 ./packages/cactus-test-tooling/src/main/resources/infra-bootstrap.sh

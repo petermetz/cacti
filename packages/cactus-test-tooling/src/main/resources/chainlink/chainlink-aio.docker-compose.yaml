@@ -55,13 +55,13 @@ services:
       - "8545:8545" # HTTP JSON-RPC
       - "8546:8546" # WebSocket JSON-RPC
 
-  proxy:
+  proxychain:
     image: hyperledger/besu:24.8.0
-    container_name: proxy
+    container_name: proxychain
     environment:
       # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
       # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
-      BESU_NETWORK_ID: 112568449526115n
+      BESU_NETWORK_ID: 112568449526115
       BESU_LOGGING: WARN
       BESU_NETWORK: dev # Equivalent to --network=dev
       BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
@@ -72,20 +72,20 @@ services:
       BESU_MINER_COINBASE: "0x0000000000000000000000000000000000000000" # Miner coinbase address
       BESU_MIN_GAS_PRICE: "0" # Equivalent to --min-gas-price=0
     ports:
-      - "9545:9545" # HTTP JSON-RPC
-      - "9546:9546" # WebSocket JSON-RPC
+      - "9545:8545" # HTTP JSON-RPC
+      - "9546:8546" # WebSocket JSON-RPC
 
   # Credentials
   # https://github.com/celo-org/celo-devchain/blob/main/src/utils.ts
-  celo:
-    build:
-      context: ../../../../../../tools/docker/celo-all-in-one/
-      dockerfile: Dockerfile
-    container_name: celo
+  # celo:
+  #   build:
+  #     context: ../../../../../../tools/docker/celo-all-in-one/
+  #     dockerfile: Dockerfile
+  #   container_name: celo
 
-    ports:
-      - "7545:8545" # HTTP JSON-RPC
-      - "7546:8546" # WebSocket JSON-RPC
+  #   ports:
+  #     - "7545:8545" # HTTP JSON-RPC
+  #     - "7546:8546" # WebSocket JSON-RPC
 
   cacti:
     container_name: cacti
@@ -98,7 +98,6 @@ services:
     depends_on:
       - chainlink
       - besu
-      - celo
       - infra-init
 
     volumes:
@@ -107,7 +106,6 @@ services:
     # command: ["ls", "-al", "/usr/src/cacti/packages/cactus-plugin-keychain-memory/"]
 
     ports:
-      - 3000:3000
       - 4000:4000
 
     environment:
@@ -144,7 +142,7 @@ services:
                   "packageSrc": "/usr/src/cacti/packages/cactus-plugin-ledger-connector-besu/",
                   "rpcApiHttpHost": "http://besu:8545",
                   "rpcApiWsHost": "ws://besu:8546",
-                  "instanceId": "plugin-connetor-besu-1"
+                  "instanceId": "plugin-connector-besu-1"
               }
           },
           {
@@ -153,22 +151,9 @@ services:
               "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",
               "options": {
                   "packageSrc": "/usr/src/cacti/packages/cacti-plugin-ledger-connector-chainlink/",
-                  "instanceId": "plugin-connetor-chainlink-1",
+                  "instanceId": "plugin-connetocr-chainlink-1",
                   "ledgerHttpHost": "http://chainlink",
                   "ledgerHttpPort": 6688
-              }
-          },
-          {
-              "packageName": "@hyperledger/cacti-plugin-ledger-connector-celo",
-              "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", 
-              "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",
-              "options": {
-                  "packageSrc": "/usr/src/cacti/packages/cacti-plugin-ledger-connector-celo/",
-                  "web3ProviderOptions": {
-                    "kind": "http",
-                    "url": "http://celo:8545"
-                  },
-                  "instanceId": "plugin-connetor-celo-1"
               }
           }
         ]
@@ -184,17 +169,14 @@ services:
     depends_on:
       - chainlink
       - besu
-      - proxy
-      - celo
+      - proxychain
       - infra-init
 
     volumes:
       - cactisrc:/usr/src/cacti
 
-    # command: ["ls", "-al", "/usr/src/cacti/packages/cactus-plugin-keychain-memory/"]
-
     ports:
-      - 5000:5000
+      - 5000:4000
 
     environment:
       AUTHORIZATION_PROTOCOL: NONE
@@ -206,7 +188,7 @@ services:
       API_TLS_CLIENT_CA_PEM: "-"
       API_TLS_KEY_PEM: "-"
       API_HOST: 0.0.0.0
-      API_PORT: 5000
+      API_PORT: 4000
       CRPC_HOST: 0.0.0.0
       GRPC_TLS_ENABLED: false
       LOG_LEVEL: DEBUG
@@ -218,9 +200,9 @@ services:
               "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",
               "options": {
                   "packageSrc": "/usr/src/cacti/packages/cactus-plugin-ledger-connector-besu/",
-                  "rpcApiHttpHost": "http://besu:9545",
-                  "rpcApiWsHost": "ws://besu:9546",
-                  "instanceId": "plugin-connetor-besu-2"
+                  "rpcApiHttpHost": "http://proxychain:8545",
+                  "rpcApiWsHost": "ws://proxychain:8546",
+                  "instanceId": "plugin-connector-besu-2"
               }
           }
         ]
@@ -238,4 +220,4 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: /home/peter/a/cacti/
+      device: /home/peter/a/cacti-upstream/

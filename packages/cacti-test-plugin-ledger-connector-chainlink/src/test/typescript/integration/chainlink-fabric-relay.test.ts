@@ -51,7 +51,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       logLevel,
     });
 
-    log.info("CCIP Contract Adresses on Besu: %o", deploymentResult);
+    log.info("CCIP Contract Addresses on Besu: %o", deploymentResult);
   });
 
   it("Can observe on/off ramp events", async () => {
@@ -74,7 +74,7 @@ describe("PluginLedgerConnectorChainlink", () => {
     await awaitOffRampTxV1Impl({
       ccipMessageId: "FIXME",
       logLevel: "DEBUG",
-      offRampAddress: deploymentResult.offRampAddr,
+      offRampAddress: deploymentResult.dstOffRampAddr,
     });
   });
 });
