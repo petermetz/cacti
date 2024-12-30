@@ -531,13 +531,10 @@ export async function deployBesuCcipContracts(opts: {
     logLevel,
   });
 
-  const rampUpdates = [{ destChainSelector, onRamp: srcOnRampAddr }];
-  log.debug("Updating Ramp configuration in Router... %o", rampUpdates);
-
-  const applyRampUpdatesOut = await srcApiClient.invokeContractV1({
+  await srcApiClient.invokeContractV1({
     invocationType: EthContractInvocationType.Send,
     methodName: "applyRampUpdates",
-    params: [rampUpdates, [], []],
+    params: [[{ destChainSelector, onRamp: srcOnRampAddr }], [], []],
     signingCredential: web3SigningCredential,
     contractName: RouterContract.contractName,
     contractAbi: RouterContract.ABI,
@@ -545,7 +542,6 @@ export async function deployBesuCcipContracts(opts: {
     gas: 9000000,
     gasPrice: 1000000,
   });
-  log.debug("applyRampUpdatesOut.data=%o", applyRampUpdatesOut.data);
 
   const { contractAddress: dstCommitStoreHelperAddr } =
     await deployBesuCommitStoreHelper({
@@ -587,6 +583,20 @@ export async function deployBesuCcipContracts(opts: {
     priceUpdatersToAdd: [dstCommitStoreHelperAddr],
     priceUpdatersToRemove: [],
     web3SigningCredential,
+  });
+
+  await srcApiClient.invokeContractV1({
+    invocationType: EthContractInvocationType.Send,
+    methodName: "applyRampUpdates",
+    params: [
+      [], // onRampUpdates []router.RouterOnRamp
+      [], // offRampRemoves []router.RouterOffRamp
+      [{ sourceChainSelector, offRamp: dstOffRampAddr }], // offRampAdds []router.RouterOffRamp
+    ],
+    signingCredential: web3SigningCredential,
+    contractName: RouterContract.contractName,
+    contractAbi: RouterContract.ABI,
+    contractAddress: dstRouterAddr,
   });
 
   const { contractAddress: dstMaybeRevertMessageReceiver1Addr } =
