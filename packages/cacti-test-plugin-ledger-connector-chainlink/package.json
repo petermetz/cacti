@@ -50,7 +50,7 @@
     "webpack:dev:web": "webpack --env=dev --target=web --config ../../webpack.config.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "1.11.1",
+    "@grpc/grpc-js": "1.12.5",
     "@hyperledger/cacti-plugin-ledger-connector-celo": "2.1.0",
     "@hyperledger/cacti-plugin-ledger-connector-chainlink": "2.1.0",
     "@hyperledger/cactus-cmd-api-server": "2.1.0",
@@ -63,9 +63,10 @@
     "http-status-codes": "2.3.0"
   },
   "devDependencies": {
-    "@types/express": "4.17.21",
-    "axios": "1.7.7",
-    "express": "4.19.2"
+    "@types/express": "5.0.0",
+    "axios": "1.7.9",
+    "ethers": "6.13.4",
+    "express": "4.21.2"
   },
   "engines": {
     "node": ">=18",

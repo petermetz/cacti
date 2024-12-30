@@ -1,9 +1,15 @@
+import { ethers } from "ethers";
+
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   EthContractInvocationType,
   Web3SigningCredentialPrivateKeyHex,
 } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { type BesuApiClient } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import {
+  linkUSDValue,
+  linkValue,
+} from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 
 import { deployBesuMockRmn } from "./deploy-besu-mock-rmn";
 import { deployBesuRmnProxy } from "./deploy-besu-rmn-proxy";
@@ -14,7 +20,6 @@ import { deployBesuRouter } from "./deploy-besu-router";
 import { deployBesuLockReleaseTokenPool } from "./deploy-besu-lock-release-token-pool";
 import { deployBesuPriceRegistry } from "./deploy-besu-price-registry";
 import { deployBesuOnRamp } from "./deploy-besu-on-ramp";
-import { linkUSDValue } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 
 import * as RouterContract from "../../../json/ccip/besu/router-contract.json";
 import { deployBesuCommitStoreHelper } from "./deploy-besu-commit-store-helper";
@@ -23,6 +28,7 @@ import { deployBesuMaybeRevertMessageReceiver } from "./deploy-besu-maybe-revert
 import { setAdminAndRegisterPool } from "./set-admin-and-register-pool";
 import { floatOffRampPool } from "./float-off-ramp-pool";
 import { depositAndTransferWeth9 } from "./deposit-and-transfer-weth9";
+import { configureTokenPool } from "./configure-token-pool";
 
 /**
  * Mimics the functionality of the integration tests of the Chainlink node at
@@ -289,6 +295,127 @@ export async function deployBesuCcipContracts(opts: {
     poolAddr: dstWeth9PoolAddr,
     tokenAddr: dstWeth9Addr,
     value: BigInt(1e18),
+    web3SigningCredential,
+  });
+
+  const inboundRateLimiterConfig = {
+    isEnabled: true,
+    capacity: linkValue(100n),
+    rate: BigInt(1e18),
+  };
+  const outboundRateLimiterConfig = inboundRateLimiterConfig;
+
+  const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+
+  // Configure the **LinkToken** pool on the **source** chain - 1
+  const abiEncodedDestLinkPool = abiCoder.encode(
+    ["address[]"],
+    [[dstLinkPoolAddr]],
+  );
+
+  const abiEncodedDestLinkTokenAddress = abiCoder.encode(
+    ["address[]"],
+    [[dstLinkTokenAddr]],
+  );
+
+  await configureTokenPool({
+    logLevel,
+    apiClient: srcApiClient,
+    poolAddr: srcLinkPoolAddr,
+    remoteChainSelectorsToRemove: [],
+    tokenPoolChainUpdate: [
+      {
+        remoteChainSelector: destChainSelector,
+        remotePoolAddresses: [abiEncodedDestLinkPool],
+        remoteTokenAddress: abiEncodedDestLinkTokenAddress,
+        outboundRateLimiterConfig,
+        inboundRateLimiterConfig,
+      },
+    ],
+    web3SigningCredential,
+  });
+
+  // Configure the **WETH9** pool on the **source** chain - 2
+  const abiEncodedDestWrappedPool = abiCoder.encode(
+    ["address[]"],
+    [[dstWeth9PoolAddr]],
+  );
+
+  const abiEncodedDestWrappedTokenAddr = abiCoder.encode(
+    ["address[]"],
+    [[dstWeth9Addr]],
+  );
+
+  await configureTokenPool({
+    logLevel,
+    apiClient: srcApiClient,
+    poolAddr: srcWeth9PoolAddr,
+    remoteChainSelectorsToRemove: [],
+    tokenPoolChainUpdate: [
+      {
+        remoteChainSelector: destChainSelector,
+        remotePoolAddresses: [abiEncodedDestWrappedPool],
+        remoteTokenAddress: abiEncodedDestWrappedTokenAddr,
+        outboundRateLimiterConfig,
+        inboundRateLimiterConfig,
+      },
+    ],
+    web3SigningCredential,
+  });
+
+  // Configure the **LinkToken** pool on the **destination** chain - 3
+  const abiEncodedSourceLinkPool = abiCoder.encode(
+    ["address[]"],
+    [[srcLinkPoolAddr]],
+  );
+
+  const abiEncodedSourceLinkTokenAddr = abiCoder.encode(
+    ["address[]"],
+    [[srcLinkTokenAddr]],
+  );
+
+  await configureTokenPool({
+    logLevel,
+    apiClient: dstApiClient,
+    poolAddr: dstLinkPoolAddr,
+    remoteChainSelectorsToRemove: [],
+    tokenPoolChainUpdate: [
+      {
+        remoteChainSelector: sourceChainSelector,
+        remotePoolAddresses: [abiEncodedSourceLinkPool],
+        remoteTokenAddress: abiEncodedSourceLinkTokenAddr,
+        outboundRateLimiterConfig,
+        inboundRateLimiterConfig,
+      },
+    ],
+    web3SigningCredential,
+  });
+
+  // Configure the **WET9** pool on the **destination** chain - 4
+  const abiEncodedSourceWrappedPool = abiCoder.encode(
+    ["address[]"],
+    [[srcWeth9PoolAddr]],
+  );
+
+  const abiEncodedSourceWrappedTokenAddr = abiCoder.encode(
+    ["address[]"],
+    [[srcWeth9Addr]],
+  );
+
+  await configureTokenPool({
+    logLevel,
+    apiClient: dstApiClient,
+    poolAddr: dstWeth9PoolAddr,
+    remoteChainSelectorsToRemove: [],
+    tokenPoolChainUpdate: [
+      {
+        remoteChainSelector: sourceChainSelector,
+        remotePoolAddresses: [abiEncodedSourceWrappedPool],
+        remoteTokenAddress: abiEncodedSourceWrappedTokenAddr,
+        outboundRateLimiterConfig,
+        inboundRateLimiterConfig,
+      },
+    ],
     web3SigningCredential,
   });
 
