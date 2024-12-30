@@ -22,6 +22,7 @@ import { deployBesuOffRamp } from "./deploy-besu-off-ramp";
 import { deployBesuMaybeRevertMessageReceiver } from "./deploy-besu-maybe-revert-message-receiver";
 import { setAdminAndRegisterPool } from "./set-admin-and-register-pool";
 import { floatOffRampPool } from "./float-off-ramp-pool";
+import { depositAndTransferWeth9 } from "./deposit-and-transfer-weth9";
 
 /**
  * Mimics the functionality of the integration tests of the Chainlink node at
@@ -280,6 +281,15 @@ export async function deployBesuCcipContracts(opts: {
     tokenAdminRegistryAddr: dstTokenAdminRegistryAddr,
     web3SigningCredential,
     logLevel,
+  });
+
+  await depositAndTransferWeth9({
+    apiClient: dstApiClient,
+    logLevel,
+    poolAddr: dstWeth9PoolAddr,
+    tokenAddr: dstWeth9Addr,
+    value: BigInt(1e18),
+    web3SigningCredential,
   });
 
   const { contractAddress: srcPriceRegistryAddr } =
