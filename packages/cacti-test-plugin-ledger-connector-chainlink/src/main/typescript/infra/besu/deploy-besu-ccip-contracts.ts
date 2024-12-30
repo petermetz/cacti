@@ -29,6 +29,7 @@ import { setAdminAndRegisterPool } from "./set-admin-and-register-pool";
 import { floatOffRampPool } from "./float-off-ramp-pool";
 import { depositAndTransferWeth9 } from "./deposit-and-transfer-weth9";
 import { configureTokenPool } from "./configure-token-pool";
+import { updateRegistryPrices } from "./update-registry-prices";
 
 /**
  * Mimics the functionality of the integration tests of the Chainlink node at
@@ -428,6 +429,31 @@ export async function deployBesuCcipContracts(opts: {
       apiClient: srcApiClient,
       logLevel,
     });
+
+  await updateRegistryPrices({
+    logLevel,
+    apiClient: srcApiClient,
+    priceRegistryAddr: srcPriceRegistryAddr,
+    web3SigningCredential,
+    internalPriceUpdates: {
+      tokenPriceUpdates: [
+        {
+          sourceToken: srcLinkTokenAddr,
+          usdPerToken: BigInt(1e18) * BigInt(20),
+        },
+        {
+          sourceToken: srcWeth9Addr,
+          usdPerToken: BigInt(1e18) * BigInt(2000),
+        },
+      ],
+      gasPriceUpdates: [
+        {
+          destChainSelector: destChainSelector,
+          usdPerUnitGas: BigInt(20000e9),
+        },
+      ],
+    },
+  });
 
   const { contractAddress: dstPriceRegistryAddr } =
     await deployBesuPriceRegistry({
