@@ -47,6 +47,8 @@ import { applyPriceUpdatersUpdates } from "./apply-price-updaters-updates";
 export async function deployBesuCcipContracts(opts: {
   readonly logLevel?: Readonly<LogLevelDesc>;
   readonly web3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
+  readonly destChainSelector: Readonly<bigint>;
+  readonly sourceChainSelector: Readonly<bigint>;
   readonly srcApiClient: Readonly<BesuApiClient>;
   readonly dstApiClient: Readonly<BesuApiClient>;
   readonly sourceFinalityDepth: Readonly<number>;
@@ -82,6 +84,8 @@ export async function deployBesuCcipContracts(opts: {
     logLevel = "WARN",
     srcApiClient,
     dstApiClient,
+    destChainSelector,
+    sourceChainSelector,
     web3SigningCredential,
   } = opts;
 
@@ -89,14 +93,6 @@ export async function deployBesuCcipContracts(opts: {
     label: "deployBesuCcipContracts()",
     level: logLevel,
   });
-
-  // spells "fabric" in ASCII
-  // 112568449526115n as a decimal number
-  const destChainSelector = BigInt(
-    "0b011001100110000101100010011100100110100101100011",
-  );
-
-  const sourceChainSelector = 1337;
 
   const { contractAddress: srcMockRmnAddr } = await deployBesuMockRmn({
     web3SigningCredential,
@@ -591,7 +587,7 @@ export async function deployBesuCcipContracts(opts: {
     params: [
       [], // onRampUpdates []router.RouterOnRamp
       [], // offRampRemoves []router.RouterOffRamp
-      [{ sourceChainSelector, offRamp: dstOffRampAddr }], // offRampAdds []router.RouterOffRamp
+      [{ sourceChainSelector: 1337n, offRamp: dstOffRampAddr }], // offRampAdds []router.RouterOffRamp
     ],
     signingCredential: web3SigningCredential,
     contractName: RouterContract.contractName,

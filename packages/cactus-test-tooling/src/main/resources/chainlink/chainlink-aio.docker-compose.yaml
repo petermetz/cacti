@@ -42,12 +42,14 @@ services:
       BESU_NETWORK_ID: 1337
       # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
       # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
-      BESU_LOGGING: WARN
+      BESU_LOGGING: DEBUG
+      BESU_REVERT_REASON_ENABLED: true
       BESU_NETWORK: dev # Equivalent to --network=dev
       BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
       BESU_RPC_WS_ENABLED: "true" # Equivalent to --rpc-ws-enabled
       BESU_HOST_WHITELIST: "*" # Equivalent to --host-whitelist=*
-      BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
+      BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE,TRACE" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
+      BESU_RPC_WS_API: "ETH,NET,WEB3,CLIQUE,TRACE" # Equivalent to --rpc-ws-api=ETH,NET,WEB3,CLIQUE
       BESU_MINER_ENABLED: "true" # Equivalent to --miner-enabled
       BESU_MINER_COINBASE: "0x0000000000000000000000000000000000000000" # Miner coinbase address
       BESU_MIN_GAS_PRICE: "0" # Equivalent to --min-gas-price=0
@@ -63,11 +65,13 @@ services:
       # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
       BESU_NETWORK_ID: 112568449526115
       BESU_LOGGING: WARN
+      BESU_REVERT_REASON_ENABLED: true
       BESU_NETWORK: dev # Equivalent to --network=dev
       BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
       BESU_RPC_WS_ENABLED: "true" # Equivalent to --rpc-ws-enabled
       BESU_HOST_WHITELIST: "*" # Equivalent to --host-whitelist=*
-      BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
+      BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE,TRACE" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
+      BESU_RPC_WS_API: "ETH,NET,WEB3,CLIQUE,TRACE" # Equivalent to --rpc-ws-api=ETH,NET,WEB3,CLIQUE
       BESU_MINER_ENABLED: "true" # Equivalent to --miner-enabled
       BESU_MINER_COINBASE: "0x0000000000000000000000000000000000000000" # Miner coinbase address
       BESU_MIN_GAS_PRICE: "0" # Equivalent to --min-gas-price=0
