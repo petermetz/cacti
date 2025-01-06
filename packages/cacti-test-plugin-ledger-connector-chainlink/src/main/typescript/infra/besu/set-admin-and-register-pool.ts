@@ -63,7 +63,8 @@ export async function setAdminAndRegisterPool(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  log.debug("CCIP TokenAdminRegistry admin proposed OK: %o", resProposeAdmin);
+  const ctxAdminPropose = JSON.stringify(resProposeAdmin);
+  log.debug("CCIP TokenAdminRegistry admin proposed OK: %o", ctxAdminPropose);
 
   const { data: resAcceptAdminRole } = await apiClient.invokeContractV1({
     methodName: "acceptAdminRole",
@@ -75,7 +76,8 @@ export async function setAdminAndRegisterPool(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  log.debug("CCIP TokenAdminRegistry admin accept OK: %o", resAcceptAdminRole);
+  const ctxAcceptAdminRole = JSON.stringify(resAcceptAdminRole);
+  log.debug("CCIP TokenAdminRegistry admin accept OK: %s", ctxAcceptAdminRole);
 
   const { data: resSetPool } = await apiClient.invokeContractV1({
     methodName: "setPool",
@@ -87,7 +89,8 @@ export async function setAdminAndRegisterPool(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  log.debug("CCIP TokenAdminRegistry admin accept OK: %o", resSetPool);
+  const ctxSetPool = JSON.stringify(resSetPool);
+  log.debug("CCIP TokenAdminRegistry admin accept OK: %o", ctxSetPool);
 
   return { resProposeAdmin, resSetPool, resAcceptAdminRole };
 }

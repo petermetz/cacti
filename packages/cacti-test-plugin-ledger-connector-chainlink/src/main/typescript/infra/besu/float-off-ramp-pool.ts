@@ -60,7 +60,8 @@ export async function floatOffRampPool(opts: {
     params: [],
     signingCredential: web3SigningCredential,
   });
-  log.debug("CCIP LockReleaseTokenPool owner set OK: %o", resOwner);
+  const ctxOwner = JSON.stringify(resOwner);
+  log.debug("CCIP LockReleaseTokenPool owner set OK: %o", ctxOwner);
 
   const { data: resSetRebalancer } = await apiClient.invokeContractV1({
     contractAddress: opts.poolAddr,
@@ -72,7 +73,8 @@ export async function floatOffRampPool(opts: {
     params: [opts.evmAdminAccountAddr],
     signingCredential: web3SigningCredential,
   });
-  log.debug("CCIP LockReleaseTokenPool setRebalancer OK: %o", resSetRebalancer);
+  const ctxSetBalancer = JSON.stringify(resSetRebalancer);
+  log.debug("CCIP LockReleaseTokenPool setRebalancer OK: %o", ctxSetBalancer);
 
   const { data: resApprove } = await apiClient.invokeContractV1({
     contractAddress: opts.tokenAddr,
@@ -84,7 +86,8 @@ export async function floatOffRampPool(opts: {
     params: [opts.poolAddr, linkValue(200n)],
     signingCredential: web3SigningCredential,
   });
-  log.debug("CCIP LinkToken approve() OK: %o", resApprove);
+  const ctxApprove = JSON.stringify(resApprove);
+  log.debug("CCIP LinkToken approve() OK: %o", ctxApprove);
 
   const { data: resProvideLiquidity } = await apiClient.invokeContractV1({
     contractAddress: opts.poolAddr,
@@ -96,7 +99,8 @@ export async function floatOffRampPool(opts: {
     params: [linkValue(200n)],
     signingCredential: web3SigningCredential,
   });
-  log.debug("CCIP LockReleaseTokenPool provideLiquidity:", resProvideLiquidity);
+  const ctxProvideLiquidity = JSON.stringify(resProvideLiquidity);
+  log.debug("CCIP LockReleaseTokenPool provideLiquidity:", ctxProvideLiquidity);
 
   return { resOwner, resSetRebalancer, resApprove, resProvideLiquidity };
 }

@@ -48,7 +48,8 @@ export async function depositAndTransferWeth9(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  log.debug("CCIP WETH9 deposit() OK: %o", resDeposit);
+  const ctxDespoit = JSON.stringify(resDeposit);
+  log.debug("CCIP WETH9 deposit() OK: %o", ctxDespoit);
 
   const { data: resTransfer } = await apiClient.invokeContractV1({
     methodName: "transfer",
@@ -60,7 +61,8 @@ export async function depositAndTransferWeth9(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  log.debug("CCIP WETH9 transfer() OK: %o", resTransfer);
+  const ctxTransfer = JSON.stringify(resTransfer);
+  log.debug("CCIP WETH9 transfer() OK: %o", ctxTransfer);
 
   return {
     resDeposit,

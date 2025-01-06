@@ -31,7 +31,8 @@ export async function deployBesuMockRmn(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP MockRMN to Besu ledger deployed OK: %o", res.data);
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("MockRMN deployed: %o", ctx);
 
   const {
     data: {

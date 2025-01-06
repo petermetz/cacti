@@ -31,7 +31,8 @@ export async function deployBesuLinkToken(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP LinkToken to Besu ledger deployed OK: %o", res.data);
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("LinkToken deployed: %o", ctx);
 
   const {
     data: {

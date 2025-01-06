@@ -43,7 +43,8 @@ export async function applyPriceUpdatersUpdates(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  log.debug("CCIP PriceRegistry applyPriceUpdatersUpdates() OK: %o", data);
+  const ctx = JSON.stringify(data);
+  log.debug("CCIP PriceRegistry applyPriceUpdatersUpdates() OK: %o", ctx);
 
   return { resApplyPriceUpdatersUpdates: data };
 }

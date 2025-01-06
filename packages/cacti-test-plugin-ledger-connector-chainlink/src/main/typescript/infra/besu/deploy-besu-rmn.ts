@@ -74,7 +74,8 @@ export async function deployBesuRmn(opts: {
     },
     gas,
   });
-  log.info("CCIP Router to Besu ledger deployed OK: %o", res.data);
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("RMN deployed: %o", ctx);
 
   const {
     data: {

@@ -32,7 +32,8 @@ export async function deployBesuMaybeRevertMessageReceiver(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP MaybeRevertMessageReceiver deployed OK: %o", res.data);
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("MaybeRevertMessageReceiver deployed: %o", ctx);
 
   const {
     data: {

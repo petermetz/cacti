@@ -40,7 +40,9 @@ export async function deployBesuOnRamp(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP OnRamp to Besu ledger deployed OK: %o", res.data);
+
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("OnRamp deployed: %o", ctx);
 
   const {
     data: {

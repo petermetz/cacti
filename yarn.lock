@@ -9579,6 +9579,7 @@ __metadata:
     ethers: "npm:6.13.4"
     express: "npm:4.21.2"
     http-status-codes: "npm:2.3.0"
+    web3: "npm:4.16.0"
   languageName: unknown
   linkType: soft
 
@@ -54835,6 +54836,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web3-core@npm:^4.4.0, web3-core@npm:^4.5.0, web3-core@npm:^4.6.0, web3-core@npm:^4.7.1":
+  version: 4.7.1
+  resolution: "web3-core@npm:4.7.1"
+  dependencies:
+    web3-errors: "npm:^1.3.1"
+    web3-eth-accounts: "npm:^4.3.1"
+    web3-eth-iban: "npm:^4.0.7"
+    web3-providers-http: "npm:^4.2.0"
+    web3-providers-ipc: "npm:^4.0.7"
+    web3-providers-ws: "npm:^4.0.8"
+    web3-types: "npm:^1.10.0"
+    web3-utils: "npm:^4.3.3"
+    web3-validator: "npm:^2.0.6"
+  dependenciesMeta:
+    web3-providers-ipc:
+      optional: true
+  checksum: 10/c6b9447e62f5c57ccc3c96492adf5630cb3256968c15ce5675c660dec1f6da0bf60397efa88588029640f749ff45a1adaa0167a402ba0b4a46e600d8eda76334
+  languageName: node
+  linkType: hard
+
 "web3-errors@npm:^1.0.2":
   version: 1.0.2
   resolution: "web3-errors@npm:1.0.2"
@@ -54886,6 +54907,15 @@ __metadata:
   dependencies:
     web3-types: "npm:^1.6.0"
   checksum: 10/99d0ecc4368c2969cc799ed4ef1b35f233dc3e7e0ccde713bcc850be4e75725ce175127342512504057ca48186266d6a053f129634f20ae23c405855a766d13d
+  languageName: node
+  linkType: hard
+
+"web3-errors@npm:^1.3.0, web3-errors@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "web3-errors@npm:1.3.1"
+  dependencies:
+    web3-types: "npm:^1.10.0"
+  checksum: 10/0d1cb0e02701a4bd619f856b0a6702fdd4cdc0a434029c3c3dcde3f3cc4acaca418117ad10238002aa697745840e7fd312bd43ad5341482b3ff8f9e6eb438a31
   languageName: node
   linkType: hard
 
@@ -55011,6 +55041,19 @@ __metadata:
     web3-utils: "npm:^4.1.1"
     web3-validator: "npm:^2.0.4"
   checksum: 10/df903dad3b41932a60504d7c532c515b47bb44bd2d338118633ecc69ffe74122fe0346fc6047cdd623eae3c9382b2fabe41156115cfafa4701616bba6577a6dd
+  languageName: node
+  linkType: hard
+
+"web3-eth-abi@npm:^4.4.1":
+  version: 4.4.1
+  resolution: "web3-eth-abi@npm:4.4.1"
+  dependencies:
+    abitype: "npm:0.7.1"
+    web3-errors: "npm:^1.3.1"
+    web3-types: "npm:^1.10.0"
+    web3-utils: "npm:^4.3.3"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/0c7f4f9f05f04e0ac98f6029edfb3bf7e514efc325f6be83e999203f49c7a0cdc9759f4b1011ce12d80c2044c74a867f7fc0ee83538408c2ebb4c9f407027b7f
   languageName: node
   linkType: hard
 
@@ -55167,6 +55210,21 @@ __metadata:
     web3-utils: "npm:^4.3.1"
     web3-validator: "npm:^2.0.6"
   checksum: 10/c5d4aa7b82517372666833e1752ffb2e768932833284de9388d710399dbdb609b129af76e4f658a0679ae18190b627e2b2331ad616ab3109c741dcd75a9e9524
+  languageName: node
+  linkType: hard
+
+"web3-eth-accounts@npm:^4.3.1":
+  version: 4.3.1
+  resolution: "web3-eth-accounts@npm:4.3.1"
+  dependencies:
+    "@ethereumjs/rlp": "npm:^4.0.1"
+    crc-32: "npm:^1.2.2"
+    ethereum-cryptography: "npm:^2.0.0"
+    web3-errors: "npm:^1.3.1"
+    web3-types: "npm:^1.10.0"
+    web3-utils: "npm:^4.3.3"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/f8b689146c908d88b983bd467c3e794ed96e284490aa3f74e665580202db4f0826d4108f0aa95dc6ef1e14f9a8a41939ff2c4485e9713744dc6474d7082d9239
   languageName: node
   linkType: hard
 
@@ -55330,6 +55388,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web3-eth-contract@npm:^4.5.0, web3-eth-contract@npm:^4.7.2":
+  version: 4.7.2
+  resolution: "web3-eth-contract@npm:4.7.2"
+  dependencies:
+    "@ethereumjs/rlp": "npm:^5.0.2"
+    web3-core: "npm:^4.7.1"
+    web3-errors: "npm:^1.3.1"
+    web3-eth: "npm:^4.11.1"
+    web3-eth-abi: "npm:^4.4.1"
+    web3-types: "npm:^1.10.0"
+    web3-utils: "npm:^4.3.3"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/f5dd22199a69c6f10b0c38daee790341f80247a0155bad03e7c1a9ffad2d6c47722010b4fd0e3fe7832a43eb72a2fceadfd2892712ef199898c1e43067a92c0d
+  languageName: node
+  linkType: hard
+
 "web3-eth-ens@npm:1.10.0":
   version: 1.10.0
   resolution: "web3-eth-ens@npm:1.10.0"
@@ -55457,6 +55531,23 @@ __metadata:
     web3-utils: "npm:^4.0.7"
     web3-validator: "npm:^2.0.3"
   checksum: 10/592762e556bc161c0fd7859c8d5f4785f9269f8a62e49aceca5f6d490856ffa8d94130b52907f19199ae0ca758aac3e81531b8847ca57e6abe39ce89ef8a1069
+  languageName: node
+  linkType: hard
+
+"web3-eth-ens@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "web3-eth-ens@npm:4.4.0"
+  dependencies:
+    "@adraffy/ens-normalize": "npm:^1.8.8"
+    web3-core: "npm:^4.5.0"
+    web3-errors: "npm:^1.2.0"
+    web3-eth: "npm:^4.8.0"
+    web3-eth-contract: "npm:^4.5.0"
+    web3-net: "npm:^4.1.0"
+    web3-types: "npm:^1.7.0"
+    web3-utils: "npm:^4.3.0"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/25a1535e095d8ffcbc0641041af69e42aa60ba2989477108a5678c42a06135df9134ccc6024c89c216cb3408848e3905ee178d5b12e3bb740e895ee6ee0bd2cf
   languageName: node
   linkType: hard
 
@@ -55656,6 +55747,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web3-eth-personal@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "web3-eth-personal@npm:4.1.0"
+  dependencies:
+    web3-core: "npm:^4.6.0"
+    web3-eth: "npm:^4.9.0"
+    web3-rpc-methods: "npm:^1.3.0"
+    web3-types: "npm:^1.8.0"
+    web3-utils: "npm:^4.3.1"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/a560b0ef1f28961101c47824aa6fc71722c4e581ef5ffc5b68cf1b7db0fd5804032239f872a167a589b3c0ebe223353b8112b38e247e1f5b5ac48991e12f853c
+  languageName: node
+  linkType: hard
+
 "web3-eth@npm:1.10.0":
   version: 1.10.0
   resolution: "web3-eth@npm:1.10.0"
@@ -55814,6 +55919,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web3-eth@npm:^4.11.1, web3-eth@npm:^4.8.0, web3-eth@npm:^4.9.0":
+  version: 4.11.1
+  resolution: "web3-eth@npm:4.11.1"
+  dependencies:
+    setimmediate: "npm:^1.0.5"
+    web3-core: "npm:^4.7.1"
+    web3-errors: "npm:^1.3.1"
+    web3-eth-abi: "npm:^4.4.1"
+    web3-eth-accounts: "npm:^4.3.1"
+    web3-net: "npm:^4.1.0"
+    web3-providers-ws: "npm:^4.0.8"
+    web3-rpc-methods: "npm:^1.3.0"
+    web3-types: "npm:^1.10.0"
+    web3-utils: "npm:^4.3.3"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/b39f5f1559a012ece0017f3976207ffb5358c4ebb2e8518721efcc4975005ed8948814613795d1ceee67eb28f33608cbc89f6b231534241052de231c6477ed17
+  languageName: node
+  linkType: hard
+
 "web3-eth@npm:^4.3.1":
   version: 4.3.1
   resolution: "web3-eth@npm:4.3.1"
@@ -55923,6 +56047,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web3-net@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "web3-net@npm:4.1.0"
+  dependencies:
+    web3-core: "npm:^4.4.0"
+    web3-rpc-methods: "npm:^1.3.0"
+    web3-types: "npm:^1.6.0"
+    web3-utils: "npm:^4.3.0"
+  checksum: 10/2899ed28d9afda9f9faee6424752cb967dabf79128bce25321318e069a41571b9bd9477b480f290fd65f07cd6c0c641def0d72f31a730705112bd14c301f4e5e
+  languageName: node
+  linkType: hard
+
 "web3-providers-http@npm:1.10.0":
   version: 1.10.0
   resolution: "web3-providers-http@npm:1.10.0"
@@ -56012,6 +56148,18 @@ __metadata:
     web3-types: "npm:^1.3.0"
     web3-utils: "npm:^4.0.7"
   checksum: 10/d98d3cedd8caadb7f6f8ab6faa74d6f42be5808e729a93d815771fb7287f9fffa9ecdc047dceaac783a329c63947f006bca758f2241dc57070aefb62cdb0f2dc
+  languageName: node
+  linkType: hard
+
+"web3-providers-http@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "web3-providers-http@npm:4.2.0"
+  dependencies:
+    cross-fetch: "npm:^4.0.0"
+    web3-errors: "npm:^1.3.0"
+    web3-types: "npm:^1.7.0"
+    web3-utils: "npm:^4.3.1"
+  checksum: 10/812b05d1e0dd8b6c5005bdcfe3c5fbddfe6cdd082bd2654dfe171ad98c3b7ff85b0bab371c70366d2bace2cf45fbf7d2f087b4cb281dbfa12372b902b8138eeb
   languageName: node
   linkType: hard
 
@@ -56191,6 +56339,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web3-providers-ws@npm:^4.0.8":
+  version: 4.0.8
+  resolution: "web3-providers-ws@npm:4.0.8"
+  dependencies:
+    "@types/ws": "npm:8.5.3"
+    isomorphic-ws: "npm:^5.0.0"
+    web3-errors: "npm:^1.2.0"
+    web3-types: "npm:^1.7.0"
+    web3-utils: "npm:^4.3.1"
+    ws: "npm:^8.17.1"
+  checksum: 10/9b9fa96fa1fc9455fb1b632de50f542d2589710002ea2cb0cd6a5c1ed9f72960d80ce219ac66b038ea6d0a767056fe653aa258a1c084aa78d5745870cc2703b4
+  languageName: node
+  linkType: hard
+
 "web3-rpc-methods@npm:^1.0.2, web3-rpc-methods@npm:^1.1.1":
   version: 1.1.1
   resolution: "web3-rpc-methods@npm:1.1.1"
@@ -56221,6 +56383,31 @@ __metadata:
     web3-types: "npm:^1.3.1"
     web3-validator: "npm:^2.0.3"
   checksum: 10/326e059f6f4255511e700abb2329927e3b20be6f17cc3304266fd9282a4e6eff8dc1d73dbbb9c48019b2ab412b456d0bf5b590c05e0dd5629e014500303ed06c
+  languageName: node
+  linkType: hard
+
+"web3-rpc-methods@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "web3-rpc-methods@npm:1.3.0"
+  dependencies:
+    web3-core: "npm:^4.4.0"
+    web3-types: "npm:^1.6.0"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/8c134b1f2ae1cf94d5c452c53fe699d5951c22c62ea82084559db06722a5f0db2047be4209172ff90432c42f70cf8081fea0ea85a024e4cbcd0e037efd9acfa8
+  languageName: node
+  linkType: hard
+
+"web3-rpc-providers@npm:^1.0.0-rc.4":
+  version: 1.0.0-rc.4
+  resolution: "web3-rpc-providers@npm:1.0.0-rc.4"
+  dependencies:
+    web3-errors: "npm:^1.3.1"
+    web3-providers-http: "npm:^4.2.0"
+    web3-providers-ws: "npm:^4.0.8"
+    web3-types: "npm:^1.10.0"
+    web3-utils: "npm:^4.3.3"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/a6dff5ce76e6905eb3e8e7175984305b859a35f17ffad9511371e0840097cdccc4d8dd4a4bc893aeb78f93c22034b4c73cac79551a4d7cba204e55590018909b
   languageName: node
   linkType: hard
 
@@ -56307,6 +56494,13 @@ __metadata:
   version: 1.1.1
   resolution: "web3-types@npm:1.1.1"
   checksum: 10/46c497edefb621734d98d303f92edda8117c8c1a35afdb89e6964dca0894fb81a0ae557a1277ec323f043ffc42b54eabe70618798364c19245ed6ac4e4841423
+  languageName: node
+  linkType: hard
+
+"web3-types@npm:^1.10.0, web3-types@npm:^1.8.0":
+  version: 1.10.0
+  resolution: "web3-types@npm:1.10.0"
+  checksum: 10/849f05a001896b27082c5b5c46c62b65a28f463366eeec7223802418a61db6d3487ebfb73d1fe6dcad3f0849a76e20706098819cb4e266df4f75ca24617e62a1
   languageName: node
   linkType: hard
 
@@ -56467,6 +56661,19 @@ __metadata:
     web3-types: "npm:^1.6.0"
     web3-validator: "npm:^2.0.6"
   checksum: 10/486178b47721b8a3f0f4c56c0f0250e9891656ba79c22c16915152ed811e29901567442fa87bbd5b4ad83280e2d4fc23221bcae7b24efb624d74210c5f2c05bb
+  languageName: node
+  linkType: hard
+
+"web3-utils@npm:^4.3.0, web3-utils@npm:^4.3.3":
+  version: 4.3.3
+  resolution: "web3-utils@npm:4.3.3"
+  dependencies:
+    ethereum-cryptography: "npm:^2.0.0"
+    eventemitter3: "npm:^5.0.1"
+    web3-errors: "npm:^1.3.1"
+    web3-types: "npm:^1.10.0"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/c91ebbe67e469fe184ab258564b1f002f6f0e563a91637429c8e5bd3f0653b970d0c45dac544402021a5512297f0bea39aa2dd0b4c9bc6f54d4b58897f2dd002
   languageName: node
   linkType: hard
 
@@ -56694,6 +56901,31 @@ __metadata:
     web3-utils: "npm:^4.0.5"
     web3-validator: "npm:^2.0.1"
   checksum: 10/6666cd853a8f29f2213a48f0477ddbcab0ecd737edb8b9ed6788d8e00580db7f88358beec8acbb1d1ba4ad50d144d2b9bfbc6c879b732df4475c57c0817ae878
+  languageName: node
+  linkType: hard
+
+"web3@npm:4.16.0":
+  version: 4.16.0
+  resolution: "web3@npm:4.16.0"
+  dependencies:
+    web3-core: "npm:^4.7.1"
+    web3-errors: "npm:^1.3.1"
+    web3-eth: "npm:^4.11.1"
+    web3-eth-abi: "npm:^4.4.1"
+    web3-eth-accounts: "npm:^4.3.1"
+    web3-eth-contract: "npm:^4.7.2"
+    web3-eth-ens: "npm:^4.4.0"
+    web3-eth-iban: "npm:^4.0.7"
+    web3-eth-personal: "npm:^4.1.0"
+    web3-net: "npm:^4.1.0"
+    web3-providers-http: "npm:^4.2.0"
+    web3-providers-ws: "npm:^4.0.8"
+    web3-rpc-methods: "npm:^1.3.0"
+    web3-rpc-providers: "npm:^1.0.0-rc.4"
+    web3-types: "npm:^1.10.0"
+    web3-utils: "npm:^4.3.3"
+    web3-validator: "npm:^2.0.6"
+  checksum: 10/8d63e70404914d2717d2675ba19350f112b07e50583a0703a68dd326eeb43a5c82b56f1165f4339cd89e697967581e0cd65fdb42ca0f1150fb7a3ce612f1a829
   languageName: node
   linkType: hard
 

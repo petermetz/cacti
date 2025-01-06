@@ -76,10 +76,10 @@ export { isIEVM2EVMOnRampStaticConfig } from "./ccip/on-ramp/i-evm-2-evm-on-ramp
 export { linkUSDValue } from "./ccip/common/link-usd-value";
 export { linkValue } from "./ccip/common/link-value";
 
-export { getEVMExtraArgsV1 } from "./ccip/common/get-evm-extra-args-v1";
+export { getEvmExtraArgsV1 } from "./ccip/common/get-evm-extra-args-v1";
 export { EVM_V1_TAG_HEX } from "./ccip/common/get-evm-extra-args-v1";
 
-export { getEVMExtraArgsV2 } from "./ccip/common/get-evm-extra-args-v2";
+export { getEvmExtraArgsV2 } from "./ccip/common/get-evm-extra-args-v2";
 export { EVM_V2_TAG_HEX } from "./ccip/common/get-evm-extra-args-v2";
 
 export { mustEncodeAddress } from "./ccip/common/must-encode-address";

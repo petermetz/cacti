@@ -31,7 +31,8 @@ export async function deployBesuRouter(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP Router to Besu ledger deployed OK: %o", res.data);
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("Router deployed: %o", ctx);
 
   const {
     data: {

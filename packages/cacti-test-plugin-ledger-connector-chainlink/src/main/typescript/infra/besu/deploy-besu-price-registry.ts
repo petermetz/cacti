@@ -38,7 +38,8 @@ export async function deployBesuPriceRegistry(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP PriceRegistry to Besu ledger deployed OK: %o", res.data);
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("PriceRegistry deployed: %o", ctx);
 
   const {
     data: {

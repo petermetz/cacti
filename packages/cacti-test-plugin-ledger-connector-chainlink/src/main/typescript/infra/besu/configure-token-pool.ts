@@ -147,7 +147,8 @@ export async function configureTokenPool(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  log.debug("CCIP token pool applyChainUpdates() OK: %o", resApplyChainUpdates);
+  const ctx = JSON.stringify(resApplyChainUpdates);
+  log.debug("CCIP token pool applyChainUpdates() OK: %o", ctx);
 
   return { resApplyChainUpdates };
 }

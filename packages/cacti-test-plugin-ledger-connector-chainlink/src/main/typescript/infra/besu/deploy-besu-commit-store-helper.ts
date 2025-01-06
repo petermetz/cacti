@@ -32,8 +32,8 @@ export async function deployBesuCommitStoreHelper(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP CommitStoreHelper to Besu ledger deployed OK: %o", res.data);
-
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("CommitStoreHelper deployed: %o", ctx);
   const {
     data: {
       transactionReceipt: { contractAddress },

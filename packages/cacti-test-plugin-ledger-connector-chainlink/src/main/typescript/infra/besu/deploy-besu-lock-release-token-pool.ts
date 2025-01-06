@@ -43,7 +43,8 @@ export async function deployBesuLockReleaseTokenPool(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP LockReleaseTokenPool to Besu deployed OK: %o", res.data);
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("LockReleaseTokenPool deployed: %o", ctx);
 
   const {
     data: {

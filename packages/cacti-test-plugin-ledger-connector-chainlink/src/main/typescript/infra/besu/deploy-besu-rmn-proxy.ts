@@ -32,7 +32,9 @@ export async function deployBesuRmnProxy(opts: {
     web3SigningCredential,
     gas,
   });
-  log.info("CCIP RMNProxy to Besu ledger deployed OK: %o", res.data);
+
+  const ctx = JSON.stringify(res.data.transactionReceipt);
+  log.debug("RMNProxy deployed: %o", ctx);
 
   const {
     data: {
