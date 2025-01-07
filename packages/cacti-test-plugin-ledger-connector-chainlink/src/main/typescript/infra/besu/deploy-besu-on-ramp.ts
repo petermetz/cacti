@@ -9,6 +9,7 @@ export async function deployBesuOnRamp(opts: {
   readonly logLevel?: Readonly<LogLevelDesc>;
   readonly web3SigningCredential: Readonly<Web3SigningCredential>;
   readonly apiClient: Readonly<BesuApiClient>;
+  readonly srcRouterAddr: Readonly<string>;
   readonly staticConfig: Readonly<IEVM2EVMOnRampStaticConfig>;
   readonly dynamicConfig: Readonly<Record<string, any>>;
   readonly rateLimiterConfig: Readonly<Record<string, any>>;

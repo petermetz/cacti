@@ -1,9 +1,9 @@
 services:
-  remix:
-    image: remixproject/remix-ide:yann300-patch-36
-    container_name: remix
-    ports:
-      - "8000:80"
+  # remix:
+  #   image: remixproject/remix-ide:yann300-patch-36
+  #   container_name: remix
+  #   ports:
+  #     - "8000:80"
 
   postgres:
     image: postgres:16.4-alpine3.20
@@ -21,11 +21,11 @@ services:
     command: ["postgres", "-c", "log_statement=none"]
 
   chainlink:
-    image: smartcontract/chainlink:2.15.0
+    image: smartcontract/chainlink:2.19.0
     container_name: chainlink
     depends_on:
       - postgres
-      - besu
+    restart: on-failure:5
     volumes:
       - ./config:/chainlink/config
       - ./secrets:/chainlink/secrets
@@ -41,33 +41,33 @@ services:
         "-a=/chainlink/.api",
       ]
 
-  besu:
-    image: hyperledger/besu:24.12.2
-    container_name: besu
-    environment:
-      BESU_NETWORK_ID: 1337
-      # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
-      # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
-      BESU_LOGGING: ALL
-      BESU_GENESIS_FILE: "/opt/besu/genesis-dev.json"
-      # BESU_OVERRIDE_GENESIS_CONFIG: "cancunTime=1710338135"
-      BESU_REVERT_REASON_ENABLED: true
-      BESU_NETWORK: dev # Equivalent to --network=dev
-      BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
-      BESU_RPC_WS_ENABLED: "true" # Equivalent to --rpc-ws-enabled
-      BESU_HOST_WHITELIST: "*" # Equivalent to --host-whitelist=*
-      BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE,TRACE,DEBUG" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
-      BESU_RPC_HTTP_CORS_ORIGINS: all
-      BESU_RPC_WS_API: "ETH,NET,WEB3,CLIQUE,TRACE,DEBUG" # Equivalent to --rpc-ws-api=ETH,NET,WEB3,CLIQUE
-      BESU_MINER_ENABLED: "true" # Equivalent to --miner-enabled
-      BESU_MINER_COINBASE: "0x0000000000000000000000000000000000000000" # Miner coinbase address
-      BESU_MIN_GAS_PRICE: "0" # Equivalent to --min-gas-price=0
-    ports:
-      - "8545:8545" # HTTP JSON-RPC
-      - "8546:8546" # WebSocket JSON-RPC
-    volumes:
-      - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis-dev.json:/opt/besu/genesis-dev.json
-      - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis-eth-pos-devnet.json:/opt/besu/genesis-eth-pos-devnet.json
+  # besu:
+  #   image: hyperledger/besu:25.1-develop-eaa75ac
+  #   container_name: besu
+  #   environment:
+  #     BESU_NETWORK_ID: 1337
+  #     # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
+  #     # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
+  #     BESU_LOGGING: ALL
+  #     BESU_GENESIS_FILE: "/opt/besu/genesis-dev.json"
+  #     BESU_REVERT_REASON_ENABLED: true
+  #     BESU_NETWORK: dev # Equivalent to --network=dev
+  #     BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
+  #     BESU_RPC_WS_ENABLED: "true" # Equivalent to --rpc-ws-enabled
+  #     BESU_HOST_WHITELIST: "*" # Equivalent to --host-whitelist=*
+  #     BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE,TRACE,DEBUG" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
+  #     BESU_RPC_HTTP_CORS_ORIGINS: all
+  #     BESU_RPC_WS_API: "ETH,NET,WEB3,CLIQUE,TRACE,DEBUG" # Equivalent to --rpc-ws-api=ETH,NET,WEB3,CLIQUE
+  #     BESU_FAST_SYNC_MIN_PEERS: 0
+  #     BESU_MINER_ENABLED: "false" # Equivalent to --miner-enabled
+  #     # BESU_MINER_COINBASE: "0x0000000000000000000000000000000000000000" # Miner coinbase address
+  #     BESU_MIN_GAS_PRICE: "0" # Equivalent to --min-gas-price=0
+  #   ports:
+  #     - "8545:8545" # HTTP JSON-RPC
+  #     - "8546:8546" # WebSocket JSON-RPC
+  #   volumes:
+  #     - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis-dev.json:/opt/besu/genesis-dev.json
+  #     - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis-eth-pos-devnet.json:/opt/besu/genesis-eth-pos-devnet.json
 
 
   proxychain:
@@ -103,14 +103,10 @@ services:
 
     depends_on:
       - chainlink
-      - besu
       - proxychain
-      - infra-init
 
     volumes:
       - cactisrc:/usr/src/cacti
-
-    # command: ["ls", "-al", "/usr/src/cacti/packages/cactus-plugin-keychain-memory/"]
 
     ports:
       - 4000:4000
@@ -147,8 +143,8 @@ services:
               "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",
               "options": {
                   "packageSrc": "/usr/src/cacti/packages/cactus-plugin-ledger-connector-besu/",
-                  "rpcApiHttpHost": "http://besu:8545",
-                  "rpcApiWsHost": "ws://besu:8546",
+                  "rpcApiHttpHost": "http://10.0.0.41:8545",
+                  "rpcApiWsHost": "ws://10.0.0.41:8546",
                   "instanceId": "plugin-connector-besu-1"
               }
           },
@@ -175,9 +171,7 @@ services:
 
     depends_on:
       - chainlink
-      - besu
       - proxychain
-      - infra-init
 
     volumes:
       - cactisrc:/usr/src/cacti
@@ -213,13 +207,6 @@ services:
               }
           }
         ]
-
-  # Race conditions seem to be causing trouble with the API server's initialization without this 10 second wait.
-  infra-init:
-    container_name: infra-init
-    image: node:22.8.0-bookworm-slim
-    # command: ["node", "-e", "console.log('hello world')"]
-    command: ["sleep", "10"]
 
 volumes: 
   cactisrc: 

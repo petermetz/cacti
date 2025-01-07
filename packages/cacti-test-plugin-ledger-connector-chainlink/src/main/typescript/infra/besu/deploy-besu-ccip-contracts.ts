@@ -470,6 +470,7 @@ export async function deployBesuCcipContracts(opts: {
   const maxNopFeesJuels = BigInt(100_000) * BigInt(1e9);
 
   const { contractAddress: srcOnRampAddr } = await deployBesuOnRamp({
+    srcRouterAddr: srcRouterAddr,
     staticConfig: {
       chainSelector: 1337n,
       defaultTxGasLimit: 200_000n,
