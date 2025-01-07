@@ -31,6 +31,7 @@ import { depositAndTransferWeth9 } from "./deposit-and-transfer-weth9";
 import { configureTokenPool } from "./configure-token-pool";
 import { updateRegistryPrices } from "./update-registry-prices";
 import { applyPriceUpdatersUpdates } from "./apply-price-updaters-updates";
+import { deployMockV3Aggregator } from "./mock-v3-aggregator-factory";
 
 export interface IDeployBesuCcipContractsOutput {
   readonly srcMockRmnAddr: Readonly<string>;
@@ -44,6 +45,7 @@ export interface IDeployBesuCcipContractsOutput {
   readonly srcWeth9PoolAddr: Readonly<string>;
   readonly srcPriceRegistryAddr: Readonly<string>;
   readonly srcOnRampAddr: Readonly<string>;
+  readonly srcMockV3AggregatorAddr: Readonly<string>;
   readonly dstMockRmnAddr: Readonly<string>;
   readonly dstRmnProxyAddr: Readonly<string>;
   readonly dstTokenAdminRegistryAddr: Readonly<string>;
@@ -58,6 +60,7 @@ export interface IDeployBesuCcipContractsOutput {
   readonly dstOffRampAddr: Readonly<string>;
   readonly dstMaybeRevertMessageReceiver1Addr: Readonly<string>;
   readonly dstMaybeRevertMessageReceiver2Addr: Readonly<string>;
+  readonly dstMockV3AggregatorAddr: Readonly<string>;
 }
 
 /**
@@ -73,7 +76,7 @@ export interface IDeployBesuCcipContractsOutput {
  * ```
  */
 export async function deployBesuCcipContracts(opts: {
-  readonly logLevel?: Readonly<LogLevelDesc>;
+  readonly logLevel: Readonly<LogLevelDesc>;
   readonly srcWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
   readonly dstWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
   readonly destChainSelector: Readonly<bigint>;
@@ -617,6 +620,24 @@ export async function deployBesuCcipContracts(opts: {
       logLevel,
     });
 
+  const { contractAddress: srcMockV3AggregatorAddr } =
+    await deployMockV3Aggregator({
+      decimals: 18,
+      initialAnswer: BigInt(2e18),
+      web3SigningCredential: srcWeb3SigningCredential,
+      apiClient: srcApiClient,
+      logLevel,
+    });
+
+  const { contractAddress: dstMockV3AggregatorAddr } =
+    await deployMockV3Aggregator({
+      decimals: 18,
+      initialAnswer: BigInt(3e18),
+      web3SigningCredential: dstWeb3SigningCredential,
+      apiClient: dstApiClient,
+      logLevel,
+    });
+
   const out = {
     srcMockRmnAddr,
     srcRmnProxyAddr,
@@ -629,6 +650,7 @@ export async function deployBesuCcipContracts(opts: {
     srcWeth9PoolAddr,
     srcPriceRegistryAddr,
     srcOnRampAddr,
+    srcMockV3AggregatorAddr,
     dstMockRmnAddr,
     dstRmnProxyAddr,
     dstTokenAdminRegistryAddr,
@@ -643,6 +665,7 @@ export async function deployBesuCcipContracts(opts: {
     dstOffRampAddr,
     dstMaybeRevertMessageReceiver1Addr,
     dstMaybeRevertMessageReceiver2Addr,
+    dstMockV3AggregatorAddr,
   };
 
   log.info("CCIP Solidity contracts to Besu ledger deployed OK: %o", out);

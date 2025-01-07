@@ -21,6 +21,8 @@ import { ABI as LinkTokenAbi } from "../../../main/typescript/infra/besu/link-to
 import { ABI as OnRampAbi } from "../../../main/typescript/infra/besu/on-ramp-factory";
 import { ABI as OffRampAbi } from "../../../main/typescript/infra/besu/off-ramp-factory";
 import { ABI as RouterAbi } from "../../../main/typescript/infra/besu/router-factory";
+import { MockV3AggregatorContractAbi } from "../../../main/typescript/infra/besu/mock-v3-aggregator-factory";
+import { setUpNodesAndJobs } from "../../../main/typescript/infra/besu/set-up-nodes-and-jobs";
 
 describe("PluginLedgerConnectorChainlink", () => {
   const logLevel: LogLevelDesc = "DEBUG";
@@ -182,6 +184,9 @@ describe("PluginLedgerConnectorChainlink", () => {
 
     await plugin.onPluginInit();
 
+    srcWeb3.eth.defaultAccount = srcWeb3SigningCredential.ethAccount;
+    dstWeb3.eth.defaultAccount = dstWeb3SigningCredential.ethAccount;
+
     const srcRouter = new Contract(RouterAbi, infra.srcRouterAddr, srcWeb3);
     const srcLinkToken = new Contract(
       LinkTokenAbi,
@@ -190,9 +195,53 @@ describe("PluginLedgerConnectorChainlink", () => {
     );
     const srcOnRamp = new Contract(OnRampAbi, infra.srcOnRampAddr, srcWeb3);
     const dstOffRamp = new Contract(OffRampAbi, infra.dstOffRampAddr, dstWeb3);
+    const srcMockV3Aggregator = new Contract(
+      MockV3AggregatorContractAbi,
+      infra.srcMockV3AggregatorAddr,
+      srcWeb3,
+    );
+    const dstMockV3Aggregator = new Contract(
+      MockV3AggregatorContractAbi,
+      infra.dstMockV3AggregatorAddr,
+      dstWeb3,
+    );
 
-    srcWeb3.eth.defaultAccount = srcWeb3SigningCredential.ethAccount;
-    dstWeb3.eth.defaultAccount = dstWeb3SigningCredential.ethAccount;
+    try {
+      // big.NewInt(50), big.NewInt(17000000), big.NewInt(1000), big.NewInt(1000)
+      const srcUpdateRoundDataOut = await srcMockV3Aggregator.methods
+        .updateRoundData(50n, 17_000_000n, 1_000n, 1_000n)
+        .send({ from: srcWeb3SigningCredential.ethAccount });
+      log.debug("srcUpdateRoundDataOut=%o", srcUpdateRoundDataOut);
+    } catch (ex: unknown) {
+      log.error("Failed to get srcUpdateRoundDataOut: ", ex);
+      throw ex;
+    }
+
+    try {
+      // (big.NewInt(50), big.NewInt(8000000), big.NewInt(1000), big.NewInt(1000))
+      const dstUpdateRoundDataOut = await dstMockV3Aggregator.methods
+        .updateRoundData(50n, 8_000_000n, 1_000n, 1_000n)
+        .send({ from: dstWeb3SigningCredential.ethAccount });
+      log.debug("dstUpdateRoundDataOut=%o", dstUpdateRoundDataOut);
+    } catch (ex: unknown) {
+      log.error("Failed to get dstUpdateRoundDataOut: ", ex);
+      throw ex;
+    }
+
+    const priceGetterConfig = {};
+    await setUpNodesAndJobs({
+      logLevel,
+      priceGetterConfig,
+      tokenPricesUSDPipeline: "",
+    });
+
+    // END SECTION SETTING UP THE ENVIRONMENT
+    //=========================================================================
+    //=========================================================================
+    //=========================================================================
+    //=========================================================================
+    //=========================================================================
+    //=========================================================================
 
     try {
       const linkAvailableForPayment1 = await srcOnRamp.methods
@@ -201,6 +250,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("linkAvailableForPayment1=%o", linkAvailableForPayment1);
     } catch (ex: unknown) {
       log.error("Failed to get linkAvailableForPayment1: ", ex);
+      throw ex;
     }
 
     try {
@@ -210,6 +260,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("getDynamicConfig=%o", getDynamicConfig);
     } catch (ex: unknown) {
       log.error("Failed to get getDynamicConfig: ", ex);
+      throw ex;
     }
 
     try {
@@ -219,6 +270,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("LinkBalance1 (ETH_Whale_1)=%o", linkBalance1);
     } catch (ex: unknown) {
       log.error("Failed to get LinkBalance1: ", ex);
+      throw ex;
     }
 
     try {
@@ -230,6 +282,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("Link Allowance -1 (ETH_Whale_1)=%o", linkAllowance);
     } catch (ex: unknown) {
       log.error("Failed to get linkAllowance: ", ex);
+      throw ex;
     }
 
     try {
@@ -243,6 +296,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("Link Approval 1 (ETH_Whale_1)=%o", linkApproval);
     } catch (ex: unknown) {
       log.error("Failed to get linkApproval 1: ", ex);
+      throw ex;
     }
 
     try {
@@ -256,6 +310,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("Link Approval 2 (srcOnRamp)=%o", linkApproval);
     } catch (ex: unknown) {
       log.error("Failed to get linkApproval 2: ", ex);
+      throw ex;
     }
 
     try {
@@ -267,6 +322,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("Link Allowance -2 (ETH_Whale_1)=%o", linkAllowance);
     } catch (ex: unknown) {
       log.error("Failed to get linkAllowance: ", ex);
+      throw ex;
     }
 
     try {
@@ -278,6 +334,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("Link Allowance -3 (srcOnRamp)=%o", linkAllowance3);
     } catch (ex: unknown) {
       log.error("Failed to get linkAllowance3: ", ex);
+      throw ex;
     }
 
     try {
@@ -287,6 +344,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("LinkBalance2 (OnRamp)=%o", linkBalance2);
     } catch (ex: unknown) {
       log.error("Failed to get LinkBalance2: ", ex);
+      throw ex;
     }
     const receiverAddr = infra.dstMaybeRevertMessageReceiver1Addr;
     const receiver = mustEncodeAddress(receiverAddr);
@@ -335,6 +393,7 @@ describe("PluginLedgerConnectorChainlink", () => {
     //   log.debug("transferFromOut OK: %s", JSON.stringify(transferFromOut));
     // } catch (ex: unknown) {
     //   log.error("Failed to send transferFrom(): ", ex);
+    //   throw ex;
     // }
 
     try {
@@ -344,6 +403,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.debug("ccipSendFee1=%o", ccipSendFee1);
     } catch (ex: unknown) {
       log.error("Failed to get ccipSendFee1: ", ex);
+      throw ex;
     }
 
     try {
@@ -354,6 +414,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       });
     } catch (ex: unknown) {
       log.error("Failed to set up DebugMessageLogged event capture:", ex);
+      throw ex;
     }
 
     try {
@@ -367,6 +428,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       });
     } catch (ex: unknown) {
       log.error("Failed to set up ExecutionStateChanged event capture:", ex);
+      throw ex;
     }
 
     try {
@@ -381,6 +443,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       });
     } catch (ex: unknown) {
       log.error("Failed to set up allEvents event capture:", ex);
+      throw ex;
     }
 
     try {
@@ -394,6 +457,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       });
     } catch (ex: unknown) {
       log.error("Failed to set up CCIPSendRequested event capture:", ex);
+      throw ex;
     }
 
     try {
@@ -408,6 +472,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       });
     } catch (ex: unknown) {
       log.error("Failed to set up allEvents event capture:", ex);
+      throw ex;
     }
 
     try {
@@ -422,6 +487,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       expect(web3Res).toBeTruthy();
     } catch (ex: unknown) {
       log.error("Web3 ccipSend failed:", ex);
+      throw ex;
     }
   });
 });
