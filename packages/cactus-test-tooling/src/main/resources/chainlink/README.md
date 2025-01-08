@@ -125,19 +125,18 @@ curl -X POST --data '{"jsonrpc": "2.0", "method": "trace_transaction","params": 
 
 ### Extracted Job Spec Configurations for `TestIntegration_CCIP`:
 
-**bootstrap-SimulatedDest**
+**bootstrap-SimulatedSource**
 
 ```toml
-name = 'bootstrap-SimulatedDest'
+name = 'bootstrap-besu'
 type = 'bootstrap'
-maxTaskDuration = ''
+schemaVersion = 1
+maxTaskDuration = '30s'
 forwardingAllowed = false
-observationSource = ''
 
-[OCR2OracleSpec]
 contractID = '0x9e823597351791060F75EcC7F61Eea18DDa497Fd'
 relay = 'evm'
-chainID = ''
+chainID = '1337'
 p2pv2Bootstrappers = []
 ocrKeyBundleID = ''
 monitoringEndpoint = ''
@@ -149,41 +148,41 @@ pluginType = ''
 captureEATelemetry = false
 captureAutomationCustomTelemetry = false
 
-[OCR2OracleSpec.relayConfig]
+[relayConfig]
 chainID = 1337
 ```
+
+`Job successfully created but could not start service: failed to create services for job: 2: error calling 'relayer.NewConfigWatcher': log poller disabled`
 
 **ccip-commit-SimulatedSource-SimulatedDest**
 
 ```toml
 name = 'ccip-commit-SimulatedSource-SimulatedDest'
 type = 'offchainreporting2'
-maxTaskDuration = ''
+schemaVersion = 1
+relay = "evm"
+maxTaskDuration = '1h'
 forwardingAllowed = false
-observationSource = ''
-
-[OCR2OracleSpec]
 contractID = '0x9e823597351791060F75EcC7F61Eea18DDa497Fd'
-relay = 'evm'
-chainID = ''
-p2pv2Bootstrappers = []
-ocrKeyBundleID = ''
-monitoringEndpoint = ''
-transmitterID = ''
-blockchainTimeout = '0s'
-contractConfigTrackerPollInterval = '20s'
-contractConfigConfirmations = 1
 pluginType = 'ccip-commit'
-captureEATelemetry = false
-captureAutomationCustomTelemetry = false
+transmitterID = '0x05bB9d57CC2bc32f796E1a35A019B03672Da836e'
 
-[OCR2OracleSpec.relayConfig]
+[relayConfig]
+
 chainID = 1337
 
-[OCR2OracleSpec.pluginConfig]
+[pluginConfig]
 destStartBlock = 86
 offRamp = '"0xB56D9238dDc576ee967d40393672f41519F494bd"'
-tokenPricesUSDPipeline = "\"\"\"\n\n// Price 1\nlink [type=http method=GET url=\"http://127.0.0.1:34335\"];\nlink_parse [type=jsonparse path=\"UsdPerLink\"];\nlink->link_parse;\neth [type=http method=GET url=\"http://127.0.0.1:33895\"];\neth_parse [type=jsonparse path=\"UsdPerETH\"];\neth->eth_parse;\nmerge [type=merge left=\"{}\" right=\"{\\\\\\\"0x44b769527cc4FE3124e2af50e1918038e07c6482\\\\\\\":$(link_parse), \\\\\\\"0xFC38956ec1da09d9C88e95cFC1E70216159B91fb\\\\\\\":$(eth_parse), \\\\\\\"0xFEa694b841326dE61d8E502B1E2E94d07F128F12\\\\\\\":$(eth_parse)}\"];\n\"\"\""
+tokenPricesUSDPipeline = """
+// Price 1
+link [type=http method=GET url="http://127.0.0.1:34335"];
+link_parse [type=jsonparse path="UsdPerLink"];
+link->link_parse;
+eth [type=http method=GET url="http://127.0.0.1:33895"];
+eth_parse [type=jsonparse path="UsdPerETH"];
+eth->eth_parse;
+"""
 ```
 
 **ccip-exec-SimulatedSource-SimulatedDest**
@@ -248,7 +247,17 @@ chainID = 1337
 destStartBlock = 229
 offRamp = '"0x911600531983d1D0b87B34a758B18c41d08eA976"'
 sourceStartBlock = 249
-tokenPricesUSDPipeline = "\"\"\"\n\n// Price 1\nlink [type=http method=GET url=\"http://127.0.0.1:34335\"];\nlink_parse [type=jsonparse path=\"UsdPerLink\"];\nlink->link_parse;\neth [type=http method=GET url=\"http://127.0.0.1:33895\"];\neth_parse [type=jsonparse path=\"UsdPerETH\"];\neth->eth_parse;\nmerge [type=merge left=\"{}\" right=\"{\\\\\\\"0x44b769527cc4FE3124e2af50e1918038e07c6482\\\\\\\":$(link_parse), \\\\\\\"0xFC38956ec1da09d9C88e95cFC1E70216159B91fb\\\\\\\":$(eth_parse), \\\\\\\"0xFEa694b841326dE61d8E502B1E2E94d07F128F12\\\\\\\":$(eth_parse)}\"];\n\"\"\""
+tokenPricesUSDPipeline = """"
+
+// Price 1
+link [type=http method=GET url="http://127.0.0.1:34335"];
+link_parse [type=jsonparse path="UsdPerLink"];
+link->link_parse;
+eth [type=http method=GET url="http://127.0.0.1:33895"];
+eth_parse [type=jsonparse path="UsdPerETH"];
+eth->eth_parse;
+merge [type=merge left="{}" right="{"0x44b769527cc4FE3124e2af50e1918038e07c6482":$(link_parse), "0xFC38956ec1da09d9C88e95cFC1E70216159B91fb":$(eth_parse), "0xFEa694b841326dE61d8E502B1E2E94d07F128F12":$(eth_parse)}"];
+""""
 ```
 
 **ccip-exec-SimulatedSource-SimulatedDest-v2**
@@ -342,7 +351,25 @@ chainID = 1337
 [OCR2OracleSpec.pluginConfig]
 destStartBlock = 88
 offRamp = '"0xbACc9843a1A102ef39262Ca44A7331a35F4958C5"'
-priceGetterConfig = "\"\"\"\n{\n \"aggregatorPrices\": {\n  \"0x49a37926de8b7672b5e6e587e786892156be7c27\": {\n   \"chainID\": \"1337\",\n   \"contractAddress\": \"0xd31538583eb075a3df5a833c59e9c44a86af6406\"\n  },\n  \"0x836c9f6c549d638cdfb963c7f4e578d57101d76a\": {\n   \"chainID\": \"1000\",\n   \"contractAddress\": \"0x5e56ccdedeac200abc6475025a4755d7c443c6a0\"\n  },\n  \"0x8c2162be397b8e6fc02505693c9fdc00a97a1119\": {\n   \"chainID\": \"1337\",\n   \"contractAddress\": \"0xd31538583eb075a3df5a833c59e9c44a86af6406\"\n  }\n },\n \"staticPrices\": {}\n}\n\"\"\""
+priceGetterConfig = """"
+{
+ "aggregatorPrices": {
+  "0x49a37926de8b7672b5e6e587e786892156be7c27": {
+   "chainID": "1337",
+   "contractAddress": "0xd31538583eb075a3df5a833c59e9c44a86af6406"
+  },
+  "0x836c9f6c549d638cdfb963c7f4e578d57101d76a": {
+   "chainID": "1000",
+   "contractAddress": "0x5e56ccdedeac200abc6475025a4755d7c443c6a0"
+  },
+  "0x8c2162be397b8e6fc02505693c9fdc00a97a1119": {
+   "chainID": "1337",
+   "contractAddress": "0xd31538583eb075a3df5a833c59e9c44a86af6406"
+  }
+ },
+ "staticPrices": {}
+}
+""""
 ```
 
 ```go
