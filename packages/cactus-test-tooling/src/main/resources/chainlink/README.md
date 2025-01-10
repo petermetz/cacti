@@ -1,5 +1,9 @@
 # Chainlink Docker Compose Setup
 
+Links:
+- https://www.npmjs.com/package/@chainlink/hardhat-chainlink
+- https://www.npmjs.com/package/@chainsafe/web3-plugin-chainlink (maybe useful but not likely)
+
 Run it from the Cacti project root:
 
 ```sh
@@ -20,6 +24,24 @@ docker compose \
 	--file packages/cactus-test-tooling/src/main/resources/chainlink/chainlink-aio.docker-compose.yaml \
 	up \
 	--build &> /tmp/chainlink.log
+```
+
+## Importing a P2P Key
+
+```sh
+peter@zend:~$ docker exec chainlink1 sh -c 'chainlink admin login --file /chainlink/.api'
+Successfully Logged In.
+peter@zend:~$ docker exec chainlink1 sh -c 'chainlink keys p2p import /chainlink/secrets/bootstrapper-p2p-key-data.json --old-password=/chainlink/secrets/bootstrapper-p2p-password.txt'
+🔑 Imported P2P key
+🔑 P2P Keys
+
+----------------------------------------------------------------------------
+ID:         12D3KooWSPPcj5FKg9fmQ3jBRB27bdLD1QbLBKwLCZDmpgnzNRzf
+Peer ID:    p2p_12D3KooWSPPcj5FKg9fmQ3jBRB27bdLD1QbLBKwLCZDmpgnzNRzf
+Public key: f630cb73d86d75f4f4db9fd174204512530fd33941e81c636a8e6a0db7c0f0a8
+----------------------------------------------------------------------------
+
+
 ```
 
 Debug a Reverted Transaction:
@@ -152,6 +174,15 @@ captureAutomationCustomTelemetry = false
 chainID = 1337
 ```
 
+http://localhost:6688/query
+```json
+{"operationName":"CreateJob","variables":{"input":{"TOML":"name = 'bootstrap-besu'\ntype = 'bootstrap'\nschemaVersion = 1\nmaxTaskDuration = '30s'\nforwardingAllowed = false\n\ncontractID = '0x63a0F110d6C4712000345E05adDCA534520eb865'\nrelay = 'evm'\nchainID = '1337'\np2pv2Bootstrappers = []\nocrKeyBundleID = ''\nmonitoringEndpoint = ''\ntransmitterID = ''\nblockchainTimeout = '0s'\ncontractConfigTrackerPollInterval = '20s'\ncontractConfigConfirmations = 1\npluginType = ''\ncaptureEATelemetry = false\ncaptureAutomationCustomTelemetry = false\n\n[relayConfig]\nchainID = 1337"}},"query":"mutation CreateJob($input: CreateJobInput!) {\n  createJob(input: $input) {\n    ... on CreateJobSuccess {\n      job {\n        id\n        __typename\n      }\n      __typename\n    }\n    ... on InputErrors {\n      errors {\n        path\n        message\n        code\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}
+```
+
+```sh
+curl 'http://localhost:6688/query' -X POST -H 'Accept: */*' -H 'Accept-Encoding: gzip, deflate, br, zstd' -H 'Referer: http://localhost:6688/jobs/new' -H 'content-type: application/json' -H 'Origin: http://localhost:6688' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Cookie: connect.sid=s%3AYIC9ort25pppJCxqn6vA21yLLyuWqeei.dBmZKKwaNGNUj09oGnsGJlElJObpbzWd6cpNJ6em4GY; local_adminer_session=322316; adminer_sid=647dce8e13810b35710a77ef1bbaf897; session=.eJzVT0FqxDAQ-4qZcyi2J7bHeUXvZVnG4_EmkHZLnD0t-_e6_UUvEkISSE-4tp37qh2WjyeYcxB8au98U5jgfVfuavb7zWxf5rwbFhmmOdetm--ReYPLa_onvcs0zh7aV1jO46FDbRUWSM5lLz40bOUXM3KzGNTaOZEvnqIiR7ahxlgJfSolNPUeM7smc5VSA7nSMtXaUFKayUeJM4kkQR8ZFUOWTFyClEQlzDmWxqNiU0w05l8fXY-_Ne71A65mfdI.ZrEkkA.rBhq7SCyNZLZEpw4iCpFROMX7Zk; PGADMIN_LANGUAGE=en; clsession=MTczNjM2NjE2NnxEWDhFQVFMX2dBQUJFQUVRQUFCR180QUFBUVp6ZEhKcGJtY01EZ0FNWTJ4elpYTnphVzl1WDJsa0JuTjBjbWx1Wnd3aUFDQTFNRFkzWmpNMU1qazNOalUwTlRZek9HVTVZVFF4WTJKaU1qZzRaREpsT1E9PXw5Jn99lqk2_848HAcrbwx8X-FkD6U6tlYu20S4EeLGoQ==' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=4' --data-raw $'{"operationName":"CreateJob","variables":{"input":{"TOML":"name = \'bootstrap-besu\'\\ntype = \'bootstrap\'\\nschemaVersion = 1\\nmaxTaskDuration = \'30s\'\\nforwardingAllowed = false\\n\\ncontractID = \'0x63a0F110d6C4712000345E05adDCA534520eb865\'\\nrelay = \'evm\'\\nchainID = \'1337\'\\np2pv2Bootstrappers = []\\nocrKeyBundleID = \'\'\\nmonitoringEndpoint = \'\'\\ntransmitterID = \'\'\\nblockchainTimeout = \'0s\'\\ncontractConfigTrackerPollInterval = \'20s\'\\ncontractConfigConfirmations = 1\\npluginType = \'\'\\ncaptureEATelemetry = false\\ncaptureAutomationCustomTelemetry = false\\n\\n[relayConfig]\\nchainID = 1337"}},"query":"mutation CreateJob($input: CreateJobInput\041) {\\n  createJob(input: $input) {\\n    ... on CreateJobSuccess {\\n      job {\\n        id\\n        __typename\\n      }\\n      __typename\\n    }\\n    ... on InputErrors {\\n      errors {\\n        path\\n        message\\n        code\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n"}'
+```
+
 `Job successfully created but could not start service: failed to create services for job: 2: error calling 'relayer.NewConfigWatcher': log poller disabled`
 
 **ccip-commit-SimulatedSource-SimulatedDest**
@@ -163,9 +194,10 @@ schemaVersion = 1
 relay = "evm"
 maxTaskDuration = '1h'
 forwardingAllowed = false
-contractID = '0x9e823597351791060F75EcC7F61Eea18DDa497Fd'
+contractID = 'the comit store helper contract address'
 pluginType = 'ccip-commit'
-transmitterID = '0x05bB9d57CC2bc32f796E1a35A019B03672Da836e'
+transmitterID = 'the EVM key ID of the node'
+p2pv2Bootstrappers = ['12D3KooWSPPcj5FKg9fmQ3jBRB27bdLD1QbLBKwLCZDmpgnzNRzf@chainlink1:6690']
 
 [relayConfig]
 
@@ -173,7 +205,7 @@ chainID = 1337
 
 [pluginConfig]
 destStartBlock = 86
-offRamp = '"0xB56D9238dDc576ee967d40393672f41519F494bd"'
+offRamp = '"the off ramp contract address"'
 tokenPricesUSDPipeline = """
 // Price 1
 link [type=http method=GET url="http://127.0.0.1:34335"];

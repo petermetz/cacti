@@ -9500,7 +9500,8 @@ __metadata:
     "@types/express": "npm:5.0.0"
     "@types/fs-extra": "npm:11.0.4"
     "@types/google-protobuf": "npm:3.15.5"
-    axios: "npm:1.7.7"
+    "@types/tough-cookie": "npm:4.0.5"
+    axios: "npm:1.7.9"
     benchmark: "npm:2.1.4"
     body-parser: "npm:1.20.2"
     ethers: "npm:6.13.4"
@@ -9509,6 +9510,7 @@ __metadata:
     google-protobuf: "npm:3.21.4"
     grpc-tools: "npm:1.12.4"
     grpc_tools_node_protoc_ts: "npm:5.3.3"
+    http-cookie-agent: "npm:6.0.8"
     http-errors-enhanced-cjs: "npm:2.0.1"
     npm-run-all2: "npm:6.1.2"
     openapi-types: "npm:12.1.3"
@@ -9518,6 +9520,7 @@ __metadata:
     rxjs: "npm:7.8.1"
     socket.io: "npm:4.6.2"
     socket.io-client-fixed-types: "npm:4.5.4"
+    tough-cookie: "npm:5.0.0"
     ts-results: "npm:3.3.0"
     tsx: "npm:4.16.2"
   languageName: unknown
@@ -9579,6 +9582,7 @@ __metadata:
     ethers: "npm:6.13.4"
     express: "npm:4.21.2"
     http-status-codes: "npm:2.3.0"
+    json2toml: "npm:6.1.1"
     web3: "npm:4.16.0"
   languageName: unknown
   linkType: soft
@@ -18606,6 +18610,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/tough-cookie@npm:4.0.5":
+  version: 4.0.5
+  resolution: "@types/tough-cookie@npm:4.0.5"
+  checksum: 10/01fd82efc8202670865928629697b62fe9bf0c0dcbc5b1c115831caeb073a2c0abb871ff393d7df1ae94ea41e256cb87d2a5a91fd03cdb1b0b4384e08d4ee482
+  languageName: node
+  linkType: hard
+
 "@types/trusted-types@npm:^2.0.2":
   version: 2.0.3
   resolution: "@types/trusted-types@npm:2.0.3"
@@ -19894,6 +19905,13 @@ __metadata:
   dependencies:
     debug: "npm:^4.3.4"
   checksum: 10/f7828f991470a0cc22cb579c86a18cbae83d8a3cbed39992ab34fc7217c4d126017f1c74d0ab66be87f71455318a8ea3e757d6a37881b8d0f2a2c6aa55e5418f
+  languageName: node
+  linkType: hard
+
+"agent-base@npm:^7.1.3":
+  version: 7.1.3
+  resolution: "agent-base@npm:7.1.3"
+  checksum: 10/3db6d8d4651f2aa1a9e4af35b96ab11a7607af57a24f3bc721a387eaa3b5f674e901f0a648b0caefd48f3fd117c7761b79a3b55854e2aebaa96c3f32cf76af84
   languageName: node
   linkType: hard
 
@@ -33414,6 +33432,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"http-cookie-agent@npm:6.0.8":
+  version: 6.0.8
+  resolution: "http-cookie-agent@npm:6.0.8"
+  dependencies:
+    agent-base: "npm:^7.1.3"
+  peerDependencies:
+    tough-cookie: ^4.0.0 || ^5.0.0
+    undici: ^5.11.0 || ^6.0.0
+  peerDependenciesMeta:
+    undici:
+      optional: true
+  checksum: 10/16880d703707aa7609b92e62491ef8059b62effd9b19cdf2f8d49b5bdcab60c57c3e210c89d2126d0343347a4d6fe7e285b9f64b498518714c65486bac931f87
+  languageName: node
+  linkType: hard
+
 "http-deceiver@npm:^1.2.7":
   version: 1.2.7
   resolution: "http-deceiver@npm:1.2.7"
@@ -37364,6 +37397,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json2toml@npm:6.1.1":
+  version: 6.1.1
+  resolution: "json2toml@npm:6.1.1"
+  dependencies:
+    lodash.isdate: "npm:^4.0.1"
+    lodash.isempty: "npm:^4.4.0"
+    lodash.isplainobject: "npm:^4.0.6"
+    strftime: "npm:^0.10.3"
+  checksum: 10/b32e10cf19a1bfacdc7dc4475b8968bc6af4ae80702ed95eaa6b0a82767650252e52fe3f4274374302a9c9a05f26ed2ca831368cefef2057747c655f0255ede4
+  languageName: node
+  linkType: hard
+
 "json5@npm:2.2.3, json5@npm:^2.2.0, json5@npm:^2.2.2, json5@npm:^2.2.3":
   version: 2.2.3
   resolution: "json5@npm:2.2.3"
@@ -38837,6 +38882,20 @@ __metadata:
   version: 3.0.3
   resolution: "lodash.isboolean@npm:3.0.3"
   checksum: 10/b70068b4a8b8837912b54052557b21fc4774174e3512ed3c5b94621e5aff5eb6c68089d0a386b7e801d679cd105d2e35417978a5e99071750aa2ed90bffd0250
+  languageName: node
+  linkType: hard
+
+"lodash.isdate@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "lodash.isdate@npm:4.0.1"
+  checksum: 10/5712b8f35956026eef32dca7f7f8f0af59a586c8dcfa8e570e5acd50537e1d93b76b2978ea69c1570b2d1cc1e33759babd7e6b1b49a53291f3c1dd6311d3a947
+  languageName: node
+  linkType: hard
+
+"lodash.isempty@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "lodash.isempty@npm:4.4.0"
+  checksum: 10/b69de4e08038f3d802fa2f510fd97f6b1785a359a648382ba30fb59e17ce0bcdad9bef2cdb9f9501abb9064c74c6edbb8db86a6d827e0d380a50a6738e051ec3
   languageName: node
   linkType: hard
 
@@ -50530,6 +50589,13 @@ __metadata:
   version: 1.1.0
   resolution: "streamsearch@npm:1.1.0"
   checksum: 10/612c2b2a7dbcc859f74597112f80a42cbe4d448d03da790d5b7b39673c1197dd3789e91cd67210353e58857395d32c1e955a9041c4e6d5bae723436b3ed9ed14
+  languageName: node
+  linkType: hard
+
+"strftime@npm:^0.10.3":
+  version: 0.10.3
+  resolution: "strftime@npm:0.10.3"
+  checksum: 10/617d99ae44eea2011467fa3ad022ede52928c2d3b813de523f31ca1a47f771fa41d1a32c3ee9bdf1bb0ede62c4a8523691fb2d347202b134223be58bb849d781
   languageName: node
   linkType: hard
 

@@ -1,0 +1,131 @@
+Log.Level = 'info'
+
+[Insecure]
+DevWebServer = true # Default is false
+OCRDevelopmentMode = true # Default is false
+InfiniteDepthQueries = true # Default is false
+DisableRateLimiting = true # Default is false
+
+[WebServer]
+AuthenticationMethod = 'local' # Default
+AllowOrigins = 'http://localhost:3000,http://localhost:6688' # Default
+BridgeCacheTTL = '0s' # Default
+# BridgeResponseURL = 'https://my-chainlink-node.example.com:6688' # Example
+HTTPWriteTimeout = '10s' # Default
+HTTPPort = 6688 # Default
+SecureCookies = false # Default is true
+SessionTimeout = '15m' # Default
+SessionReaperExpiration = '240h' # Default
+HTTPMaxSize = '3232768b' # Default
+StartTimeout = '15s' # Default
+ListenIP = '0.0.0.0' # Default
+
+[WebServer.TLS]
+HTTPSPort=0
+
+[Database]
+# URL = 'postgres://chainlink_user:chainlink_pass@postgres:5432/chainlink_db?sslmode=disable'
+DefaultIdleInTxSessionTimeout = '1h' # Default
+DefaultLockTimeout = '15s' # Default
+DefaultQueryTimeout = '10s' # Default
+LogQueries = true # Default is false
+MaxIdleConns = 10 # Default
+MaxOpenConns = 100 # Default
+MigrateOnStartup = true # Default
+
+
+[[EVM]]
+ChainID = '1337' # Required
+
+[[EVM.Nodes]]
+Name = 'besu' # Required
+WSURL = 'ws://besu:8546'
+HTTPURL = 'http://besu:8545' # Required
+
+[[EVM]]
+ChainID = '112568449526115' # Required
+
+[[EVM.Nodes]]
+Name = 'proxychain' # Required
+WSURL = 'ws://proxychain:8546'
+HTTPURL = 'http://proxychain:8545' # Required
+
+[Feature]
+FeedsManager = true # Default
+
+# LogPoller enables the log poller, an experimental approach to processing logs, required if also using Evm.UseForwarders or OCR2.
+LogPoller = true # Default = false
+
+# UICSAKeys enables CSA Keys in the UI.
+UICSAKeys = true # Default = false
+
+# CCIP enables the CCIP service.
+CCIP = true # Default
+
+# MultiFeedsManagers enables support for multiple feeds manager connections.
+MultiFeedsManagers = false # Default
+
+[OCR2]
+Enabled = true # Default: false
+ContractConfirmations = 1 # Default: 3
+BlockchainTimeout = '20s' # Default
+ContractPollInterval = '1m' # Default
+ContractSubscribeInterval = '2m' # Default
+ContractTransmitterTransmitTimeout = '10s' # Default
+DatabaseTimeout = '10s' # Default
+# KeyBundleID = '7a5f66bbe6594259325bf2b4f5b1a9c900000000000000000000000000000000' # Example
+CaptureEATelemetry = false # Default
+CaptureAutomationCustomTelemetry = true # Default
+DefaultTransactionQueueDepth = 1 # Default
+SimulateTransactions = false # Default
+TraceLogging = false # Default
+
+# P2P has a versioned networking stack. Currently only `[P2P.V2]` is supported.
+# All nodes in the OCR network should share the same networking stack.
+[P2P]
+# IncomingMessageBufferSize is the per-remote number of incoming
+# messages to buffer. Any additional messages received on top of those
+# already in the queue will be dropped.
+IncomingMessageBufferSize = 10 # Default
+# OutgoingMessageBufferSize is the per-remote number of outgoing
+# messages to buffer. Any additional messages send on top of those
+# already in the queue will displace the oldest.
+# NOTE: OutgoingMessageBufferSize should be comfortably smaller than remote's
+# IncomingMessageBufferSize to give the remote enough space to process
+# them all in case we regained connection and now send a bunch at once
+OutgoingMessageBufferSize = 10 # Default
+
+# PeerID is the default peer ID to use for OCR jobs. If unspecified, uses the first available peer ID.
+# PeerID = '12D3KooWMoejJznyDuEk5aX6GvbjaG12UzeornPCBNzMRqdwrFJw' # Example
+# TraceLogging enables trace level logging.
+TraceLogging = false # Default
+
+[P2P.V2]
+# Enabled enables P2P V2.
+# Note: V1.Enabled is true by default, so it must be set false in order to run V2 only.
+Enabled = true # Default
+
+# AnnounceAddresses is the addresses the peer will advertise on the network in `host:port` form as accepted by the TCP version of Go’s `net.Dial`. 
+# The addresses should be reachable by other nodes on the network. When attempting to connect to another node, 
+# a node will attempt to dial all of the other node’s AnnounceAddresses in round-robin fashion.
+AnnounceAddresses = ['0.0.0.0:6690']
+# ListenAddresses is the addresses the peer will listen to on the network in `host:port` form as accepted by `net.Listen()`, 
+# but the host and port must be fully specified and cannot be empty. You can specify `0.0.0.0` (IPv4) or `::` (IPv6) to listen on all interfaces, but that is not recommended.
+ListenAddresses = ['0.0.0.0:6690']
+
+# DefaultBootstrappers is the default bootstrapper peers for libocr's v2 networking stack.
+#
+# Oracle nodes typically only know each other’s PeerIDs, but not their hostnames, IP addresses, or ports. 
+# DefaultBootstrappers are special nodes that help other nodes discover each other’s `AnnounceAddresses` so they can communicate. 
+# Nodes continuously attempt to connect to bootstrappers configured in here. When a node wants to connect to another node 
+# (which it knows only by PeerID, but not by address), it discovers the other node’s AnnounceAddresses from communications 
+# received from its DefaultBootstrappers or other discovered nodes. To facilitate discovery,
+# nodes will regularly broadcast signed announcements containing their PeerID and AnnounceAddresses.
+# DefaultBootstrappers = ['12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999', '12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234'] # Example
+
+DefaultBootstrappers = ['12D3KooWSPPcj5FKg9fmQ3jBRB27bdLD1QbLBKwLCZDmpgnzNRzf@chainlink1:6690']
+
+# DeltaDial controls how far apart Dial attempts are
+DeltaDial = '0.5s' # Default
+# DeltaReconcile controls how often a Reconcile message is sent to every peer.
+DeltaReconcile = '5s' # Default

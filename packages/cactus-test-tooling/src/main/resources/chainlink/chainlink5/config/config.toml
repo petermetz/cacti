@@ -57,7 +57,7 @@ FeedsManager = true # Default
 LogPoller = true # Default = false
 
 # UICSAKeys enables CSA Keys in the UI.
-UICSAKeys = false # Default
+UICSAKeys = true # Default = false
 
 # CCIP enables the CCIP service.
 CCIP = true # Default
@@ -73,7 +73,7 @@ ContractPollInterval = '1m' # Default
 ContractSubscribeInterval = '2m' # Default
 ContractTransmitterTransmitTimeout = '10s' # Default
 DatabaseTimeout = '10s' # Default
-KeyBundleID = '7a5f66bbe6594259325bf2b4f5b1a9c900000000000000000000000000000000' # Example
+# KeyBundleID = '7a5f66bbe6594259325bf2b4f5b1a9c900000000000000000000000000000000' # Example
 CaptureEATelemetry = false # Default
 CaptureAutomationCustomTelemetry = true # Default
 DefaultTransactionQueueDepth = 1 # Default
@@ -104,10 +104,15 @@ TraceLogging = false # Default
 # Enabled enables P2P V2.
 # Note: V1.Enabled is true by default, so it must be set false in order to run V2 only.
 Enabled = true # Default
+
 # AnnounceAddresses is the addresses the peer will advertise on the network in `host:port` form as accepted by the TCP version of Go’s `net.Dial`. 
 # The addresses should be reachable by other nodes on the network. When attempting to connect to another node, 
 # a node will attempt to dial all of the other node’s AnnounceAddresses in round-robin fashion.
-AnnounceAddresses = ['127.0.0.1:9999'] # Example
+AnnounceAddresses = ['0.0.0.0:6690']
+# ListenAddresses is the addresses the peer will listen to on the network in `host:port` form as accepted by `net.Listen()`, 
+# but the host and port must be fully specified and cannot be empty. You can specify `0.0.0.0` (IPv4) or `::` (IPv6) to listen on all interfaces, but that is not recommended.
+ListenAddresses = ['0.0.0.0:6690']
+
 # DefaultBootstrappers is the default bootstrapper peers for libocr's v2 networking stack.
 #
 # Oracle nodes typically only know each other’s PeerIDs, but not their hostnames, IP addresses, or ports. 
@@ -118,28 +123,11 @@ AnnounceAddresses = ['127.0.0.1:9999'] # Example
 # nodes will regularly broadcast signed announcements containing their PeerID and AnnounceAddresses.
 # DefaultBootstrappers = ['12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999', '12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234'] # Example
 
+DefaultBootstrappers = ['12D3KooWSPPcj5FKg9fmQ3jBRB27bdLD1QbLBKwLCZDmpgnzNRzf@chainlink1:6690']
+
 # DeltaDial controls how far apart Dial attempts are
-DeltaDial = '15s' # Default
+DeltaDial = '0.5s' # Default
 # DeltaReconcile controls how often a Reconcile message is sent to every peer.
-DeltaReconcile = '1m' # Default
+DeltaReconcile = '5s' # Default
 # ListenAddresses is the addresses the peer will listen to on the network in `host:port` form as accepted by `net.Listen()`, 
 # but the host and port must be fully specified and cannot be empty. You can specify `0.0.0.0` (IPv4) or `::` (IPv6) to listen on all interfaces, but that is not recommended.
-ListenAddresses = ['0.0.0.0:9999'] # Example
-
-# [Blockchain]
-#   [Ethereum]
-#     URL = "http://besu:8545"
-#     ChainID = "1337"
-#     LinkContractAddress = "0x0"  # Replace with the actual LINK token contract address
-
-# [Job]
-#   MinPayment = "0.1"
-
-
-# [[EVM]]
-# ChainID = '1' # Required
-
-# [[EVM.Nodes]]
-# Name = 'fake' # Required
-# WSURL = 'wss://foo.bar/ws'
-# HTTPURL = 'https://foo.bar' # Required

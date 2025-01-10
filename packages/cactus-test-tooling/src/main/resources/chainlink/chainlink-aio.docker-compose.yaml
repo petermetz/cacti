@@ -5,34 +5,172 @@ services:
   #   ports:
   #     - "8000:80"
 
-  postgres:
+  postgres1:
     image: postgres:16.4-alpine3.20
-    container_name: postgres
+    container_name: postgres1
 
     environment:
       POSTGRES_DB: chainlink_db
       POSTGRES_USER: chainlink_user
       POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
       POSTGRES_HOST_AUTH_METHOD: trust
-    # ports:
-    #   - "5432:5432"
+    ports:
+      - "5432:5432"
+
+  postgres2:
+    image: postgres:16.4-alpine3.20
+    container_name: postgres2
+
+    environment:
+      POSTGRES_DB: chainlink_db
+      POSTGRES_USER: chainlink_user
+      POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
+      POSTGRES_HOST_AUTH_METHOD: trust
 
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
 
-  chainlink:
-    image: chainlink-ccip:local
+  postgres3:
+    image: postgres:16.4-alpine3.20
+    container_name: postgres3
+
+    environment:
+      POSTGRES_DB: chainlink_db
+      POSTGRES_USER: chainlink_user
+      POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+    # log_statement possible options: none, ddl, mod, all
+    command: ["postgres", "-c", "log_statement=none"]
+
+  postgres4:
+    image: postgres:16.4-alpine3.20
+    container_name: postgres4
+
+    environment:
+      POSTGRES_DB: chainlink_db
+      POSTGRES_USER: chainlink_user
+      POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+    # log_statement possible options: none, ddl, mod, all
+    command: ["postgres", "-c", "log_statement=none"]
+
+  postgres5:
+    image: postgres:16.4-alpine3.20
+    container_name: postgres5
+
+    environment:
+      POSTGRES_DB: chainlink_db
+      POSTGRES_USER: chainlink_user
+      POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+    # log_statement possible options: none, ddl, mod, all
+    command: ["postgres", "-c", "log_statement=none"]
+
+  chainlink1:
+    image: chainlink-ccip:local3
     # image: smartcontract/chainlink:2.19.0
-    container_name: chainlink
+    container_name: chainlink1
     depends_on:
-      - postgres
-    restart: on-failure:5
+      - postgres1
+    restart: on-failure:10
     volumes:
-      - ./config:/chainlink/config
-      - ./secrets:/chainlink/secrets
-      - ./chainlink-demo-gui-email-and-password.txt:/chainlink/.api
+      - ./chainlink1/config:/chainlink/config
+      - ./chainlink1/secrets:/chainlink/secrets
+      - ./chainlink1/chainlink-demo-gui-email-and-password.txt:/chainlink/.api
     ports:
       - "6688:6688"
+
+    command:
+      [
+        "node",
+        "-config=/chainlink/config/config.toml",
+        "-secrets=/chainlink/secrets/secrets.toml",
+        "start",
+        "-a=/chainlink/.api",
+      ]
+
+  chainlink2:
+    image: chainlink-ccip:local3
+    # image: smartcontract/chainlink:2.19.0
+    container_name: chainlink2
+    depends_on:
+      - postgres2
+    restart: on-failure:10
+    volumes:
+      - ./chainlink2/config:/chainlink/config
+      - ./chainlink2/secrets:/chainlink/secrets
+      - ./chainlink2/chainlink-demo-gui-email-and-password.txt:/chainlink/.api
+    ports:
+      - "16688:6688"
+    command:
+      [
+        "node",
+        "-config=/chainlink/config/config.toml",
+        "-secrets=/chainlink/secrets/secrets.toml",
+        "start",
+        "-a=/chainlink/.api",
+      ]
+
+  chainlink3:
+    image: chainlink-ccip:local3
+    # image: smartcontract/chainlink:2.19.0
+    container_name: chainlink3
+    depends_on:
+      - postgres3
+    restart: on-failure:10
+    volumes:
+      - ./chainlink3/config:/chainlink/config
+      - ./chainlink3/secrets:/chainlink/secrets
+      - ./chainlink3/chainlink-demo-gui-email-and-password.txt:/chainlink/.api
+    ports:
+      - "26688:6688"
+    command:
+      [
+        "node",
+        "-config=/chainlink/config/config.toml",
+        "-secrets=/chainlink/secrets/secrets.toml",
+        "start",
+        "-a=/chainlink/.api",
+      ]
+
+  chainlink4:
+    image: chainlink-ccip:local3
+    # image: smartcontract/chainlink:2.19.0
+    container_name: chainlink4
+    depends_on:
+      - postgres4
+    restart: on-failure:10
+    volumes:
+      - ./chainlink4/config:/chainlink/config
+      - ./chainlink4/secrets:/chainlink/secrets
+      - ./chainlink4/chainlink-demo-gui-email-and-password.txt:/chainlink/.api
+    ports:
+      - "36688:6688"
+    command:
+      [
+        "node",
+        "-config=/chainlink/config/config.toml",
+        "-secrets=/chainlink/secrets/secrets.toml",
+        "start",
+        "-a=/chainlink/.api",
+      ]
+
+  chainlink5:
+    image: chainlink-ccip:local3
+    # image: smartcontract/chainlink:2.19.0
+    container_name: chainlink5
+    depends_on:
+      - postgres5
+    restart: on-failure:10
+    volumes:
+      - ./chainlink5/config:/chainlink/config
+      - ./chainlink5/secrets:/chainlink/secrets
+      - ./chainlink5/chainlink-demo-gui-email-and-password.txt:/chainlink/.api
+    ports:
+      - "46688:6688"
     command:
       [
         "node",
@@ -69,7 +207,6 @@ services:
       - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis-dev.json:/opt/besu/genesis-dev.json
       - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis-eth-pos-devnet.json:/opt/besu/genesis-eth-pos-devnet.json
 
-
   proxychain:
     image: hyperledger/besu:24.12.2
     container_name: proxychain
@@ -104,7 +241,6 @@ services:
       dockerfile: cmd-api-server.Dockerfile
 
     depends_on:
-      - chainlink
       - proxychain
 
     volumes:
@@ -157,7 +293,7 @@ services:
               "options": {
                   "packageSrc": "/usr/src/cacti/packages/cacti-plugin-ledger-connector-chainlink/",
                   "instanceId": "plugin-connetocr-chainlink-1",
-                  "ledgerHttpHost": "http://chainlink",
+                  "ledgerHttpHost": "http://chainlink1",
                   "ledgerHttpPort": 6688
               }
           }
@@ -172,7 +308,6 @@ services:
       dockerfile: cmd-api-server.Dockerfile
 
     depends_on:
-      - chainlink
       - proxychain
 
     volumes:
@@ -210,8 +345,8 @@ services:
           }
         ]
 
-volumes: 
-  cactisrc: 
+volumes:
+  cactisrc:
     driver: local
     driver_opts:
       o: bind

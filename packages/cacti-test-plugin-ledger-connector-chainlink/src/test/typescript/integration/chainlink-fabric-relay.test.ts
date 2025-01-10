@@ -5,7 +5,12 @@ import { Contract, Web3, WebSocketProvider } from "web3";
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import { PluginImportType } from "@hyperledger/cactus-core-api";
 import { PluginRegistry } from "@hyperledger/cactus-core";
-import { PluginFactoryLedgerConnector as PluginFactoryLedgerConnectorChainlink } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import {
+  createApiclient,
+  IAuthArgs,
+  IConnectionArgs,
+  PluginFactoryLedgerConnector as PluginFactoryLedgerConnectorChainlink,
+} from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { mustEncodeAddress } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { getEvmExtraArgsV2 } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import {
@@ -32,6 +37,46 @@ describe("PluginLedgerConnectorChainlink", () => {
     level: logLevel,
   });
 
+  const chainlinkNodeDemoEmailAndPw = "cacti-dev@cacti.example.com";
+
+  // The P2P ID extracted from the keys hardcoded into the containers via mounts.
+  const bootstrapNodeP2pId =
+    "12D3KooWSPPcj5FKg9fmQ3jBRB27bdLD1QbLBKwLCZDmpgnzNRzf@chainlink1:6690";
+
+  const connectionArgs1: IConnectionArgs = {
+    protocol: "http",
+    host: "127.0.0.1",
+    port: 6688,
+  };
+  const connectionArgs2: IConnectionArgs = {
+    protocol: "http",
+    host: "127.0.0.1",
+    port: 16688,
+  };
+  const connectionArgs3: IConnectionArgs = {
+    protocol: "http",
+    host: "127.0.0.1",
+    port: 26688,
+  };
+  const connectionArgs4: IConnectionArgs = {
+    protocol: "http",
+    host: "127.0.0.1",
+    port: 36688,
+  };
+  const connectionArgs5: IConnectionArgs = {
+    protocol: "http",
+    host: "127.0.0.1",
+    port: 46688,
+  };
+  const authArgs1: IAuthArgs = {
+    email: chainlinkNodeDemoEmailAndPw,
+    password: chainlinkNodeDemoEmailAndPw,
+  };
+  const authArgs2 = authArgs1;
+  const authArgs3 = authArgs1;
+  const authArgs4 = authArgs1;
+  const authArgs5 = authArgs1;
+
   const contractLogSubscriptions: Array<{ unsubscribe: () => Promise<void> }> =
     [];
 
@@ -40,8 +85,10 @@ describe("PluginLedgerConnectorChainlink", () => {
       "Unsubscribing %d solidity event subs...",
       contractLogSubscriptions.length,
     );
-    await Promise.race(contractLogSubscriptions.map((x) => x.unsubscribe()));
-    log.debug("Solidity event unsubscribe operations OK.");
+    const unSubResults = await Promise.allSettled(
+      contractLogSubscriptions.map((x) => x.unsubscribe()),
+    );
+    log.debug("Solidity event unsubscribe operations settled:", unSubResults);
 
     log.debug("Disconnecting Web3 WS Providers...");
     await dstWeb3WsProvider.safeDisconnect();
@@ -228,12 +275,53 @@ describe("PluginLedgerConnectorChainlink", () => {
       throw ex;
     }
 
+    const clApiClientOut1 = await createApiclient({
+      authArgs: authArgs1,
+      connectionArgs: connectionArgs1,
+      level: logLevel,
+    });
+
+    const clApiClientOut2 = await createApiclient({
+      authArgs: authArgs2,
+      connectionArgs: connectionArgs2,
+      level: logLevel,
+    });
+
+    const clApiClientOut3 = await createApiclient({
+      authArgs: authArgs3,
+      connectionArgs: connectionArgs3,
+      level: logLevel,
+    });
+
+    const clApiClientOut4 = await createApiclient({
+      authArgs: authArgs4,
+      connectionArgs: connectionArgs4,
+      level: logLevel,
+    });
+
+    const clApiClientOut5 = await createApiclient({
+      authArgs: authArgs5,
+      connectionArgs: connectionArgs5,
+      level: logLevel,
+    });
+
     const priceGetterConfig = {};
-    await setUpNodesAndJobs({
+
+    const { jobParams } = await setUpNodesAndJobs({
+      sourceChainSelector,
+      destChainSelector,
+      contracts: infra,
+      bootstrapNodeP2pId,
+      node1: { clApiClient: clApiClientOut1.apiClient },
+      node2: { clApiClient: clApiClientOut2.apiClient },
+      node3: { clApiClient: clApiClientOut3.apiClient },
+      node4: { clApiClient: clApiClientOut4.apiClient },
+      node5: { clApiClient: clApiClientOut5.apiClient },
       logLevel,
       priceGetterConfig,
       tokenPricesUSDPipeline: "",
     });
+    expect(jobParams).toBeTruthy();
 
     // END SECTION SETTING UP THE ENVIRONMENT
     //=========================================================================

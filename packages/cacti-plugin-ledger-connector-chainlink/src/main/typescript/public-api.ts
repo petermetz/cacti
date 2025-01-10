@@ -83,3 +83,26 @@ export { getEvmExtraArgsV2 } from "./ccip/common/get-evm-extra-args-v2";
 export { EVM_V2_TAG_HEX } from "./ccip/common/get-evm-extra-args-v2";
 
 export { mustEncodeAddress } from "./ccip/common/must-encode-address";
+
+export { IAuthArgs } from "./node/auth/i-auth-args";
+export { IConnectionArgs } from "./node/auth/i-connection-args";
+export { login } from "./node/auth/login";
+export { logout } from "./node/auth/logout";
+export { IChainlinkApiClient } from "./node/create-api-client";
+export { createApiclient } from "./node/create-api-client";
+
+export { IOcr2KeyBundlesDto } from "./node/ocr2/ocr2-key-bundles-dto";
+export { IOcr2KeyBundlesDtoData } from "./node/ocr2/ocr2-key-bundles-dto";
+export { OCR2KeyBundle } from "./node/ocr2/ocr2-key-bundles-dto";
+export { OCR2KeyBundlesPayload } from "./node/ocr2/ocr2-key-bundles-dto";
+
+export { IChain } from "./node/ocr2/eth-keys-dto";
+export { IEthKey } from "./node/ocr2/eth-keys-dto";
+export { IEthKeysData } from "./node/ocr2/eth-keys-dto";
+export { IEthKeysDto } from "./node/ocr2/eth-keys-dto";
+export { IEthKeysPayload } from "./node/ocr2/eth-keys-dto";
+
+export { IP2PKey } from "./node/ocr2/p2p-keys-dto";
+export { IP2PKeysPayload } from "./node/ocr2/p2p-keys-dto";
+export { IP2pKeysData } from "./node/ocr2/p2p-keys-dto";
+export { IP2pKeysDto } from "./node/ocr2/p2p-keys-dto";

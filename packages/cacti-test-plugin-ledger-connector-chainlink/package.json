@@ -67,6 +67,7 @@
     "axios": "1.7.9",
     "ethers": "6.13.4",
     "express": "4.21.2",
+    "json2toml": "6.1.1",
     "web3": "4.16.0"
   },
   "engines": {
