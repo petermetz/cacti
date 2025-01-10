@@ -35,7 +35,7 @@ MigrateOnStartup = true # Default
 
 
 [[EVM]]
-ChainID = '1337' # Required
+ChainID = '90000001' # Required
 
 [[EVM.Nodes]]
 Name = 'besu' # Required
@@ -43,7 +43,7 @@ WSURL = 'ws://besu:8546'
 HTTPURL = 'http://besu:8545' # Required
 
 [[EVM]]
-ChainID = '112568449526115' # Required
+ChainID = '90000002' # Required
 
 [[EVM.Nodes]]
 Name = 'proxychain' # Required

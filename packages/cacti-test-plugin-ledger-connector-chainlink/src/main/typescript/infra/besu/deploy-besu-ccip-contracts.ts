@@ -81,6 +81,8 @@ export async function deployBesuCcipContracts(opts: {
   readonly dstWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
   readonly destChainSelector: Readonly<bigint>;
   readonly sourceChainSelector: Readonly<bigint>;
+  readonly destChainId: Readonly<bigint>;
+  readonly sourceChainId: Readonly<bigint>;
   readonly srcApiClient: Readonly<BesuApiClient>;
   readonly dstApiClient: Readonly<BesuApiClient>;
   readonly sourceFinalityDepth: Readonly<number>;
@@ -475,7 +477,7 @@ export async function deployBesuCcipContracts(opts: {
   const { contractAddress: srcOnRampAddr } = await deployBesuOnRamp({
     srcRouterAddr: srcRouterAddr,
     staticConfig: {
-      chainSelector: 1337n,
+      chainSelector: sourceChainSelector,
       defaultTxGasLimit: 200_000n,
       destChainSelector,
       linkToken: srcLinkTokenAddr,
@@ -596,7 +598,7 @@ export async function deployBesuCcipContracts(opts: {
     params: [
       [], // onRampUpdates []router.RouterOnRamp
       [], // offRampRemoves []router.RouterOffRamp
-      [{ sourceChainSelector: 1337n, offRamp: dstOffRampAddr }], // offRampAdds []router.RouterOffRamp
+      [{ sourceChainSelector, offRamp: dstOffRampAddr }], // offRampAdds []router.RouterOffRamp
     ],
     signingCredential: srcWeb3SigningCredential,
     contractName: RouterContract.contractName,

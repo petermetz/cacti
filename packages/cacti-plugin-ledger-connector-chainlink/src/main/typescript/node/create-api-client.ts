@@ -54,7 +54,7 @@ class ChainlinkApiClient implements IChainlinkApiClient {
    *       "results": [
    *         {
    *           "address": "0xbcfcDc02F569fbf4D4BDA8914749a9f8EaD63fcf",
-   *           "chain": { "id": "112568449526115", "__typename": "Chain" },
+   *           "chain": { "id": "90000002", "__typename": "Chain" },
    *           "createdAt": "2025-01-10T04:29:38.801785Z",
    *           "ethBalance": "0.000000000000000000",
    *           "isDisabled": false,
@@ -63,7 +63,7 @@ class ChainlinkApiClient implements IChainlinkApiClient {
    *         },
    *         {
    *           "address": "0xe89c78416024649b6fed028072d4E2eDB9E989B3",
-   *           "chain": { "id": "1337", "__typename": "Chain" },
+   *           "chain": { "id": "90000001", "__typename": "Chain" },
    *           "createdAt": "2025-01-10T04:29:37.87087Z",
    *           "ethBalance": "0.000000000000000000",
    *           "isDisabled": false,

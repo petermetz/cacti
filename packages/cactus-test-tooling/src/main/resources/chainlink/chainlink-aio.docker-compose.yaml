@@ -184,11 +184,11 @@ services:
     image: hyperledger/besu:25.1-develop-eaa75ac
     container_name: besu
     environment:
-      BESU_NETWORK_ID: 1337
+      BESU_NETWORK_ID: 90000001
       # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
       # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
       BESU_LOGGING: INFO
-      # BESU_GENESIS_FILE: "/opt/besu/genesis-dev.json"
+      BESU_GENESIS_FILE: "/opt/besu/genesis.json"
       BESU_REVERT_REASON_ENABLED: true
       BESU_NETWORK: dev # Equivalent to --network=dev
       BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
@@ -204,13 +204,13 @@ services:
       - "8545:8545" # HTTP JSON-RPC
       - "8546:8546" # WebSocket JSON-RPC
     volumes:
-      - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis-dev.json:/opt/besu/genesis-dev.json
-      - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis-eth-pos-devnet.json:/opt/besu/genesis-eth-pos-devnet.json
+      - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis.json:/opt/besu/genesis.json
 
   proxychain:
     image: hyperledger/besu:24.12.2
     container_name: proxychain
     environment:
+      BESU_NETWORK_ID: 90000002
       # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
       # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
       BESU_LOGGING: WARN

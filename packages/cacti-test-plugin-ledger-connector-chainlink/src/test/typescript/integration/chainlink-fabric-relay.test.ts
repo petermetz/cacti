@@ -111,13 +111,26 @@ describe("PluginLedgerConnectorChainlink", () => {
   const dstApiClient = new BesuApiClient(proxyApiClientOptions);
   const srcApiClient = new BesuApiClient(besuApiClientOptions);
 
+  // https://github.com/smartcontractkit/chain-selectors/blob/52181932b9e18957b9bd09b574ce49947ccf69fc/test_selectors.yml
+  // ```yaml
+  //   90000001:
+  //   selector: 909606746561742123
+  // 90000002:
+  //   selector: 5548718428018410741
+  // ```
+  //
+  const sourceChainSelector = BigInt(909606746561742123n);
+  const destChainSelector = BigInt(5548718428018410741n);
+  const destChainId = BigInt(90000002);
+  const sourceChainId = BigInt(90000001);
+
   // spells "fabric" in ASCII
   // 112568449526115n as a decimal number
-  const destChainSelector = BigInt(
-    "0b011001100110000101100010011100100110100101100011",
-  );
+  // const destChainSelector = BigInt(
+  //   "0b011001100110000101100010011100100110100101100011",
+  // );
 
-  const sourceChainSelector = BigInt(1337n);
+  // const sourceChainSelector = BigInt(3379446385462418246n);
 
   const genesisWeb3SigningCredential: Web3SigningCredential = {
     ethAccount: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
@@ -201,6 +214,8 @@ describe("PluginLedgerConnectorChainlink", () => {
     log.debug("Balance of dstWeb3SigningCredential after seed: %o", balance);
 
     infra = await deployBesuCcipContracts({
+      sourceChainId,
+      destChainId,
       sourceChainSelector,
       destChainSelector,
       srcApiClient,
@@ -308,6 +323,8 @@ describe("PluginLedgerConnectorChainlink", () => {
     const priceGetterConfig = {};
 
     const { jobParams } = await setUpNodesAndJobs({
+      sourceChainId,
+      destChainId,
       sourceChainSelector,
       destChainSelector,
       contracts: infra,
