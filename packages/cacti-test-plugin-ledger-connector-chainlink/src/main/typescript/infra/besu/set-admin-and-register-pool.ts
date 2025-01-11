@@ -1,3 +1,5 @@
+import safeStringify from "fast-safe-stringify";
+
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   EthContractInvocationType,
@@ -63,8 +65,19 @@ export async function setAdminAndRegisterPool(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  const ctxAdminPropose = JSON.stringify(resProposeAdmin);
-  log.debug("CCIP TokenAdminRegistry admin proposed OK: %o", ctxAdminPropose);
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resProposeAdmin as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("TokenAdminRegistry admin proposal tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ blockNumber, gasUsed, callOutput });
+    log.debug("CCIP TokenAdminRegistry admin proposed OK: %s", ctx);
+  }
 
   const { data: resAcceptAdminRole } = await apiClient.invokeContractV1({
     methodName: "acceptAdminRole",
@@ -76,8 +89,20 @@ export async function setAdminAndRegisterPool(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  const ctxAcceptAdminRole = JSON.stringify(resAcceptAdminRole);
-  log.debug("CCIP TokenAdminRegistry admin accept OK: %s", ctxAcceptAdminRole);
+
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resAcceptAdminRole as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("TokenAdminRegistry admin accept tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ blockNumber, gasUsed, callOutput });
+    log.debug("CCIP TokenAdminRegistry admin accept OK: %s", ctx);
+  }
 
   const { data: resSetPool } = await apiClient.invokeContractV1({
     methodName: "setPool",
@@ -89,8 +114,20 @@ export async function setAdminAndRegisterPool(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  const ctxSetPool = JSON.stringify(resSetPool);
-  log.debug("CCIP TokenAdminRegistry admin accept OK: %o", ctxSetPool);
+
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resSetPool as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("TokenAdminRegistry setting pool tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ blockNumber, gasUsed, callOutput });
+    log.debug("CCIP TokenAdminRegistry setting pool OK: %s", ctx);
+  }
 
   return { resProposeAdmin, resSetPool, resAcceptAdminRole };
 }

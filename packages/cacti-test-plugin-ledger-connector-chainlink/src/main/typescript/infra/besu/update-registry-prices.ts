@@ -1,3 +1,5 @@
+import safeStringify from "fast-safe-stringify";
+
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   EthContractInvocationType,
@@ -67,8 +69,25 @@ export async function updateRegistryPrices(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  const ctxUpdatePrices = JSON.stringify(resUpdatePrices);
-  log.debug("CCIP PriceRegistry updatePrices() OK: %o", ctxUpdatePrices);
+
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resUpdatePrices as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("PriceRegistry updatePrices() tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed, transactionHash } = transactionReceipt;
+    const ctx = safeStringify({
+      blockNumber,
+      gasUsed,
+      callOutput,
+      transactionHash,
+    });
+    log.debug("PriceRegistry updatePrices() OK: %s", ctx);
+  }
 
   return { resUpdatePrices };
 }

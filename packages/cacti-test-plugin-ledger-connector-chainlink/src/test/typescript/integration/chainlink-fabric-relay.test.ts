@@ -1,5 +1,6 @@
 import "jest-extended";
 
+import safeStringify from "fast-safe-stringify";
 import { Contract, Web3, WebSocketProvider } from "web3";
 
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
@@ -26,8 +27,15 @@ import { ABI as LinkTokenAbi } from "../../../main/typescript/infra/besu/link-to
 import { ABI as OnRampAbi } from "../../../main/typescript/infra/besu/on-ramp-factory";
 import { ABI as OffRampAbi } from "../../../main/typescript/infra/besu/off-ramp-factory";
 import { ABI as RouterAbi } from "../../../main/typescript/infra/besu/router-factory";
+import { ABI as RmnProxyAbi } from "../../../main/typescript/infra/besu/rmn-proxy-factory";
+import { ABI as MockRmnAbi } from "../../../main/typescript/infra/besu/mock-rmn-factory";
+import { ABI as CommitStoreHelperAbi } from "../../../main/typescript/infra/besu/commit-store-helper-factory";
 import { MockV3AggregatorContractAbi } from "../../../main/typescript/infra/besu/mock-v3-aggregator-factory";
 import { setUpNodesAndJobs } from "../../../main/typescript/infra/besu/set-up-nodes-and-jobs";
+
+interface IUnsubscribeable {
+  unsubscribe: () => Promise<void>;
+}
 
 describe("PluginLedgerConnectorChainlink", () => {
   const logLevel: LogLevelDesc = "DEBUG";
@@ -77,18 +85,18 @@ describe("PluginLedgerConnectorChainlink", () => {
   const authArgs4 = authArgs1;
   const authArgs5 = authArgs1;
 
-  const contractLogSubscriptions: Array<{ unsubscribe: () => Promise<void> }> =
-    [];
+  const contractLogSubscriptions: Array<IUnsubscribeable> = [];
 
   afterAll(async () => {
-    log.debug(
-      "Unsubscribing %d solidity event subs...",
-      contractLogSubscriptions.length,
-    );
-    const unSubResults = await Promise.allSettled(
-      contractLogSubscriptions.map((x) => x.unsubscribe()),
-    );
-    log.debug("Solidity event unsubscribe operations settled:", unSubResults);
+    //FIXME
+    // log.debug(
+    //   "Unsubscribing %d solidity event subs...",
+    //   contractLogSubscriptions.length,
+    // );
+    // const unSubResults = await Promise.allSettled(
+    //   contractLogSubscriptions.map((x) => x.unsubscribe()),
+    // );
+    // log.debug("Solidity event unsubscribe operations settled:", unSubResults);
 
     log.debug("Disconnecting Web3 WS Providers...");
     await dstWeb3WsProvider.safeDisconnect();
@@ -171,8 +179,8 @@ describe("PluginLedgerConnectorChainlink", () => {
     type: Web3SigningCredentialType.PrivateKeyHex,
   };
 
-  log.debug("SrcWeb3 Account: %o", JSON.stringify(srcAccount));
-  log.debug("DstWeb3 Account: %o", JSON.stringify(dstAccount));
+  log.debug("SrcWeb3 Accounts: %s", safeStringify(srcAccount));
+  log.debug("DstWeb3 Accounts: %s", safeStringify(dstAccount));
 
   let infra: IDeployBesuCcipContractsOutput;
 
@@ -192,7 +200,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       value: 999_999_999_999_999_999_999n,
       gas: 10_000_000n,
     });
-    log.debug("Src SeedOut=%s", JSON.stringify(srcSeedOut));
+    log.debug("Src SeedOut=%s", safeStringify(srcSeedOut));
 
     const srcBalance = await srcWeb3.eth.getBalance(
       srcWeb3SigningCredential.ethAccount,
@@ -206,7 +214,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       value: 999_999_999_999_999_999_999n,
       gas: 10_000_000n,
     });
-    log.debug("Dst SeedOut=%s", JSON.stringify(seedOut));
+    log.debug("Dst SeedOut=%s", safeStringify(seedOut));
 
     const balance = await dstWeb3.eth.getBalance(
       dstWeb3SigningCredential.ethAccount,
@@ -249,6 +257,58 @@ describe("PluginLedgerConnectorChainlink", () => {
     srcWeb3.eth.defaultAccount = srcWeb3SigningCredential.ethAccount;
     dstWeb3.eth.defaultAccount = dstWeb3SigningCredential.ethAccount;
 
+    const dstCommitStoreHelper = new Contract(
+      CommitStoreHelperAbi,
+      infra.dstCommitStoreHelperAddr,
+      dstWeb3,
+    );
+    await logAllEventsOfContract({
+      logLevel,
+      contract: dstCommitStoreHelper,
+      contractLogSubscriptions,
+      contractName: "dstCommitStoreHelper",
+    });
+
+    const dstRmnProxy = new Contract(
+      RmnProxyAbi,
+      infra.dstRmnProxyAddr,
+      dstWeb3,
+    );
+    await logAllEventsOfContract({
+      logLevel,
+      contract: dstRmnProxy,
+      contractLogSubscriptions,
+      contractName: "dstRmnProxy",
+    });
+
+    const srcRmnProxy = new Contract(
+      RmnProxyAbi,
+      infra.srcRmnProxyAddr,
+      srcWeb3,
+    );
+    await logAllEventsOfContract({
+      logLevel,
+      contract: srcRmnProxy,
+      contractLogSubscriptions,
+      contractName: "srcRmnProxy",
+    });
+
+    const dstMockRmn = new Contract(MockRmnAbi, infra.dstMockRmnAddr, dstWeb3);
+    await logAllEventsOfContract({
+      logLevel,
+      contract: dstMockRmn,
+      contractLogSubscriptions,
+      contractName: "dstMockRmn",
+    });
+
+    const srcMockRmn = new Contract(MockRmnAbi, infra.srcMockRmnAddr, srcWeb3);
+    await logAllEventsOfContract({
+      logLevel,
+      contract: srcMockRmn,
+      contractLogSubscriptions,
+      contractName: "srcMockRmn",
+    });
+
     const srcRouter = new Contract(RouterAbi, infra.srcRouterAddr, srcWeb3);
     const srcLinkToken = new Contract(
       LinkTokenAbi,
@@ -256,24 +316,50 @@ describe("PluginLedgerConnectorChainlink", () => {
       srcWeb3,
     );
     const srcOnRamp = new Contract(OnRampAbi, infra.srcOnRampAddr, srcWeb3);
+    await logAllEventsOfContract({
+      logLevel,
+      contract: srcOnRamp,
+      contractLogSubscriptions,
+      contractName: "srcOnRamp",
+    });
     const dstOffRamp = new Contract(OffRampAbi, infra.dstOffRampAddr, dstWeb3);
+    await logAllEventsOfContract({
+      logLevel,
+      contract: dstOffRamp,
+      contractLogSubscriptions,
+      contractName: "dstOffRamp",
+    });
+
     const srcMockV3Aggregator = new Contract(
       MockV3AggregatorContractAbi,
       infra.srcMockV3AggregatorAddr,
       srcWeb3,
     );
+    await logAllEventsOfContract({
+      logLevel,
+      contract: srcMockV3Aggregator,
+      contractLogSubscriptions,
+      contractName: "srcMockV3Aggregator",
+    });
     const dstMockV3Aggregator = new Contract(
       MockV3AggregatorContractAbi,
       infra.dstMockV3AggregatorAddr,
       dstWeb3,
     );
-
+    await logAllEventsOfContract({
+      logLevel,
+      contract: dstMockV3Aggregator,
+      contractLogSubscriptions,
+      contractName: "dstMockV3Aggregator",
+    });
     try {
       // big.NewInt(50), big.NewInt(17000000), big.NewInt(1000), big.NewInt(1000)
-      const srcUpdateRoundDataOut = await srcMockV3Aggregator.methods
+      const out = await srcMockV3Aggregator.methods
         .updateRoundData(50n, 17_000_000n, 1_000n, 1_000n)
         .send({ from: srcWeb3SigningCredential.ethAccount });
-      log.debug("srcUpdateRoundDataOut=%o", srcUpdateRoundDataOut);
+      const { blockNumber, cumulativeGasUsed, gasUsed, transactionHash } = out;
+      const ctx = { blockNumber, cumulativeGasUsed, gasUsed, transactionHash };
+      log.debug("MockV3Aggregator srcUpdateRoundData=%s", safeStringify(ctx));
     } catch (ex: unknown) {
       log.error("Failed to get srcUpdateRoundDataOut: ", ex);
       throw ex;
@@ -281,12 +367,140 @@ describe("PluginLedgerConnectorChainlink", () => {
 
     try {
       // (big.NewInt(50), big.NewInt(8000000), big.NewInt(1000), big.NewInt(1000))
-      const dstUpdateRoundDataOut = await dstMockV3Aggregator.methods
+      const out = await dstMockV3Aggregator.methods
         .updateRoundData(50n, 8_000_000n, 1_000n, 1_000n)
         .send({ from: dstWeb3SigningCredential.ethAccount });
-      log.debug("dstUpdateRoundDataOut=%o", dstUpdateRoundDataOut);
+      const { blockNumber, cumulativeGasUsed, gasUsed, transactionHash } = out;
+      const ctx = { blockNumber, cumulativeGasUsed, gasUsed, transactionHash };
+      log.debug("MockV3Aggregator dstUpdateRoundData=%o", safeStringify(ctx));
     } catch (ex: unknown) {
       log.error("Failed to get dstUpdateRoundDataOut: ", ex);
+      throw ex;
+    }
+
+    try {
+      const linkAvailable = await srcOnRamp.methods
+        .linkAvailableForPayment()
+        .call();
+      log.debug("srcOnRamp.linkAvailableForPayment=%o", linkAvailable);
+    } catch (ex: unknown) {
+      log.error("Failed to get srcOnRamp.linkAvailableForPayment1: ", ex);
+      throw ex;
+    }
+
+    try {
+      const cfg = await dstOffRamp.methods.getDynamicConfig().call();
+      log.debug("dstOffRamp.getDynamicConfig=%o", safeStringify(cfg));
+    } catch (ex: unknown) {
+      log.error("Failed to get getDynamicConfig: ", ex);
+      throw ex;
+    }
+
+    try {
+      const linkBalance1 = await srcLinkToken.methods
+        .balanceOf(srcWeb3SigningCredential.ethAccount)
+        .call();
+      log.debug("LinkBalance1 (ETH_Whale_1)=%o", linkBalance1);
+    } catch (ex: unknown) {
+      log.error("Failed to get LinkBalance1: ", ex);
+      throw ex;
+    }
+
+    try {
+      const owner = srcWeb3SigningCredential.ethAccount;
+      const spender = srcWeb3SigningCredential.ethAccount;
+      const linkAllowance = await srcLinkToken.methods
+        .allowance(owner, spender)
+        .call();
+      log.debug("Link Allowance -1 (ETH_Whale_1)=%o", linkAllowance);
+    } catch (ex: unknown) {
+      log.error("Failed to get linkAllowance: ", ex);
+      throw ex;
+    }
+
+    try {
+      const amount = await srcLinkToken.methods
+        .balanceOf(srcWeb3SigningCredential.ethAccount)
+        .call();
+      const spender = srcWeb3SigningCredential.ethAccount;
+
+      const linkApproval = await srcLinkToken.methods
+        .approve(spender, amount)
+        .send({ from: srcWeb3SigningCredential.ethAccount });
+
+      const { blockNumber, cumulativeGasUsed, gasUsed, transactionHash } =
+        linkApproval;
+
+      const ctx = safeStringify({
+        blockNumber,
+        cumulativeGasUsed,
+        gasUsed,
+        transactionHash,
+      });
+      log.debug("Link Approval 1 (ETH_Whale_1)=%s", ctx);
+    } catch (ex: unknown) {
+      log.error("Failed to get linkApproval 1: ", ex);
+      throw ex;
+    }
+
+    try {
+      const amount = await srcLinkToken.methods
+        .balanceOf(srcWeb3SigningCredential.ethAccount)
+        .call();
+      const spender = infra.srcOnRampAddr;
+      const linkApproval = await srcLinkToken.methods
+        .approve(spender, amount)
+        .send({ from: srcWeb3SigningCredential.ethAccount });
+
+      const { blockNumber, cumulativeGasUsed, gasUsed, transactionHash } =
+        linkApproval;
+
+      const ctx = safeStringify({
+        blockNumber,
+        cumulativeGasUsed,
+        gasUsed,
+        transactionHash,
+      });
+      log.debug("Link Approval 2 (srcOnRamp)=%s", ctx);
+    } catch (ex: unknown) {
+      log.error("Failed to get linkApproval 2: ", ex);
+      throw ex;
+    }
+
+    try {
+      const owner = srcWeb3SigningCredential.ethAccount;
+      const spender = srcWeb3SigningCredential.ethAccount;
+
+      const linkAllowance = await srcLinkToken.methods
+        .allowance(owner, spender)
+        .call();
+
+      log.debug("Link Allowance -2 (ETH_Whale_1)=%d", linkAllowance);
+    } catch (ex: unknown) {
+      log.error("Failed to get linkAllowance: ", ex);
+      throw ex;
+    }
+
+    try {
+      const owner = srcWeb3SigningCredential.ethAccount;
+      const spender = infra.srcOnRampAddr;
+      const linkAllowance3 = await srcLinkToken.methods
+        .allowance(owner, spender)
+        .call();
+
+      log.debug("Link Allowance -3 (srcOnRamp)=%d", linkAllowance3);
+    } catch (ex: unknown) {
+      log.error("Failed to get linkAllowance3: ", ex);
+      throw ex;
+    }
+
+    try {
+      const linkBalance2 = await srcLinkToken.methods
+        .balanceOf(infra.srcOnRampAddr)
+        .call();
+      log.debug("LinkBalance2 (OnRamp)=%o", linkBalance2);
+    } catch (ex: unknown) {
+      log.error("Failed to get LinkBalance2: ", ex);
       throw ex;
     }
 
@@ -322,7 +536,7 @@ describe("PluginLedgerConnectorChainlink", () => {
 
     const priceGetterConfig = {};
 
-    const { jobParams } = await setUpNodesAndJobs({
+    const { commitJob2 } = await setUpNodesAndJobs({
       sourceChainId,
       destChainId,
       sourceChainSelector,
@@ -338,7 +552,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       priceGetterConfig,
       tokenPricesUSDPipeline: "",
     });
-    expect(jobParams).toBeTruthy();
+    expect(commitJob2).toBeTruthy();
 
     // END SECTION SETTING UP THE ENVIRONMENT
     //=========================================================================
@@ -348,109 +562,6 @@ describe("PluginLedgerConnectorChainlink", () => {
     //=========================================================================
     //=========================================================================
 
-    try {
-      const linkAvailableForPayment1 = await srcOnRamp.methods
-        .linkAvailableForPayment()
-        .call();
-      log.debug("linkAvailableForPayment1=%o", linkAvailableForPayment1);
-    } catch (ex: unknown) {
-      log.error("Failed to get linkAvailableForPayment1: ", ex);
-      throw ex;
-    }
-
-    try {
-      const getDynamicConfig = await dstOffRamp.methods
-        .getDynamicConfig()
-        .call();
-      log.debug("getDynamicConfig=%o", getDynamicConfig);
-    } catch (ex: unknown) {
-      log.error("Failed to get getDynamicConfig: ", ex);
-      throw ex;
-    }
-
-    try {
-      const linkBalance1 = await srcLinkToken.methods
-        .balanceOf(srcWeb3SigningCredential.ethAccount)
-        .call();
-      log.debug("LinkBalance1 (ETH_Whale_1)=%o", linkBalance1);
-    } catch (ex: unknown) {
-      log.error("Failed to get LinkBalance1: ", ex);
-      throw ex;
-    }
-
-    try {
-      const owner = srcWeb3SigningCredential.ethAccount;
-      const spender = srcWeb3SigningCredential.ethAccount;
-      const linkAllowance = await srcLinkToken.methods
-        .allowance(owner, spender)
-        .call();
-      log.debug("Link Allowance -1 (ETH_Whale_1)=%o", linkAllowance);
-    } catch (ex: unknown) {
-      log.error("Failed to get linkAllowance: ", ex);
-      throw ex;
-    }
-
-    try {
-      const amount = await srcLinkToken.methods
-        .balanceOf(srcWeb3SigningCredential.ethAccount)
-        .call();
-      const spender = srcWeb3SigningCredential.ethAccount;
-      const linkApproval = await srcLinkToken.methods
-        .approve(spender, amount)
-        .send({ from: srcWeb3SigningCredential.ethAccount });
-      log.debug("Link Approval 1 (ETH_Whale_1)=%o", linkApproval);
-    } catch (ex: unknown) {
-      log.error("Failed to get linkApproval 1: ", ex);
-      throw ex;
-    }
-
-    try {
-      const amount = await srcLinkToken.methods
-        .balanceOf(srcWeb3SigningCredential.ethAccount)
-        .call();
-      const spender = infra.srcOnRampAddr;
-      const linkApproval = await srcLinkToken.methods
-        .approve(spender, amount)
-        .send({ from: srcWeb3SigningCredential.ethAccount });
-      log.debug("Link Approval 2 (srcOnRamp)=%o", linkApproval);
-    } catch (ex: unknown) {
-      log.error("Failed to get linkApproval 2: ", ex);
-      throw ex;
-    }
-
-    try {
-      const owner = srcWeb3SigningCredential.ethAccount;
-      const spender = srcWeb3SigningCredential.ethAccount;
-      const linkAllowance = await srcLinkToken.methods
-        .allowance(owner, spender)
-        .call();
-      log.debug("Link Allowance -2 (ETH_Whale_1)=%o", linkAllowance);
-    } catch (ex: unknown) {
-      log.error("Failed to get linkAllowance: ", ex);
-      throw ex;
-    }
-
-    try {
-      const owner = srcWeb3SigningCredential.ethAccount;
-      const spender = infra.srcOnRampAddr;
-      const linkAllowance3 = await srcLinkToken.methods
-        .allowance(owner, spender)
-        .call();
-      log.debug("Link Allowance -3 (srcOnRamp)=%o", linkAllowance3);
-    } catch (ex: unknown) {
-      log.error("Failed to get linkAllowance3: ", ex);
-      throw ex;
-    }
-
-    try {
-      const linkBalance2 = await srcLinkToken.methods
-        .balanceOf(infra.srcOnRampAddr)
-        .call();
-      log.debug("LinkBalance2 (OnRamp)=%o", linkBalance2);
-    } catch (ex: unknown) {
-      log.error("Failed to get LinkBalance2: ", ex);
-      throw ex;
-    }
     const receiverAddr = infra.dstMaybeRevertMessageReceiver1Addr;
     const receiver = mustEncodeAddress(receiverAddr);
     const data = "0x".concat(helloBuffer.toString("hex"));
@@ -512,75 +623,6 @@ describe("PluginLedgerConnectorChainlink", () => {
     }
 
     try {
-      const subscription = srcRouter.events.DebugMessageLogged();
-      contractLogSubscriptions.push(subscription);
-      subscription.on("data", (anEvent) => {
-        log.debug("srcRouter.DebugLogEvent msg=%s", anEvent.returnValues.msg);
-      });
-    } catch (ex: unknown) {
-      log.error("Failed to set up DebugMessageLogged event capture:", ex);
-      throw ex;
-    }
-
-    try {
-      const subscription = dstOffRamp.events.ExecutionStateChanged();
-      contractLogSubscriptions.push(subscription);
-      subscription.on("data", (anEvent) => {
-        log.debug(
-          "dstOffRamp.ExecutionStateChanged msg=%s",
-          JSON.stringify(anEvent.returnValues, null, 4),
-        );
-      });
-    } catch (ex: unknown) {
-      log.error("Failed to set up ExecutionStateChanged event capture:", ex);
-      throw ex;
-    }
-
-    try {
-      const subscription = dstOffRamp.events.allEvents();
-      contractLogSubscriptions.push(subscription);
-      subscription.on("data", (anEvent) => {
-        log.debug(
-          "dstOffRamp.allEvents:%s msg=%s",
-          anEvent.event,
-          JSON.stringify(anEvent.returnValues, null, 4),
-        );
-      });
-    } catch (ex: unknown) {
-      log.error("Failed to set up allEvents event capture:", ex);
-      throw ex;
-    }
-
-    try {
-      const subscription = srcOnRamp.events.CCIPSendRequested();
-      contractLogSubscriptions.push(subscription);
-      subscription.on("data", (anEvent) => {
-        log.debug(
-          "srcOnRamp.CCIPSendRequested msg=%s",
-          JSON.stringify(anEvent.returnValues, null, 4),
-        );
-      });
-    } catch (ex: unknown) {
-      log.error("Failed to set up CCIPSendRequested event capture:", ex);
-      throw ex;
-    }
-
-    try {
-      const subscription = srcOnRamp.events.allEvents();
-      contractLogSubscriptions.push(subscription);
-      subscription.on("data", (anEvent) => {
-        log.debug(
-          "srcOnRamp.allEvents: %s msg=%s",
-          anEvent.event,
-          JSON.stringify(anEvent.returnValues, null, 4),
-        );
-      });
-    } catch (ex: unknown) {
-      log.error("Failed to set up allEvents event capture:", ex);
-      throw ex;
-    }
-
-    try {
       //Works now
       const web3Res = await srcRouter.methods
         .ccipSend(destChainSelector, clientEVM2AnyMessage)
@@ -588,7 +630,7 @@ describe("PluginLedgerConnectorChainlink", () => {
           from: srcWeb3SigningCredential.ethAccount,
           gas: 10_000_000n.toString(10),
         });
-      log.debug("************* SUCCESS", web3Res);
+      log.debug("************* SUCCESS", safeStringify(web3Res));
       expect(web3Res).toBeTruthy();
     } catch (ex: unknown) {
       log.error("Web3 ccipSend failed:", ex);
@@ -596,3 +638,28 @@ describe("PluginLedgerConnectorChainlink", () => {
     }
   });
 });
+
+async function logAllEventsOfContract(opts: {
+  readonly contractName: Readonly<string>;
+  readonly logLevel: Readonly<LogLevelDesc>;
+  readonly contract: Readonly<Contract<never>>;
+  readonly contractLogSubscriptions: Array<IUnsubscribeable>;
+}): Promise<void> {
+  const log = LoggerProvider.getOrCreate({
+    level: opts.logLevel,
+    label: "logAllEventsOfContract()",
+  });
+  try {
+    const subscription = opts.contract.events.allEvents();
+    opts.contractLogSubscriptions.push(subscription);
+    subscription.on("data", (anEvent) => {
+      const { event: eventName } = anEvent;
+      log.info("%s Event Fired => %s", opts.contractName, eventName);
+    });
+  } catch (ex: unknown) {
+    const { contractName } = opts;
+    const ctx = safeStringify({ contractName });
+    log.error("Failed to set up allEvents event capture %s:", ctx, ex);
+    throw ex;
+  }
+}

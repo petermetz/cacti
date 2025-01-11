@@ -1,3 +1,5 @@
+import safeStringify from "fast-safe-stringify";
+
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   EthContractInvocationType,
@@ -60,8 +62,20 @@ export async function floatOffRampPool(opts: {
     params: [],
     signingCredential: web3SigningCredential,
   });
-  const ctxOwner = JSON.stringify(resOwner);
-  log.debug("CCIP LockReleaseTokenPool owner set OK: %o", ctxOwner);
+
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resOwner as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("LockReleaseTokenPool owner set tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ blockNumber, gasUsed, callOutput });
+    log.debug("LockReleaseTokenPool owner set OK: %s", ctx);
+  }
 
   const { data: resSetRebalancer } = await apiClient.invokeContractV1({
     contractAddress: opts.poolAddr,
@@ -73,8 +87,20 @@ export async function floatOffRampPool(opts: {
     params: [opts.evmAdminAccountAddr],
     signingCredential: web3SigningCredential,
   });
-  const ctxSetBalancer = JSON.stringify(resSetRebalancer);
-  log.debug("CCIP LockReleaseTokenPool setRebalancer OK: %o", ctxSetBalancer);
+
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resSetRebalancer as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("LockReleaseTokenPool setRebalancer tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ blockNumber, gasUsed, callOutput });
+    log.debug("LockReleaseTokenPool setRebalancer OK: %s", ctx);
+  }
 
   const { data: resApprove } = await apiClient.invokeContractV1({
     contractAddress: opts.tokenAddr,
@@ -86,8 +112,20 @@ export async function floatOffRampPool(opts: {
     params: [opts.poolAddr, linkValue(200n)],
     signingCredential: web3SigningCredential,
   });
-  const ctxApprove = JSON.stringify(resApprove);
-  log.debug("CCIP LinkToken approve() OK: %o", ctxApprove);
+
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resApprove as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("LinkToken approve() tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ blockNumber, gasUsed, callOutput });
+    log.debug("LinkToken approve() OK: %s", ctx);
+  }
 
   const { data: resProvideLiquidity } = await apiClient.invokeContractV1({
     contractAddress: opts.poolAddr,
@@ -99,8 +137,22 @@ export async function floatOffRampPool(opts: {
     params: [linkValue(200n)],
     signingCredential: web3SigningCredential,
   });
-  const ctxProvideLiquidity = JSON.stringify(resProvideLiquidity);
-  log.debug("CCIP LockReleaseTokenPool provideLiquidity:", ctxProvideLiquidity);
+
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resProvideLiquidity as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error(
+        "LockReleaseTokenPool provideLiquidity tx receipt falsy.",
+      );
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ blockNumber, gasUsed, callOutput });
+    log.debug("LockReleaseTokenPool provideLiquidity OK: %s", ctx);
+  }
 
   return { resOwner, resSetRebalancer, resApprove, resProvideLiquidity };
 }

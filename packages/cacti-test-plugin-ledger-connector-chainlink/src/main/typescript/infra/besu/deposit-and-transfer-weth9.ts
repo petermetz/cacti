@@ -1,3 +1,5 @@
+import safeStringify from "fast-safe-stringify";
+
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   EthContractInvocationType,
@@ -37,7 +39,7 @@ export async function depositAndTransferWeth9(opts: {
     level: logLevel,
   });
 
-  const { data: resDeposit } = await apiClient.invokeContractV1({
+  const { data: deposit } = await apiClient.invokeContractV1({
     methodName: "deposit",
     value: opts.value.toString(),
     invocationType: EthContractInvocationType.Send,
@@ -48,10 +50,23 @@ export async function depositAndTransferWeth9(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  const ctxDespoit = JSON.stringify(resDeposit);
-  log.debug("CCIP WETH9 deposit() OK: %o", ctxDespoit);
 
-  const { data: resTransfer } = await apiClient.invokeContractV1({
+  // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+  // for the response body not compliant with the OpenAPI specifications.
+  const out = (deposit as unknown as { out: unknown })
+    .out as InvokeContractV1Response;
+
+  if (!out.transactionReceipt) {
+    throw new Error("Failed to WETH9.deposit() TransactionReceipt was falsy.");
+  }
+  {
+    const { transactionReceipt } = out;
+    const { contractAddress, blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ contractAddress, blockNumber, gasUsed });
+    log.debug("WETH9 deposit call OK: %s", ctx);
+  }
+
+  const { data: transfer } = await apiClient.invokeContractV1({
     methodName: "transfer",
     invocationType: EthContractInvocationType.Send,
     params: [opts.poolAddr, opts.value.toString()],
@@ -61,11 +76,23 @@ export async function depositAndTransferWeth9(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  const ctxTransfer = JSON.stringify(resTransfer);
-  log.debug("CCIP WETH9 transfer() OK: %o", ctxTransfer);
+
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (transfer as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("WETH9 transfer tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed } = transactionReceipt;
+    const ctx = safeStringify({ blockNumber, gasUsed, callOutput });
+    log.debug("WETH9 transfer OK: %s", ctx);
+  }
 
   return {
-    resDeposit,
-    resTransfer,
+    resDeposit: deposit,
+    resTransfer: transfer,
   };
 }

@@ -1,3 +1,5 @@
+import safeStringify from "fast-safe-stringify";
+
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import {
   EthContractInvocationType,
@@ -147,8 +149,24 @@ export async function configureTokenPool(opts: {
     signingCredential: web3SigningCredential,
     gas,
   });
-  const ctx = JSON.stringify(resApplyChainUpdates);
-  log.debug("CCIP token pool applyChainUpdates() OK: %o", ctx);
+  {
+    // FIXME - this is a bug in the besu endpoint which returns an incorrect shape
+    // for the response body not compliant with the OpenAPI specifications.
+    const out = (resApplyChainUpdates as unknown as { out: unknown })
+      .out as InvokeContractV1Response;
+    if (!out.transactionReceipt) {
+      throw new Error("token pool applyChainUpdates() tx receipt falsy.");
+    }
+    const { transactionReceipt, callOutput } = out;
+    const { blockNumber, gasUsed, transactionHash } = transactionReceipt;
+    const ctx = safeStringify({
+      blockNumber,
+      gasUsed,
+      callOutput,
+      transactionHash,
+    });
+    log.debug("token pool applyChainUpdates() OK: %s", ctx);
+  }
 
   return { resApplyChainUpdates };
 }

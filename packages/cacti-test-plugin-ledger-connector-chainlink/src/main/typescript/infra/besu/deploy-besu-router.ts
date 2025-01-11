@@ -1,3 +1,5 @@
+import safeStringify from "fast-safe-stringify";
+
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import { Web3SigningCredential } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { type BesuApiClient } from "@hyperledger/cactus-plugin-ledger-connector-besu";
@@ -21,7 +23,7 @@ export async function deployBesuRouter(opts: {
   const { Bin: bytecode, ABI: contractAbi, contractName, gas } = RouterContract;
 
   const constructorArgs = [opts.weth9Addr, opts.armProxyAddr];
-  log.info("Deploying Router with args: %o", constructorArgs);
+  log.info("Deploying Router with args: %s", safeStringify(constructorArgs));
 
   const res = await apiClient.deployContractSolBytecodeNoKeychainV1({
     bytecode,
@@ -31,14 +33,10 @@ export async function deployBesuRouter(opts: {
     web3SigningCredential,
     gas,
   });
-  const ctx = JSON.stringify(res.data.transactionReceipt);
-  log.debug("Router deployed: %o", ctx);
 
-  const {
-    data: {
-      transactionReceipt: { contractAddress },
-    },
-  } = res;
+  const { contractAddress, blockNumber, gasUsed } = res.data.transactionReceipt;
+  const ctx = safeStringify({ contractAddress, blockNumber, gasUsed });
+  log.debug("Router deployed: %s", ctx);
 
   if (!contractAddress) {
     throw new Error("deployBesuRouter() contractAddress is falsy.");

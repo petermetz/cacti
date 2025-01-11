@@ -1,4 +1,4 @@
-Log.Level = 'debug'
+Log.Level = 'info'
 
 [Insecure]
 DevWebServer = true # Default is false

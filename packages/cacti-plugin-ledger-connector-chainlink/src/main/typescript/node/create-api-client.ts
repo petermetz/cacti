@@ -1,6 +1,11 @@
 import { AxiosInstance, AxiosResponse } from "axios";
+import safeStringify from "fast-safe-stringify";
 
-import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
+import {
+  Logger,
+  LoggerProvider,
+  LogLevelDesc,
+} from "@hyperledger/cactus-common";
 
 import { IConnectionArgs } from "./auth/i-connection-args";
 import { IAuthArgs } from "./auth/i-auth-args";
@@ -38,12 +43,20 @@ export interface IChainlinkApiClient {
 }
 
 class ChainlinkApiClient implements IChainlinkApiClient {
+  private readonly log: Logger;
   constructor(
     private readonly opts: {
+      readonly logLevel: Readonly<LogLevelDesc>;
       readonly axiosInstance: Readonly<AxiosInstance>;
       readonly connectionArgs: Readonly<IConnectionArgs>;
     },
-  ) {}
+  ) {
+    const { logLevel = "WARN" } = opts;
+    this.log = LoggerProvider.getOrCreate({
+      label: "ChainlinkApiClient",
+      level: logLevel,
+    });
+  }
 
   /**
    * Example response JSON payload:
@@ -101,11 +114,13 @@ class ChainlinkApiClient implements IChainlinkApiClient {
 
       const { errors } = response.data;
       if (Array.isArray(errors) && errors.length > 0) {
-        throw new Error("FetchOCR2KeyBundles call: ", { cause: errors });
+        this.log.debug("FetchETHKeys fail:", safeStringify(errors));
+        throw new Error("FetchETHKeys call: ", { cause: errors });
       }
 
       return { offset, limit, response };
     } catch (cause: unknown) {
+      this.log.debug("FetchETHKeys fail:", safeStringify(cause));
       throw new Error("FetchETHKeys Chainlink request fail:", { cause });
     }
   }
@@ -156,12 +171,14 @@ class ChainlinkApiClient implements IChainlinkApiClient {
 
       const { errors } = response.data;
       if (Array.isArray(errors) && errors.length > 0) {
+        this.log.debug("FetchOCR2KeyBundles fail:", safeStringify(errors));
         throw new Error("FetchOCR2KeyBundles call: ", { cause: errors });
       }
 
       return { offset, limit, response };
     } catch (cause: unknown) {
-      throw new Error("getOcr2KeyBundles Chainlink request fail:", { cause });
+      this.log.debug("FetchOCR2KeyBundles fail:", safeStringify(cause));
+      throw new Error("FetchOCR2KeyBundles Chainlink request fail:", { cause });
     }
   }
 
@@ -213,11 +230,13 @@ class ChainlinkApiClient implements IChainlinkApiClient {
 
       const { errors } = response.data;
       if (Array.isArray(errors) && errors.length > 0) {
+        this.log.debug("FetchJobs fail:", safeStringify(errors));
         throw new Error("FetchJobs call failed: ", { cause: errors });
       }
 
       return { offset, limit, response };
     } catch (cause: unknown) {
+      this.log.debug("FetchJobs fail:", safeStringify(cause));
       throw new Error("FetchJobs Chainlink node request failed: ", { cause });
     }
   }
@@ -286,11 +305,13 @@ class ChainlinkApiClient implements IChainlinkApiClient {
 
     const { errors } = response.data;
     if (Array.isArray(errors) && errors.length > 0) {
+      this.log.debug("CreateJob fail1:", safeStringify(errors));
       throw new Error("CreateJob GraphQL action failed: ", { cause: errors });
     }
 
     const { errors: errors2 } = response.data.data?.createJob;
     if (Array.isArray(errors) && errors.length > 0) {
+      this.log.debug("CreateJob fail2:", safeStringify(errors));
       throw new Error("CreateJob GraphQL action failed: ", { cause: errors2 });
     }
 
@@ -333,6 +354,7 @@ class ChainlinkApiClient implements IChainlinkApiClient {
 
     const { errors } = response.data;
     if (Array.isArray(errors) && errors.length > 0) {
+      this.log.debug("CreateP2PKey fail:", safeStringify(errors));
       throw new Error("CreateP2PKey call: ", { cause: errors });
     }
 
@@ -394,6 +416,7 @@ class ChainlinkApiClient implements IChainlinkApiClient {
 
     const { errors } = response.data;
     if (Array.isArray(errors) && errors.length > 0) {
+      this.log.debug("FetchP2PKeys fail:", safeStringify(errors));
       throw new Error("FetchP2PKeys call: ", { cause: errors });
     }
 
@@ -416,7 +439,11 @@ export async function createApiclient(opts: {
   try {
     const { axiosInstance } = await login({ level, authArgs, connectionArgs });
     log.debug("Created ChainlinkApiClient OK.");
-    const apiClient = new ChainlinkApiClient({ axiosInstance, connectionArgs });
+    const apiClient = new ChainlinkApiClient({
+      logLevel: opts.level,
+      axiosInstance,
+      connectionArgs,
+    });
     return { apiClient };
   } catch (cause: unknown) {
     throw new Error("Could not log in to Chainlink node.", { cause });

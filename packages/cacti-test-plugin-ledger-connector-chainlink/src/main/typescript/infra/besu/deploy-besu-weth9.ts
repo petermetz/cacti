@@ -1,3 +1,5 @@
+import safeStringify from "fast-safe-stringify";
+
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import { Web3SigningCredential } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { type BesuApiClient } from "@hyperledger/cactus-plugin-ledger-connector-besu";
@@ -27,14 +29,9 @@ export async function deployBesuWeth9(opts: {
     gas,
   });
 
-  const ctx = JSON.stringify(res.data.transactionReceipt);
-  log.debug("WETH9 deployed: %o", ctx);
-
-  const {
-    data: {
-      transactionReceipt: { contractAddress },
-    },
-  } = res;
+  const { contractAddress, blockNumber, gasUsed } = res.data.transactionReceipt;
+  const ctx = safeStringify({ contractAddress, blockNumber, gasUsed });
+  log.debug("WETH9 deployed: %s", ctx);
 
   if (!contractAddress) {
     throw new Error("deployBesuWeth9() contractAddress is falsy.");
