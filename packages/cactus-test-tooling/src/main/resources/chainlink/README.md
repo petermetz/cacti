@@ -26,6 +26,71 @@ docker compose \
 	--build &> /tmp/chainlink.log
 ```
 
+## Events Used In Replication
+
+**EVM2EVMOnRamp.sol**
+
+```solidity
+  // STATIC CONFIG
+  string public constant override typeAndVersion = "EVM2EVMOnRamp 1.5.0";
+
+/// RMN depends on this event, if changing, please notify the RMN maintainers.
+event CCIPSendRequested(Internal.EVM2EVMMessage message);
+```
+
+**OnRamp.sol**
+
+```solidity
+  // STATIC CONFIG
+  string public constant override typeAndVersion = "OnRamp 1.6.0-dev";
+
+/// RMN depends on this event, if changing, please notify the RMN maintainers.
+event CCIPMessageSent(
+  uint64 indexed destChainSelector, uint64 indexed sequenceNumber, Internal.EVM2AnyRampMessage message
+);
+```
+
+**OffRamp.sol**
+
+```solidity
+  // STATIC CONFIG
+  string public constant override typeAndVersion = "OffRamp 1.6.0-dev";
+
+  /// @dev RMN depends on this event, if changing, please notify the RMN maintainers.
+  event CommitReportAccepted(Internal.MerkleRoot[] merkleRoots, Internal.PriceUpdates priceUpdates);
+  event RootRemoved(bytes32 root);
+```
+
+```solidity
+ emit ReportAccepted(report);
+```
+
+```solidity
+/// @notice Report that is committed by the observing DON at the committing phase
+/// @dev RMN depends on this struct, if changing, please notify the RMN maintainers.
+struct CommitReport {
+  Internal.PriceUpdates priceUpdates;
+  Interval interval;
+  bytes32 merkleRoot;
+}
+```
+
+```solidity
+  /// @notice Enum listing the possible message execution states within
+  /// the offRamp contract.
+  /// UNTOUCHED never executed
+  /// IN_PROGRESS currently being executed, used a replay protection
+  /// SUCCESS successfully executed. End state
+  /// FAILURE unsuccessfully executed, manual execution is now enabled.
+  /// @dev RMN depends on this enum, if changing, please notify the RMN maintainers.
+  enum MessageExecutionState {
+    UNTOUCHED,
+    IN_PROGRESS,
+    SUCCESS,
+    FAILURE
+  }
+```
+
 ## Importing a P2P Key
 
 ```sh
@@ -45,6 +110,7 @@ Public key: f630cb73d86d75f4f4db9fd174204512530fd33941e81c636a8e6a0db7c0f0a8
 ```
 
 Debug a Reverted Transaction:
+
 ```sh
 curl -X POST --data '{"jsonrpc": "2.0", "method": "trace_transaction","params": ["0xfaff10cd38a321273863faf009d3d2c7eeb7d7dc502f47a6858bbc5b2d21113b"],"id": 1}' http://127.0.0.1:8545
 
@@ -175,8 +241,17 @@ chainID = 90000001
 ```
 
 http://localhost:6688/query
+
 ```json
-{"operationName":"CreateJob","variables":{"input":{"TOML":"name = 'bootstrap-besu'\ntype = 'bootstrap'\nschemaVersion = 1\nmaxTaskDuration = '30s'\nforwardingAllowed = false\n\ncontractID = '0x63a0F110d6C4712000345E05adDCA534520eb865'\nrelay = 'evm'\nchainID = '90000001'\np2pv2Bootstrappers = []\nocrKeyBundleID = ''\nmonitoringEndpoint = ''\ntransmitterID = ''\nblockchainTimeout = '0s'\ncontractConfigTrackerPollInterval = '20s'\ncontractConfigConfirmations = 1\npluginType = ''\ncaptureEATelemetry = false\ncaptureAutomationCustomTelemetry = false\n\n[relayConfig]\nchainID = 90000001"}},"query":"mutation CreateJob($input: CreateJobInput!) {\n  createJob(input: $input) {\n    ... on CreateJobSuccess {\n      job {\n        id\n        __typename\n      }\n      __typename\n    }\n    ... on InputErrors {\n      errors {\n        path\n        message\n        code\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"}
+{
+  "operationName": "CreateJob",
+  "variables": {
+    "input": {
+      "TOML": "name = 'bootstrap-besu'\ntype = 'bootstrap'\nschemaVersion = 1\nmaxTaskDuration = '30s'\nforwardingAllowed = false\n\ncontractID = '0x63a0F110d6C4712000345E05adDCA534520eb865'\nrelay = 'evm'\nchainID = '90000001'\np2pv2Bootstrappers = []\nocrKeyBundleID = ''\nmonitoringEndpoint = ''\ntransmitterID = ''\nblockchainTimeout = '0s'\ncontractConfigTrackerPollInterval = '20s'\ncontractConfigConfirmations = 1\npluginType = ''\ncaptureEATelemetry = false\ncaptureAutomationCustomTelemetry = false\n\n[relayConfig]\nchainID = 90000001"
+    }
+  },
+  "query": "mutation CreateJob($input: CreateJobInput!) {\n  createJob(input: $input) {\n    ... on CreateJobSuccess {\n      job {\n        id\n        __typename\n      }\n      __typename\n    }\n    ... on InputErrors {\n      errors {\n        path\n        message\n        code\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n"
+}
 ```
 
 ```sh
@@ -323,7 +398,6 @@ chainID = 90000001
 destStartBlock = 229
 sourceStartBlock = 249
 ```
-
 
 **bootstrap-SimulatedDest**
 
@@ -486,6 +560,9 @@ https://vscode.blockscan.com/ethereum/0x8B63b3DE93431C0f756A493644d128134291fA1b
 This doesn't yet have the client integrated with it, so you can't connect to it
 through a JSON-RPC endpoint just yet (web3, ethers).
 
+1. Extend it with the client so that it can listen on 8545 and 8546 ports (HTTP and websocket)
+2. Demonstate with web3 that it is possible to connect to it and run transactions
+
 ```javascript
 import { VM } from "@ethereumjs/vm";
 import { Common, Hardfork, Chain } from "@ethereumjs/common";
@@ -493,10 +570,14 @@ import { Blockchain } from "@ethereumjs/blockchain";
 import { Account, Address } from "@ethereumjs/util";
 import { LegacyTransaction, TransactionFactory } from "@ethereumjs/tx";
 import { ethers } from "ethers";
-import jsonStringify from "fast-safe-stringify"; "fast-safe-stringify";
+import jsonStringify from "fast-safe-stringify";
+("fast-safe-stringify");
 
 async function main() {
-  const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Shanghai });
+  const common = new Common({
+    chain: Chain.Mainnet,
+    hardfork: Hardfork.Shanghai,
+  });
 
   // Use the safe static constructor which awaits the init method
   const blockchain = await Blockchain.create({
@@ -511,7 +592,7 @@ async function main() {
   // Create an account with some funds
   const privateKey = Buffer.from(
     "1d3d1b257f559ffaf6db2bb88e60e2d9ee1d7e3940e326d34c88bfce7067bd20",
-    "hex"
+    "hex",
   );
   const senderAddress = Address.fromPrivateKey(privateKey);
   const senderAccount = new Account();
@@ -544,7 +625,7 @@ async function main() {
       gasPrice: 1000000000,
       data: deployTxData,
     },
-    { common }
+    { common },
   ).sign(privateKey);
 
   const deployResult = await vm.runTx({ tx: deployTx });
@@ -563,10 +644,10 @@ async function main() {
       to: contractAddress,
       data: callData,
     },
-    { common }
+    { common },
   ).sign(privateKey);
 
-  const callResult = await vm.runTx({ tx: callTx});
+  const callResult = await vm.runTx({ tx: callTx });
 
   console.log("Call result:", jsonStringify(callResult.receipt));
 
@@ -611,213 +692,79 @@ main().catch((err) => {
 });
 ```
 
-## Chainlink Node REST API for Job Creation
-
-`deployment/environment/nodeclient/chainlink.go`
-
-```go
-
-func initRestyClient(url string, email string, password string, headers map[string]string, timeout *time.Duration) (*resty.Client, error) {
-	isDebug := os.Getenv("RESTY_DEBUG") == "true"
-	// G402 - TODO: certificates
-	//nolint
-	rc := resty.New().SetBaseURL(url).SetHeaders(headers).SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true}).SetDebug(isDebug)
-	if timeout != nil {
-		rc.SetTimeout(*timeout)
-	}
-	session := &Session{Email: email, Password: password}
-	// Retry the connection on boot up, sometimes pods can still be starting up and not ready to accept connections
-	var resp *resty.Response
-	var err error
-	retryCount := 20
-	for i := 0; i < retryCount; i++ {
-		resp, err = rc.R().SetBody(session).Post("/sessions")
-		if err != nil {
-			log.Warn().Err(err).Str("URL", url).Interface("Session Details", session).Msg("Error connecting to Chainlink node, retrying")
-			time.Sleep(5 * time.Second)
-		} else {
-			break
-		}
-	}
-	if err != nil {
-		return nil, fmt.Errorf("error connecting to chainlink node after %d attempts: %w", retryCount, err)
-	}
-	rc.SetCookies(resp.Cookies())
-	log.Debug().Str("URL", url).Msg("Connected to Chainlink node")
-	return rc, nil
-}
-
-// URL Chainlink instance http url
-func (c *ChainlinkClient) URL() string {
-	return c.Config.URL
-}
-
-// Health returns all statuses health info
-func (c *ChainlinkClient) Health() (*HealthResponse, *http.Response, error) {
-	respBody := &HealthResponse{}
-	c.l.Info().Str(NodeURL, c.Config.URL).Msg("Requesting health data")
-	resp, err := c.APIClient.R().
-		SetResult(&respBody).
-		Get("/health")
-	if err != nil {
-		return nil, nil, err
-	}
-	return respBody, resp.RawResponse, err
-}
-
-// CreateJobRaw creates a Chainlink job based on the provided spec string
-func (c *ChainlinkClient) CreateJobRaw(spec string) (*Job, *http.Response, error) {
-	job := &Job{}
-	c.l.Info().Str("Node URL", c.Config.URL).Msg("Creating Job")
-	c.l.Trace().Str("Node URL", c.Config.URL).Str("Job Body", spec).Msg("Creating Job")
-	resp, err := c.APIClient.R().
-		SetBody(&JobForm{
-			TOML: spec,
-		}).
-		SetResult(&job).
-		Post("/v2/jobs")
-	if err != nil {
-		return nil, nil, err
-	}
-	return job, resp.RawResponse, err
-}
-```
-
 ## CCIP Contract Deployment Utilities (Gauntlet as they call it)
 
 https://www.npmjs.com/search?q=evm
 https://www.npmjs.com/package/@chainlink/evm-gauntlet-ccip?activeTab=code
 https://www.npmjs.com/package/@chainlink/evm-gauntlet-ocr?activeTab=readme
 
-`.github/workflows/integration-tests.yml`
+## CCIP Cacti Connector
+### Sequence Diagram
 
-```yaml
-run-ccip-e2e-tests-for-pr:
-    name: Run CCIP E2E Tests For PR
-    permissions:
-      actions: read
-      checks: write
-      pull-requests: write
-      id-token: write
-      contents: read
-    needs: [build-chainlink, changes]
-    if: github.event_name == 'pull_request' && (needs.changes.outputs.ccip_changes == 'true' || needs.changes.outputs.github_ci_changes == 'true')
-    uses: smartcontractkit/.github/.github/workflows/run-e2e-tests.yml@0632b5652dd5eb03bfa87e23a2b3e2911484fe59
-    with:
-      workflow_name: Run CCIP E2E Tests For PR
-      chainlink_version: ${{ inputs.evm-ref || github.sha }}
-      chainlink_upgrade_version: ${{ github.sha }}
-      test_path: .github/e2e-tests.yml
-      test_trigger: PR E2E CCIP Tests
-      upload_cl_node_coverage_artifact: true
-      upload_cl_node_coverage_artifact_prefix: cl_node_coverage_data_
-      enable_otel_traces_for_ocr2_plugins: ${{ contains(join(github.event.pull_request.labels.*.name, ' '), 'enable tracing') }}
-      team: "CCIP"
-    secrets:
-      QA_AWS_REGION: ${{ secrets.QA_AWS_REGION }}
-      QA_AWS_ROLE_TO_ASSUME: ${{ secrets.QA_AWS_ROLE_TO_ASSUME }}
-      QA_AWS_ACCOUNT_NUMBER: ${{ secrets.QA_AWS_ACCOUNT_NUMBER }}
-      PROD_AWS_ACCOUNT_NUMBER: ${{ secrets.AWS_ACCOUNT_ID_PROD }}
-      QA_PYROSCOPE_INSTANCE: ${{ secrets.QA_PYROSCOPE_INSTANCE }}
-      QA_PYROSCOPE_KEY: ${{ secrets.QA_PYROSCOPE_KEY }}
-      QA_KUBECONFIG: ${{ secrets.QA_KUBECONFIG }}
-      GRAFANA_INTERNAL_TENANT_ID: ${{ secrets.GRAFANA_INTERNAL_TENANT_ID }}
-      GRAFANA_INTERNAL_BASIC_AUTH: ${{ secrets.GRAFANA_INTERNAL_BASIC_AUTH }}
-      GRAFANA_INTERNAL_HOST: ${{ secrets.GRAFANA_INTERNAL_HOST }}
-      GRAFANA_INTERNAL_URL_SHORTENER_TOKEN: ${{ secrets.GRAFANA_INTERNAL_URL_SHORTENER_TOKEN }}
-      LOKI_TENANT_ID: ${{ secrets.LOKI_TENANT_ID }}
-      LOKI_URL: ${{ secrets.LOKI_URL }}
-      LOKI_BASIC_AUTH: ${{ secrets.LOKI_BASIC_AUTH }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      AWS_REGION: ${{ secrets.QA_AWS_REGION }}
-      AWS_OIDC_IAM_ROLE_VALIDATION_PROD_ARN: ${{ secrets.AWS_OIDC_IAM_ROLE_VALIDATION_PROD_ARN }}
-      AWS_API_GW_HOST_GRAFANA: ${{ secrets.AWS_API_GW_HOST_GRAFANA }}
-      SLACK_BOT_TOKEN: ${{ secrets.QA_SLACK_API_KEY }}
+Mermaid Config
+```json
+{
+    "theme": "dark",
+    "sequence": {
+        "showSequenceNumbers": true,
+        "messageFontWeight": "bold",
+        "actorFontWeight": "bold",
+        "noteFontWeight": "bold"
+    }
+}
 ```
 
-`core/services/ocr2/plugins/ccip/testhelpers/integration/chainlink.go`
+```mermaid
+sequenceDiagram
+autonumber
 
-```go
+participant ChainB as Private Chain<br/><<fabric>>
+participant Cacti as Cacti<br>CCIP Connector
+participant EvmProxy as EvmProxy<br/><<evm>>
+participant Chainlink as Chainlink<br/>DON & RMN
+participant ChainA as Ethereum<br/>Mainnet<br/><<evm>>
 
-const (
-	execSpecTemplate = `
-		type = "offchainreporting2"
-		schemaVersion = 1
-		name = "ccip-exec-1"
-		externalJobID      = "67ffad71-d90f-4fe3-b4e4-494924b707fb"
-		forwardingAllowed = false
-		maxTaskDuration = "0s"
-		contractID = "%s"
-		contractConfigConfirmations = 1
-		contractConfigTrackerPollInterval = "20s"
-		ocrKeyBundleID = "%s"
-		relay = "evm"
-		pluginType = "ccip-execution"
-		transmitterID = "%s"
+rect rgb(90, 90, 90)
+note left of ChainB: initialization
+    Cacti->>EvmProxy: Deploy CCIP Contracts
+    Cacti->>EvmProxy: Configure CCIP Contracts
+    Chainlink->>EvmProxy: Fetch OffRamp Config
+    Chainlink->>EvmProxy: FilterCCIPMessageSent()
+    Cacti->>ChainB: subscribe(CCIPMessageSent)
+end
+rect rgb(90, 90, 90)
+note left of ChainB: up & running
+loop Until Exit
+Cacti->>EvmProxy: Send Pending CCIP Messages
+end
+ChainB->>ChainB: router.ccipSend()
+note right of ChainB: emit CCIPMessageSent()
+ChainB-->>Cacti: Deliver Event CCIPMessageSent
+Cacti->>EvmProxy: router.ccipSend()
+EvmProxy->>EvmProxy: onRamp.forwardFromRouter()
+note right of EvmProxy: emit CCIPMessageSent()
+EvmProxy-->>Chainlink: Deliver Event CCIPMessageSent
+Chainlink->>ChainA: offRamp.execute(message)
+end
 
-		[relayConfig]
-		chainID = 1_337
-
-		[pluginConfig]
-		destStartBlock = 50
-
-	    [pluginConfig.USDCConfig]
-	    AttestationAPI = "http://blah.com"
-	    SourceMessageTransmitterAddress = "%s"
-	    SourceTokenAddress = "%s"
-		AttestationAPITimeoutSeconds = 10
-	`
-	commitSpecTemplatePipeline = `
-		type = "offchainreporting2"
-		schemaVersion = 1
-		name = "ccip-commit-1"
-		externalJobID = "13c997cf-1a14-4ab7-9068-07ee6d2afa55"
-		forwardingAllowed = false
-		maxTaskDuration = "0s"
-		contractID = "%s"
-		contractConfigConfirmations = 1
-		contractConfigTrackerPollInterval = "20s"
-		ocrKeyBundleID = "%s"
-		relay = "evm"
-		pluginType = "ccip-commit"
-		transmitterID = "%s"
-
-		[relayConfig]
-		chainID = 1_337
-
-		[pluginConfig]
-		destStartBlock = 50
-		offRamp = "%s"
-		tokenPricesUSDPipeline = """
-		%s
-		"""
-	`
-	commitSpecTemplateDynamicPriceGetter = `
-		type = "offchainreporting2"
-		schemaVersion = 1
-		name = "ccip-commit-1"
-		externalJobID = "13c997cf-1a14-4ab7-9068-07ee6d2afa55"
-		forwardingAllowed = false
-		maxTaskDuration = "0s"
-		contractID = "%s"
-		contractConfigConfirmations = 1
-		contractConfigTrackerPollInterval = "20s"
-		ocrKeyBundleID = "%s"
-		relay = "evm"
-		pluginType = "ccip-commit"
-		transmitterID = "%s"
-
-		[relayConfig]
-		chainID = 1_337
-
-		[pluginConfig]
-		destStartBlock = 50
-		offRamp = "%s"
-		priceGetterConfig = """
-		%s
-		"""
-	`
-)
 ```
 
 
+```sh
+config.aesEncryptBlock (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/github.com/smartcontractkit/libocr@v0.0.0-20241007185508-adbe57025f12/offchainreporting2plus/internal/config/shared_secret_encrypt.go:68)
+config.EncryptSharedSecretDeterministic (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/github.com/smartcontractkit/libocr@v0.0.0-20241007185508-adbe57025f12/offchainreporting2plus/internal/config/shared_secret_encrypt.go:40)
+config.EncryptSharedSecret (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/github.com/smartcontractkit/libocr@v0.0.0-20241007185508-adbe57025f12/offchainreporting2plus/internal/config/shared_secret_encrypt.go:64)
+ocr2config.XXXContractSetConfigArgsFromSharedConfig (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/github.com/smartcontractkit/libocr@v0.0.0-20241007185508-adbe57025f12/offchainreporting2plus/internal/config/ocr2config/shared_config.go:128)
+confighelper.ContractSetConfigArgsForTestsWithAuxiliaryArgs (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/github.com/smartcontractkit/libocr@v0.0.0-20241007185508-adbe57025f12/offchainreporting2plus/confighelper/confighelper.go:237)
+confighelper.ContractSetConfigArgsForTests (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/github.com/smartcontractkit/libocr@v0.0.0-20241007185508-adbe57025f12/offchainreporting2plus/confighelper/confighelper.go:283)
+confighelper.ContractSetConfigArgsForTests (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/github.com/smartcontractkit/libocr@v0.0.0-20241007185508-adbe57025f12/offchainreporting2/confighelper/alias.go:118)
+testhelpers.(*CCIPContracts).DeriveOCR2Config (/home/peter/a/hyperledger/chainlink/core/services/ocr2/plugins/ccip/testhelpers/ccip_contracts.go:506)
+testhelpers.(*CCIPContracts).SetupCommitOCR2Config (/home/peter/a/hyperledger/chainlink/core/services/ocr2/plugins/ccip/testhelpers/ccip_contracts.go:551)
+testhelpers.(*CCIPContracts).SetupOnchainConfig (/home/peter/a/hyperledger/chainlink/core/services/ocr2/plugins/ccip/testhelpers/ccip_contracts.go:587)
+integration.(*CCIPIntegrationTestHarness).SetupAndStartNodes (/home/peter/a/hyperledger/chainlink/core/services/ocr2/plugins/ccip/testhelpers/integration/chainlink.go:1042)
+integration.(*CCIPIntegrationTestHarness).SetUpNodesAndJobs (/home/peter/a/hyperledger/chainlink/core/services/ocr2/plugins/ccip/testhelpers/integration/chainlink.go:1053)
+ccip_test.TestIntegration_CCIP.func1 (/home/peter/a/hyperledger/chainlink/core/services/ocr2/plugins/ccip/integration_test.go:111)
+testing.tRunner (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.4.linux-amd64/src/testing/testing.go:1690)
+testing.(*T).Run.gowrap1 (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.4.linux-amd64/src/testing/testing.go:1743)
+runtime.goexit (/home/peter/.gvm/pkgsets/go1.23.3/global/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.4.linux-amd64/src/runtime/asm_amd64.s:1700)
+```

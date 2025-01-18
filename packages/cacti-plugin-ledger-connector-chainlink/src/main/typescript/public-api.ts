@@ -89,7 +89,7 @@ export { IConnectionArgs } from "./node/auth/i-connection-args";
 export { login } from "./node/auth/login";
 export { logout } from "./node/auth/logout";
 export { IChainlinkApiClient } from "./node/create-api-client";
-export { createApiclient } from "./node/create-api-client";
+export { createApiClient } from "./node/create-api-client";
 
 export { IOcr2KeyBundlesDto } from "./node/ocr2/ocr2-key-bundles-dto";
 export { IOcr2KeyBundlesDtoData } from "./node/ocr2/ocr2-key-bundles-dto";
@@ -106,3 +106,8 @@ export { IP2PKey } from "./node/ocr2/p2p-keys-dto";
 export { IP2PKeysPayload } from "./node/ocr2/p2p-keys-dto";
 export { IP2pKeysData } from "./node/ocr2/p2p-keys-dto";
 export { IP2pKeysDto } from "./node/ocr2/p2p-keys-dto";
+
+export { OffchainConfigProto } from "./generated/proto/ts-proto/ccip/offchainreporting2_monitoring_offchain_config";
+export { SharedSecretEncryptionsProto } from "./generated/proto/ts-proto/ccip/offchainreporting2_monitoring_offchain_config";
+
+export { startEvmProxy } from "./evm-proxy/start-evm-proxy";

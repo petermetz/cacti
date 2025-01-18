@@ -6,7 +6,9 @@
     "declarationDir": "dist/lib",
     "resolveJsonModule": true,
     "rootDir": "./src",
-    "tsBuildInfoFile": "../../.build-cache/cacti-plugin-ledger-connector-chainlink.tsbuildinfo"
+    "tsBuildInfoFile": "../../.build-cache/cacti-plugin-ledger-connector-chainlink.tsbuildinfo",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "./src",

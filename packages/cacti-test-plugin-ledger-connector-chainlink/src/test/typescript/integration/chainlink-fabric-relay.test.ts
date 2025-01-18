@@ -7,13 +7,15 @@ import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import { PluginImportType } from "@hyperledger/cactus-core-api";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import {
-  createApiclient,
+  createApiClient,
   IAuthArgs,
+  IChainlinkApiClient,
   IConnectionArgs,
   PluginFactoryLedgerConnector as PluginFactoryLedgerConnectorChainlink,
 } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { mustEncodeAddress } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { getEvmExtraArgsV2 } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { startEvmProxy } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import {
   BesuApiClient,
   Web3SigningCredential,
@@ -88,15 +90,14 @@ describe("PluginLedgerConnectorChainlink", () => {
   const contractLogSubscriptions: Array<IUnsubscribeable> = [];
 
   afterAll(async () => {
-    //FIXME
-    // log.debug(
-    //   "Unsubscribing %d solidity event subs...",
-    //   contractLogSubscriptions.length,
-    // );
-    // const unSubResults = await Promise.allSettled(
-    //   contractLogSubscriptions.map((x) => x.unsubscribe()),
-    // );
-    // log.debug("Solidity event unsubscribe operations settled:", unSubResults);
+    log.debug(
+      "Unsubscribing %d solidity event subs...",
+      contractLogSubscriptions.length,
+    );
+    const unSubResults = await Promise.allSettled(
+      contractLogSubscriptions.map((x) => x.unsubscribe()),
+    );
+    log.debug("Solidity event unsubscribe operations settled:", unSubResults);
 
     log.debug("Disconnecting Web3 WS Providers...");
     await dstWeb3WsProvider.safeDisconnect();
@@ -132,14 +133,6 @@ describe("PluginLedgerConnectorChainlink", () => {
   const destChainId = BigInt(90000002);
   const sourceChainId = BigInt(90000001);
 
-  // spells "fabric" in ASCII
-  // 112568449526115n as a decimal number
-  // const destChainSelector = BigInt(
-  //   "0b011001100110000101100010011100100110100101100011",
-  // );
-
-  // const sourceChainSelector = BigInt(3379446385462418246n);
-
   const genesisWeb3SigningCredential: Web3SigningCredential = {
     ethAccount: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
     secret: "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
@@ -147,7 +140,6 @@ describe("PluginLedgerConnectorChainlink", () => {
   };
 
   const srcWeb3WsProvider = new WebSocketProvider("ws://127.0.0.1:8546");
-  // const srcWeb3 = new Web3("http://127.0.0.1:8545");
   const srcWeb3 = new Web3(srcWeb3WsProvider);
 
   const srcAccount = srcWeb3.eth.accounts.wallet.add(
@@ -164,7 +156,6 @@ describe("PluginLedgerConnectorChainlink", () => {
   };
 
   const dstWeb3WsProvider = new WebSocketProvider("ws://127.0.0.1:9546");
-  // const dstWeb3 = new Web3("http://127.0.0.1:9545");
   const dstWeb3 = new Web3(dstWeb3WsProvider);
   const dstAccount = dstWeb3.eth.accounts.wallet.add(
     "0x" + genesisWeb3SigningCredential.secret,
@@ -183,6 +174,7 @@ describe("PluginLedgerConnectorChainlink", () => {
   log.debug("DstWeb3 Accounts: %s", safeStringify(dstAccount));
 
   let infra: IDeployBesuCcipContractsOutput;
+  let srcRouter: Contract<typeof RouterAbi>;
 
   beforeAll(() => {
     log.warn("Note: Overriding BigInt.prototype.toJSON() to call .toString()");
@@ -190,6 +182,15 @@ describe("PluginLedgerConnectorChainlink", () => {
     (BigInt.prototype as any).toJSON = function () {
       return this.toString();
     };
+  });
+
+  beforeAll(async () => {
+    await startEvmProxy({
+      logLevel,
+      chainId: destChainId,
+      mnemonic: "asdf",
+      passphrase: "",
+    });
   });
 
   beforeAll(async () => {
@@ -207,12 +208,21 @@ describe("PluginLedgerConnectorChainlink", () => {
     );
     log.debug("Balance of srcWeb3SigningCredential after seed: %o", srcBalance);
 
+    const genesisDstAccountBalance = await dstWeb3.eth.getBalance(
+      genesisWeb3SigningCredential.ethAccount,
+    );
+    log.debug(
+      "genesisDstAccountBalance(%s): %d",
+      genesisWeb3SigningCredential.ethAccount,
+      genesisDstAccountBalance,
+    );
     log.debug("Seeding dst chain test account with whale money");
     const seedOut = await dstWeb3.eth.sendTransaction({
       from: genesisWeb3SigningCredential.ethAccount,
       to: dstWeb3SigningCredential.ethAccount,
       value: 999_999_999_999_999_999_999n,
       gas: 10_000_000n,
+      maxFeePerGas: 2500000000,
     });
     log.debug("Dst SeedOut=%s", safeStringify(seedOut));
 
@@ -235,24 +245,6 @@ describe("PluginLedgerConnectorChainlink", () => {
       dstWeb3SigningCredential,
       logLevel,
     });
-  });
-
-  it("Can observe on/off ramp events", async () => {
-    const factory = new PluginFactoryLedgerConnectorChainlink({
-      pluginImportType: PluginImportType.Local,
-    });
-
-    const pluginRegistry = new PluginRegistry();
-
-    const plugin = await factory.create({
-      instanceId: "chainlink-connector-1",
-      ledgerHttpHost: "https://localhost:8080",
-      ledgerHttpPort: 1234,
-      pluginRegistry,
-      logLevel,
-    });
-
-    await plugin.onPluginInit();
 
     srcWeb3.eth.defaultAccount = srcWeb3SigningCredential.ethAccount;
     dstWeb3.eth.defaultAccount = dstWeb3SigningCredential.ethAccount;
@@ -309,12 +301,26 @@ describe("PluginLedgerConnectorChainlink", () => {
       contractName: "srcMockRmn",
     });
 
-    const srcRouter = new Contract(RouterAbi, infra.srcRouterAddr, srcWeb3);
+    srcRouter = new Contract(RouterAbi, infra.srcRouterAddr, srcWeb3);
+    await logAllEventsOfContract({
+      logLevel,
+      contract: srcRouter,
+      contractLogSubscriptions,
+      contractName: "srcRouter",
+    });
+
     const srcLinkToken = new Contract(
       LinkTokenAbi,
       infra.srcLinkTokenAddr,
       srcWeb3,
     );
+    await logAllEventsOfContract({
+      logLevel,
+      contract: srcLinkToken,
+      contractLogSubscriptions,
+      contractName: "srcOnRamp",
+    });
+
     const srcOnRamp = new Contract(OnRampAbi, infra.srcOnRampAddr, srcWeb3);
     await logAllEventsOfContract({
       logLevel,
@@ -322,6 +328,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contractLogSubscriptions,
       contractName: "srcOnRamp",
     });
+
     const dstOffRamp = new Contract(OffRampAbi, infra.dstOffRampAddr, dstWeb3);
     await logAllEventsOfContract({
       logLevel,
@@ -341,6 +348,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contractLogSubscriptions,
       contractName: "srcMockV3Aggregator",
     });
+
     const dstMockV3Aggregator = new Contract(
       MockV3AggregatorContractAbi,
       infra.dstMockV3AggregatorAddr,
@@ -352,6 +360,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contractLogSubscriptions,
       contractName: "dstMockV3Aggregator",
     });
+
     try {
       // big.NewInt(50), big.NewInt(17000000), big.NewInt(1000), big.NewInt(1000)
       const out = await srcMockV3Aggregator.methods
@@ -504,35 +513,60 @@ describe("PluginLedgerConnectorChainlink", () => {
       throw ex;
     }
 
-    const clApiClientOut1 = await createApiclient({
+    const clApiClientOut1 = await createApiClient({
       authArgs: authArgs1,
       connectionArgs: connectionArgs1,
       level: logLevel,
     });
 
-    const clApiClientOut2 = await createApiclient({
+    const clApiClientOut2 = await createApiClient({
       authArgs: authArgs2,
       connectionArgs: connectionArgs2,
       level: logLevel,
     });
 
-    const clApiClientOut3 = await createApiclient({
+    const clApiClientOut3 = await createApiClient({
       authArgs: authArgs3,
       connectionArgs: connectionArgs3,
       level: logLevel,
     });
 
-    const clApiClientOut4 = await createApiclient({
+    const clApiClientOut4 = await createApiClient({
       authArgs: authArgs4,
       connectionArgs: connectionArgs4,
       level: logLevel,
     });
 
-    const clApiClientOut5 = await createApiclient({
+    const clApiClientOut5 = await createApiClient({
       authArgs: authArgs5,
       connectionArgs: connectionArgs5,
       level: logLevel,
     });
+
+    //
+    // Funding the transmitter addresses the Chainlink nodes use to send messages (transactions)
+    //
+    const clients = [
+      { apiClient: clApiClientOut1.apiClient, nodeLabel: "chainlink1" },
+      { apiClient: clApiClientOut2.apiClient, nodeLabel: "chainlink2" },
+      { apiClient: clApiClientOut3.apiClient, nodeLabel: "chainlink3" },
+      { apiClient: clApiClientOut4.apiClient, nodeLabel: "chainlink4" },
+      { apiClient: clApiClientOut5.apiClient, nodeLabel: "chainlink5" },
+    ];
+
+    for (const client of clients) {
+      await fundChainlinkNodeAccountsWithSomeEth({
+        logLevel,
+        apiClient: client.apiClient,
+        destChainId,
+        destChainSelector,
+        dstWeb3,
+        nodeLabel: client.nodeLabel,
+        sourceChainId,
+        sourceChainSelector,
+        srcWeb3,
+      });
+    }
 
     const priceGetterConfig = {};
 
@@ -554,13 +588,61 @@ describe("PluginLedgerConnectorChainlink", () => {
     });
     expect(commitJob2).toBeTruthy();
 
-    // END SECTION SETTING UP THE ENVIRONMENT
-    //=========================================================================
-    //=========================================================================
-    //=========================================================================
-    //=========================================================================
-    //=========================================================================
-    //=========================================================================
+    // TODO configure the commit store and the off ramp:
+
+    // func (c *CCIPContracts) SetupCommitOCR2Config(t *testing.T, commitOnchainConfig, commitOffchainConfig []byte) {
+    //   c.commitOCRConfig = c.DeriveOCR2Config(t, c.Oracles, commitOnchainConfig, commitOffchainConfig)
+    //   // Set the DON on the commit store
+    //   _, err := c.Dest.CommitStore.SetOCR2Config(
+    //     c.Dest.User,
+    //     c.commitOCRConfig.Signers,
+    //     c.commitOCRConfig.Transmitters,
+    //     c.commitOCRConfig.F,
+    //     c.commitOCRConfig.OnchainConfig,
+    //     c.commitOCRConfig.OffchainConfigVersion,
+    //     c.commitOCRConfig.OffchainConfig,
+    //   )
+    //   require.NoError(t, err)
+    //   c.Dest.Chain.Commit()
+    // }
+
+    // func (c *CCIPContracts) SetupExecOCR2Config(t *testing.T, execOnchainConfig, execOffchainConfig []byte) {
+    //   c.execOCRConfig = c.DeriveOCR2Config(t, c.Oracles, execOnchainConfig, execOffchainConfig)
+    //   // Same DON on the offramp
+    //   _, err := c.Dest.OffRamp.SetOCR2Config(
+    //     c.Dest.User,
+    //     c.execOCRConfig.Signers,
+    //     c.execOCRConfig.Transmitters,
+    //     c.execOCRConfig.F,
+    //     c.execOCRConfig.OnchainConfig,
+    //     c.execOCRConfig.OffchainConfigVersion,
+    //     c.execOCRConfig.OffchainConfig,
+    //   )
+    //   require.NoError(t, err)
+    //   c.Dest.Chain.Commit()
+    // }
+  });
+
+  it("Can observe on/off ramp events", async () => {
+    const factory = new PluginFactoryLedgerConnectorChainlink({
+      pluginImportType: PluginImportType.Local,
+    });
+
+    const pluginRegistry = new PluginRegistry();
+
+    const plugin = await factory.create({
+      instanceId: "chainlink-connector-1",
+      ledgerHttpHost: "https://localhost:8080",
+      ledgerHttpPort: 1234,
+      pluginRegistry,
+      logLevel,
+    });
+
+    await plugin.onPluginInit();
+
+    log.debug("Waiting for Chainlink nodes and jobs to be ready.");
+    await new Promise((resolve) => setTimeout(resolve, 10_000));
+    log.debug("Waited for Chainlink nodes and jobs. Sending CCIP message...");
 
     const receiverAddr = infra.dstMaybeRevertMessageReceiver1Addr;
     const receiver = mustEncodeAddress(receiverAddr);
@@ -622,20 +704,24 @@ describe("PluginLedgerConnectorChainlink", () => {
       throw ex;
     }
 
-    try {
-      //Works now
-      const web3Res = await srcRouter.methods
-        .ccipSend(destChainSelector, clientEVM2AnyMessage)
-        .send({
-          from: srcWeb3SigningCredential.ethAccount,
-          gas: 10_000_000n.toString(10),
-        });
-      log.debug("************* SUCCESS", safeStringify(web3Res));
-      expect(web3Res).toBeTruthy();
-    } catch (ex: unknown) {
-      log.error("Web3 ccipSend failed:", ex);
-      throw ex;
-    }
+    setInterval(async () => {
+      try {
+        //Works now
+        const web3Res = await srcRouter.methods
+          .ccipSend(destChainSelector, clientEVM2AnyMessage)
+          .send({
+            from: srcWeb3SigningCredential.ethAccount,
+            gas: 10_000_000n.toString(10),
+          });
+        const { blockNumber, cumulativeGasUsed, transactionHash } = web3Res;
+        const ctx = { blockNumber, cumulativeGasUsed, transactionHash };
+        log.debug("ccipSend() called on router OK: ", safeStringify(ctx));
+        expect(web3Res).toBeTruthy();
+      } catch (ex: unknown) {
+        log.error("Web3 ccipSend failed:", ex);
+        throw ex;
+      }
+    }, 5000);
   });
 });
 
@@ -662,4 +748,85 @@ async function logAllEventsOfContract(opts: {
     log.error("Failed to set up allEvents event capture %s:", ctx, ex);
     throw ex;
   }
+}
+
+async function fundChainlinkNodeAccountsWithSomeEth(opts: {
+  readonly logLevel: Readonly<LogLevelDesc>;
+  readonly apiClient: Readonly<IChainlinkApiClient>;
+  readonly nodeLabel: Readonly<string>;
+  readonly dstWeb3: Readonly<Web3>;
+  readonly srcWeb3: Readonly<Web3>;
+  readonly sourceChainSelector: Readonly<bigint>;
+  readonly destChainSelector: Readonly<bigint>;
+  readonly destChainId: Readonly<bigint>;
+  readonly sourceChainId: Readonly<bigint>;
+}) {
+  const log = LoggerProvider.getOrCreate({
+    level: opts.logLevel,
+    label: "fundChainlinkNodeAccountsWithSomeEth()-" + opts.nodeLabel,
+  });
+  log.debug("ENTER");
+  const ethKeysOut = await opts.apiClient.getEthKeys({ limit: 10, offset: 0 });
+  const ethKeys = ethKeysOut.response.data.data.ethKeys.results;
+  log.debug("Fetched ETH keys OK: %d", ethKeys.length);
+  const srcChainId = opts.sourceChainId.toString(10);
+  const dstChainId = opts.destChainId.toString(10);
+
+  // An array of objects that have "address" properties.
+  const srcChainKeys = ethKeys.filter((x) => x.chain.id === srcChainId);
+  log.debug("Found %d keys for the source chain.", srcChainKeys.length);
+
+  // An array of objects that have "address" properties.
+  const dstChainKeys = ethKeys.filter((x) => x.chain.id === dstChainId);
+  log.debug("Found %d keys for the destination chain.", dstChainKeys.length);
+
+  // finish the code here, send 10 ETH to all the addresses on the source and destination chains...
+  //
+  //
+  //
+  // Function to send ETH to addresses
+  async function sendEth(
+    web3: Readonly<Web3>,
+    fromAccount: string,
+    toAddress: string,
+    amountInEth: string,
+  ): Promise<void> {
+    const amountInWei = web3.utils.toWei(amountInEth, "ether");
+    try {
+      const tx = await web3.eth.sendTransaction({
+        from: fromAccount,
+        to: toAddress,
+        value: amountInWei,
+      });
+      log.debug(`Transaction successful: ${tx.transactionHash}`);
+    } catch (error) {
+      log.error(`Error sending ETH to ${toAddress}:`, error);
+    }
+  }
+
+  const fundAccounts = async (
+    web3: Readonly<Web3>,
+    keys: { address: string }[],
+    amount: string,
+    chainName: string,
+  ) => {
+    const accounts = await web3.eth.getAccounts();
+    const fundingAccount = accounts[0];
+    log.debug(
+      `Using funding account: ${fundingAccount} for chain ${chainName}`,
+    );
+
+    for (const key of keys) {
+      log.debug(`Funding address: ${key.address} with ${amount} ETH`);
+      await sendEth(web3, fundingAccount, key.address, amount);
+    }
+  };
+
+  // Fund source chain accounts
+  await fundAccounts(opts.srcWeb3, srcChainKeys, "10", "source chain");
+
+  // Fund destination chain accounts
+  await fundAccounts(opts.dstWeb3, dstChainKeys, "10", "destination chain");
+
+  log.debug("All funding completed.");
 }

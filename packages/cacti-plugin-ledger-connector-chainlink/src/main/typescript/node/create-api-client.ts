@@ -424,12 +424,12 @@ class ChainlinkApiClient implements IChainlinkApiClient {
   }
 }
 
-export async function createApiclient(opts: {
+export async function createApiClient(opts: {
   readonly level: Readonly<LogLevelDesc>;
   readonly connectionArgs: Readonly<IConnectionArgs>;
   readonly authArgs: Readonly<IAuthArgs>;
 }): Promise<{ readonly apiClient: Readonly<IChainlinkApiClient> }> {
-  const fn = "chainlink/node/createApiclient()";
+  const fn = "chainlink/node/createApiClient()";
   const { level = "WARN" } = opts;
   const log = LoggerProvider.getOrCreate({ level, label: fn });
 

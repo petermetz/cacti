@@ -26,6 +26,8 @@ services:
       POSTGRES_USER: chainlink_user
       POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
       POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "6432:5432"
 
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
@@ -39,6 +41,8 @@ services:
       POSTGRES_USER: chainlink_user
       POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
       POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "7432:5432"
 
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
@@ -52,6 +56,8 @@ services:
       POSTGRES_USER: chainlink_user
       POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
       POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "8432:5432"
 
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
@@ -65,6 +71,8 @@ services:
       POSTGRES_USER: chainlink_user
       POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
       POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "9432:5432"
 
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
@@ -180,8 +188,38 @@ services:
         "-a=/chainlink/.api",
       ]
 
+  # proxychain:
+  #   image: ethereum/client-go:v1.14.12
+  #   container_name: proxychain
+  #   ports:
+  #     - "9545:8545" # HTTP JSON-RPC
+  #     - "9546:8546" # WebSocket JSON-RPC
+  #   volumes:
+  #     - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/proxychain/genesis.json:/opt/proxychain/genesis.json
+  #     - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/proxychain/geth.config.toml:/opt/proxychain/geth.config.toml
+  #   entrypoint:
+  #     [
+  #       "sh",
+  #       "-c",
+  #       "geth init /opt/proxychain/genesis.json && geth --dev --config=/opt/proxychain/geth.config.toml",
+  #     ]
+
+  # hardhat:
+  #   image: ethereumoptimism/hardhat:latest # Use a Hardhat-compatible image
+  #   container_name: hardhat
+  #   command: ["node", "./node_modules/.bin/hardhat", "node"]
+  #   environment:
+  #     HARDHAT_NETWORK: hardhat
+  #     HARDHAT_PORT: 8545 # Specify the Hardhat network port
+  #     HARDHAT_CHAIN_ID: 31337 # Hardhat's default chain ID
+  #   ports:
+  #     - "8545:8545" # HTTP JSON-RPC for Hardhat
+  #   volumes:
+  #     - ${PWD}/hardhat:/usr/src/app # Mount your Hardhat project directory
+  #   working_dir: /usr/src/app
+
   besu:
-    image: hyperledger/besu:25.1-develop-eaa75ac
+    image: hyperledger/besu:24.12.2
     container_name: besu
     environment:
       BESU_NETWORK_ID: 90000001
@@ -206,31 +244,31 @@ services:
     volumes:
       - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/besu/genesis.json:/opt/besu/genesis.json
 
-  proxychain:
-    image: hyperledger/besu:24.12.2
-    container_name: proxychain
-    environment:
-      BESU_NETWORK_ID: 90000002
-      # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
-      # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
-      BESU_LOGGING: WARN
-      BESU_GENESIS_FILE: "/opt/besu/genesis.json"
-      BESU_REVERT_REASON_ENABLED: true
-      BESU_NETWORK: dev # Equivalent to --network=dev
-      BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
-      BESU_RPC_WS_ENABLED: "true" # Equivalent to --rpc-ws-enabled
-      BESU_HOST_WHITELIST: "*" # Equivalent to --host-whitelist=*
-      BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE,TRACE,DEBUG" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
-      BESU_RPC_HTTP_CORS_ORIGINS: all
-      BESU_RPC_WS_API: "ETH,NET,WEB3,CLIQUE,TRACE,DEBUG" # Equivalent to --rpc-ws-api=ETH,NET,WEB3,CLIQUE
-      BESU_MINER_ENABLED: "true" # Equivalent to --miner-enabled
-      BESU_MINER_COINBASE: "0x0000000000000000000000000000000000000000" # Miner coinbase address
-      BESU_MIN_GAS_PRICE: "0" # Equivalent to --min-gas-price=0
-    ports:
-      - "9545:8545" # HTTP JSON-RPC
-      - "9546:8546" # WebSocket JSON-RPC
-    volumes:
-      - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/proxychain/genesis.json:/opt/besu/genesis.json
+  # proxychain:
+  #   image: hyperledger/besu:24.12.2
+  #   container_name: proxychain
+  #   environment:
+  #     BESU_NETWORK_ID: 90000002
+  #     # https://besu.hyperledger.org/development/public-networks/how-to/monitor/logging#basic-logging
+  #     # Valid log levels are OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL. The default level is INFO.
+  #     BESU_LOGGING: WARN
+  #     BESU_GENESIS_FILE: "/opt/besu/genesis.json"
+  #     BESU_REVERT_REASON_ENABLED: true
+  #     BESU_NETWORK: dev # Equivalent to --network=dev
+  #     BESU_RPC_HTTP_ENABLED: "true" # Equivalent to --rpc-http-enabled
+  #     BESU_RPC_WS_ENABLED: "true" # Equivalent to --rpc-ws-enabled
+  #     BESU_HOST_WHITELIST: "*" # Equivalent to --host-whitelist=*
+  #     BESU_RPC_HTTP_API: "ETH,NET,WEB3,CLIQUE,TRACE,DEBUG" # Equivalent to --rpc-http-api=ETH,NET,WEB3,CLIQUE
+  #     BESU_RPC_HTTP_CORS_ORIGINS: all
+  #     BESU_RPC_WS_API: "ETH,NET,WEB3,CLIQUE,TRACE,DEBUG" # Equivalent to --rpc-ws-api=ETH,NET,WEB3,CLIQUE
+  #     BESU_MINER_ENABLED: "true" # Equivalent to --miner-enabled
+  #     BESU_MINER_COINBASE: "0x0000000000000000000000000000000000000000" # Miner coinbase address
+  #     BESU_MIN_GAS_PRICE: "0" # Equivalent to --min-gas-price=0
+  #   ports:
+  #     - "9545:8545" # HTTP JSON-RPC
+  #     - "9546:8546" # WebSocket JSON-RPC
+  #   volumes:
+  #     - ${PWD}/packages/cactus-test-tooling/src/main/resources/chainlink/proxychain/genesis.json:/opt/besu/genesis.json
 
   cacti:
     container_name: cacti
@@ -239,9 +277,6 @@ services:
     build:
       context: ../../../../../../packages/cactus-cmd-api-server/
       dockerfile: cmd-api-server.Dockerfile
-
-    depends_on:
-      - proxychain
 
     volumes:
       - cactisrc:/usr/src/cacti
@@ -307,14 +342,14 @@ services:
       context: ../../../../../../packages/cactus-cmd-api-server/
       dockerfile: cmd-api-server.Dockerfile
 
-    depends_on:
-      - proxychain
-
     volumes:
       - cactisrc:/usr/src/cacti
 
     ports:
       - 5000:4000
+
+    extra_hosts:
+        - "host.docker.internal:10.0.0.41"
 
     environment:
       AUTHORIZATION_PROTOCOL: NONE
@@ -338,8 +373,8 @@ services:
               "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",
               "options": {
                   "packageSrc": "/usr/src/cacti/packages/cactus-plugin-ledger-connector-besu/",
-                  "rpcApiHttpHost": "http://proxychain:8545",
-                  "rpcApiWsHost": "ws://proxychain:8546",
+                  "rpcApiHttpHost": "http://host.docker.internal:8545",
+                  "rpcApiWsHost": "ws://host.docker.internal:8546",
                   "instanceId": "plugin-connector-besu-2"
               }
           }

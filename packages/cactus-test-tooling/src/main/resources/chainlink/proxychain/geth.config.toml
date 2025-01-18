@@ -1,0 +1,132 @@
+# [Node]
+# # Node configuration
+# networkid = 90000002
+# maxpeers = 0
+# nodiscover = true
+# bootnodes = ""
+# http = true
+# http.addr = "0.0.0.0"
+# http.port = 8545
+# http.api = ["eth", "net", "web3", "clique", "trace", "debug"]
+# http.corsdomain = "*"
+# ws = true
+# ws.addr = "0.0.0.0"
+# ws.port = 8546
+# ws.api = ["eth", "net", "web3", "clique", "trace", "debug"]
+# ws.origins = "*"
+# allow-insecure-unlock = true
+# datadir = "/root/.ethereum"
+
+# [Eth]
+# # Ethereum specific settings
+# verbosity = 4
+# miner.threads = 1
+
+# [Mining]
+# # Mining configuration
+# mine = true
+
+
+[Eth]
+NetworkId = 90000002
+# SyncMode = "snap"
+# EthDiscoveryURLs = []
+# SnapDiscoveryURLs = []
+# NoPruning = false
+# NoPrefetch = false
+# TxLookupLimit = 2350000
+# TransactionHistory = 2350000
+# StateHistory = 90000
+# DatabaseCache = 512
+# DatabaseFreezer = ""
+# TrieCleanCache = 154
+# TrieDirtyCache = 256
+# TrieTimeout = 3600000000000
+# SnapshotCache = 102
+# Preimages = false
+# FilterLogCacheSize = 32
+# EnablePreimageRecording = false
+# VMTrace = ""
+# VMTraceJsonConfig = ""
+# RPCGasCap = 50000000
+# RPCEVMTimeout = 5000000000
+# RPCTxFeeCap = 1e+00
+
+# [Eth.Miner]
+# GasCeil = 30000000
+# GasPrice = 1000000
+# Recommit = 2000000000
+
+# [Eth.TxPool]
+# Locals = []
+# NoLocals = false
+# Journal = "transactions.rlp"
+# Rejournal = 3600000000000
+# PriceLimit = 1
+# PriceBump = 10
+# AccountSlots = 16
+# GlobalSlots = 5120
+# AccountQueue = 64
+# GlobalQueue = 1024
+# Lifetime = 10800000000000
+
+# [Eth.BlobPool]
+# Datadir = "blobpool"
+# Datacap = 2684354560
+# PriceBump = 100
+
+# [Eth.GPO]
+# Blocks = 20
+# Percentile = 60
+# MaxHeaderHistory = 1024
+# MaxBlockHistory = 1024
+# MaxPrice = 500000000000
+# IgnorePrice = 2
+
+[Node]
+DataDir = "/root/.ethereum/proxychain"
+IPCPath = "geth.ipc"
+HTTPHost = ""
+HTTPPort = 8545
+HTTPVirtualHosts = ["localhost"]
+HTTPModules = ["admin", "eth", "net", "web3", "debug", "txpool", "miner"]
+AuthAddr = "localhost"
+AuthPort = 8551
+AuthVirtualHosts = ["localhost"]
+WSHost = "0.0.0.0"
+WSPort = 8546
+WSModules = ["admin", "eth", "net", "web3", "debug", "txpool", "miner"]
+GraphQLVirtualHosts = ["localhost"]
+BatchRequestLimit = 1000
+BatchResponseMaxSize = 25000000
+
+[Node.P2P]
+MaxPeers = 0
+NoDiscovery = true
+DiscoveryV4 = false
+DiscoveryV5 = false
+BootstrapNodes = []
+BootstrapNodesV5 = []
+StaticNodes = []
+TrustedNodes = []
+ListenAddr = ":30303"
+DiscAddr = ""
+EnableMsgEvents = false
+
+[Node.HTTPTimeouts]
+ReadTimeout = 30000000000
+ReadHeaderTimeout = 30000000000
+WriteTimeout = 30000000000
+IdleTimeout = 120000000000
+
+[Metrics]
+HTTP = "127.0.0.1"
+Port = 6060
+InfluxDBEndpoint = "http://localhost:8086"
+InfluxDBDatabase = "geth"
+InfluxDBUsername = "test"
+InfluxDBPassword = "test"
+InfluxDBTags = "host=localhost"
+InfluxDBToken = "test"
+InfluxDBBucket = "geth"
+InfluxDBOrganization = "geth"
