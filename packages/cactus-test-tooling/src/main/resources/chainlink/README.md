@@ -16,6 +16,10 @@ docker compose \
     --build
 ```
 
+```sh
+yarn run vitest run packages/cacti-test-plugin-ledger-connector-chainlink/src/test/typescript/integration/chainlink-fabric-relay.test.ts --hookTimeout=9999999 --testTimeout=9999999
+```
+
 If you prefer to observe the logs from a text file then redirect it like this:
 
 ```sh

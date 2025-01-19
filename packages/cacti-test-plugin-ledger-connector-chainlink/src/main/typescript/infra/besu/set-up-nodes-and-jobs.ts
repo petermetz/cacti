@@ -3,13 +3,20 @@ import { randomUUID } from "node:crypto";
 import { AxiosResponse } from "axios";
 import safeStringify from "fast-safe-stringify";
 import json2toml from "json2toml";
+import { Contract } from "web3";
 
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import { IChainlinkApiClient } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { OCR2KeyBundle } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { Web3SigningCredentialPrivateKeyHex } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 
 import { IDeployBesuCcipContractsOutput } from "./deploy-besu-ccip-contracts";
+import { ABI as CommitStoreHelperAbi } from "../../../../main/typescript/infra/besu/commit-store-helper-factory";
 
 export interface ICreateChainlinkJobResponse {
+  readonly peerId: Readonly<string>;
+  readonly transmitterId: Readonly<string>;
+  readonly ocrKeyBundle: Readonly<OCR2KeyBundle>;
   readonly externalJobId: Readonly<string>;
   readonly jobSpecToml: Readonly<string>;
   readonly jobSpec: Readonly<Record<string, unknown>>;
@@ -39,12 +46,17 @@ export interface ICreateChainlinkJobResponse {
  */
 export async function setUpNodesAndJobs(opts: {
   readonly logLevel: Readonly<LogLevelDesc>;
+  readonly srcWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
+  readonly dstWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
   readonly sourceChainId: Readonly<bigint>;
   readonly destChainId: Readonly<bigint>;
   readonly sourceChainSelector: Readonly<bigint>;
   readonly destChainSelector: Readonly<bigint>;
   readonly bootstrapNodeP2pId: Readonly<string>;
   readonly contracts: Readonly<IDeployBesuCcipContractsOutput>;
+  readonly dstCommitStoreHelper: Readonly<
+    Contract<typeof CommitStoreHelperAbi>
+  >;
   readonly node1: Readonly<{
     readonly clApiClient: Readonly<IChainlinkApiClient>;
   }>;
@@ -258,12 +270,12 @@ async function createCommitOcr2Job(opts: {
 
     throw new Error(msg);
   }
-  const { address: transmitterID } =
+  const { address: transmitterId } =
     ethKeysDto.response.data.data.ethKeys.results[transmitterKeyIdx];
 
   log.debug(
     "Determined transmitterID=%s for chainId=%s",
-    transmitterID,
+    transmitterId,
     opts.destChainId,
   );
 
@@ -272,6 +284,7 @@ async function createCommitOcr2Job(opts: {
 
   const [firstP2pKey] = p2pKeysDto.response.data.data.p2pKeys.results;
   const p2pKeyID = firstP2pKey.id;
+  const peerId = firstP2pKey.peerID;
   log.debug("Chainlink Node P2P keys[0]=%s", safeStringify(firstP2pKey));
 
   const p2pv2Bootstrappers = [opts.bootstrapNodeP2pId];
@@ -286,7 +299,7 @@ async function createCommitOcr2Job(opts: {
     forwardingAllowed: false,
     contractID: opts.contracts.dstCommitStoreHelperAddr,
     pluginType: "ccip-commit",
-    transmitterID,
+    transmitterID: transmitterId,
     ocrKeyBundleIDs,
     ocrKeyBundleID: ocrKeyBundle.id,
     p2pKeyID,
@@ -331,16 +344,24 @@ async function createCommitOcr2Job(opts: {
   const ctx = safeStringify(createJobResponse.data);
   log.debug("Created CCIP-commit job OK %s", ctx);
   return {
+    ocrKeyBundle,
     externalJobId,
     createJobResponse,
     jobSpecToml,
     jobSpec,
+    transmitterId,
+    peerId,
   };
 }
 
 async function createExecOcr2Job(opts: {
   readonly nodeLabel: Readonly<string>;
   readonly logLevel: Readonly<LogLevelDesc>;
+  readonly srcWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
+  readonly dstWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
+  readonly dstCommitStoreHelper: Readonly<
+    Contract<typeof CommitStoreHelperAbi>
+  >;
   readonly sourceChainId: Readonly<bigint>;
   readonly destChainId: Readonly<bigint>;
   readonly sourceChainSelector: Readonly<bigint>;
@@ -402,6 +423,7 @@ async function createExecOcr2Job(opts: {
 
   const [firstP2pKey] = p2pKeysDto.response.data.data.p2pKeys.results;
   log.debug("Chainlink Node P2P keys[0]=%s", safeStringify(firstP2pKey));
+  const peerId = firstP2pKey.peerID;
 
   const jobSpec = {
     type: "offchainreporting2",
@@ -436,10 +458,14 @@ async function createExecOcr2Job(opts: {
   );
   const ctx = safeStringify(createJobResponse.data);
   log.debug("Created CCIP-exec job OK %s", ctx);
+
   return {
+    ocrKeyBundle,
     externalJobId,
     createJobResponse,
     jobSpecToml,
     jobSpec,
+    peerId,
+    transmitterId,
   };
 }

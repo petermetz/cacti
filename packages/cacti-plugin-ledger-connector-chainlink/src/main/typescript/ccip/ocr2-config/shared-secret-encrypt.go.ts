@@ -1,8 +1,9 @@
 import { createCipheriv } from "node:crypto";
-import { Keccak } from "sha3";
-import { SharedSecretEncryptions } from "./shared-secret.go";
 
-type ConfigEncryptionPublicKey = Uint8Array;
+import { Keccak } from "sha3";
+import { x25519 } from "@noble/curves/ed25519";
+
+import { SharedSecretEncryptions } from "./shared-secret.go";
 
 export const CURVE25519_POINT_SIZE = 32; // Size of X25519 public key
 const SHARED_SECRET_SIZE = 16; // A 128-bit symmetric key
@@ -39,7 +40,7 @@ const SHARED_SECRET_SIZE = 16; // A 128-bit symmetric key
  * @returns An object containing the DiffieHellmanPoint, sharedSecretHash, and encrypted secrets
  */
 export async function encryptSharedSecretDeterministic(
-  publicKeys: Uint8Array[],
+  publicKeys: Readonly<Array<Uint8Array>>,
   sharedSecret: Uint8Array,
   ephemeralSk: Uint8Array,
 ): Promise<SharedSecretEncryptions> {
@@ -61,7 +62,7 @@ export async function encryptSharedSecretDeterministic(
   const basepoint = new Uint8Array(32);
   basepoint[0] = 9;
 
-  const ephemeralPk = await x25519(ephemeralSk, basepoint);
+  const ephemeralPk = await x25519SharedSecret(ephemeralSk, basepoint);
 
   const sharedSecretBuffer = Buffer.from(sharedSecret);
   // Compute sharedSecretHash
@@ -74,7 +75,7 @@ export async function encryptSharedSecretDeterministic(
   // Encrypt sharedSecret for each public key
   const encryptionsPromises: Array<Promise<Uint8Array>> = publicKeys.map(
     async (aPublicKey) => {
-      const dhPoint = await x25519(ephemeralSk, aPublicKey); // Diffie-Hellman key exchange
+      const dhPoint = await x25519SharedSecret(ephemeralSk, aPublicKey); // Diffie-Hellman key exchange
       const dhpBuffer = Buffer.from(dhPoint);
       const key = new Keccak(256).update(dhpBuffer).digest().subarray(0, 16); // Keccak256, truncated to 16 bytes
 
@@ -91,19 +92,18 @@ export async function encryptSharedSecretDeterministic(
   );
 }
 
-export async function x25519(
+export async function x25519SharedSecret(
   scalar: Uint8Array,
   point: Uint8Array,
 ): Promise<Uint8Array> {
-  const { sharedKey } = await import("@stablelib/x25519");
-  return sharedKey(scalar, point);
+  return x25519.getSharedSecret(scalar, point);
 }
 
 /**
  * Encrypt a shared secret using a random ephemeral key.
  */
 export async function encryptSharedSecret(
-  keys: ConfigEncryptionPublicKey[],
+  keys: Readonly<Array<Uint8Array>>,
   sharedSecret: Uint8Array,
 ): Promise<SharedSecretEncryptions> {
   const ephemeralSk = crypto.getRandomValues(new Uint8Array(32));

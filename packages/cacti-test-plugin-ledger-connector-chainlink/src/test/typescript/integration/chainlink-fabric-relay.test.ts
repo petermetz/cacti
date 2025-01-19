@@ -1,5 +1,3 @@
-import "jest-extended";
-
 import safeStringify from "fast-safe-stringify";
 import { Contract, Web3, WebSocketProvider } from "web3";
 
@@ -8,6 +6,10 @@ import { PluginImportType } from "@hyperledger/cactus-core-api";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import {
   createApiClient,
+  createDefaultCommitOffchainConfig,
+  createDefaultCommitOnchainConfig,
+  createDefaultExecOffchainConfig,
+  createDefaultExecOnchainConfig,
   IAuthArgs,
   IChainlinkApiClient,
   IConnectionArgs,
@@ -15,7 +17,7 @@ import {
 } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { mustEncodeAddress } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { getEvmExtraArgsV2 } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
-import { startEvmProxy } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { IOracleIdentityExtra } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import {
   BesuApiClient,
   Web3SigningCredential,
@@ -34,6 +36,7 @@ import { ABI as MockRmnAbi } from "../../../main/typescript/infra/besu/mock-rmn-
 import { ABI as CommitStoreHelperAbi } from "../../../main/typescript/infra/besu/commit-store-helper-factory";
 import { MockV3AggregatorContractAbi } from "../../../main/typescript/infra/besu/mock-v3-aggregator-factory";
 import { setUpNodesAndJobs } from "../../../main/typescript/infra/besu/set-up-nodes-and-jobs";
+import { setupOnchainConfig } from "../../../main/typescript/infra/besu/setup-onchain-config";
 
 interface IUnsubscribeable {
   unsubscribe: () => Promise<void>;
@@ -184,14 +187,14 @@ describe("PluginLedgerConnectorChainlink", () => {
     };
   });
 
-  beforeAll(async () => {
-    await startEvmProxy({
-      logLevel,
-      chainId: destChainId,
-      mnemonic: "asdf",
-      passphrase: "",
-    });
-  });
+  // beforeAll(async () => {
+  //   await startEvmProxy({
+  //     logLevel,
+  //     chainId: destChainId,
+  //     mnemonic: "asdf",
+  //     passphrase: "",
+  //   });
+  // });
 
   beforeAll(async () => {
     log.debug("Seeding source chain test account with whale money");
@@ -216,13 +219,15 @@ describe("PluginLedgerConnectorChainlink", () => {
       genesisWeb3SigningCredential.ethAccount,
       genesisDstAccountBalance,
     );
+
     log.debug("Seeding dst chain test account with whale money");
+
     const seedOut = await dstWeb3.eth.sendTransaction({
       from: genesisWeb3SigningCredential.ethAccount,
       to: dstWeb3SigningCredential.ethAccount,
       value: 999_999_999_999_999_999_999n,
       gas: 10_000_000n,
-      maxFeePerGas: 2500000000,
+      maxFeePerGas: 2_500_000_000,
     });
     log.debug("Dst SeedOut=%s", safeStringify(seedOut));
 
@@ -570,57 +575,90 @@ describe("PluginLedgerConnectorChainlink", () => {
 
     const priceGetterConfig = {};
 
-    const { commitJob2 } = await setUpNodesAndJobs({
-      sourceChainId,
-      destChainId,
-      sourceChainSelector,
-      destChainSelector,
-      contracts: infra,
-      bootstrapNodeP2pId,
-      node1: { clApiClient: clApiClientOut1.apiClient },
-      node2: { clApiClient: clApiClientOut2.apiClient },
-      node3: { clApiClient: clApiClientOut3.apiClient },
-      node4: { clApiClient: clApiClientOut4.apiClient },
-      node5: { clApiClient: clApiClientOut5.apiClient },
-      logLevel,
-      priceGetterConfig,
-      tokenPricesUSDPipeline: "",
-    });
+    const { commitJob2, commitJob3, commitJob4, commitJob5 } =
+      await setUpNodesAndJobs({
+        sourceChainId,
+        destChainId,
+        srcWeb3SigningCredential,
+        dstWeb3SigningCredential,
+        sourceChainSelector,
+        destChainSelector,
+        contracts: infra,
+        dstCommitStoreHelper,
+        bootstrapNodeP2pId,
+        node1: { clApiClient: clApiClientOut1.apiClient },
+        node2: { clApiClient: clApiClientOut2.apiClient },
+        node3: { clApiClient: clApiClientOut3.apiClient },
+        node4: { clApiClient: clApiClientOut4.apiClient },
+        node5: { clApiClient: clApiClientOut5.apiClient },
+        logLevel,
+        priceGetterConfig,
+        tokenPricesUSDPipeline: "",
+      });
     expect(commitJob2).toBeTruthy();
+    expect(commitJob3).toBeTruthy();
+    expect(commitJob4).toBeTruthy();
+    expect(commitJob5).toBeTruthy();
 
-    // TODO configure the commit store and the off ramp:
+    const commitJobs = [commitJob2, commitJob3, commitJob4, commitJob5];
 
-    // func (c *CCIPContracts) SetupCommitOCR2Config(t *testing.T, commitOnchainConfig, commitOffchainConfig []byte) {
-    //   c.commitOCRConfig = c.DeriveOCR2Config(t, c.Oracles, commitOnchainConfig, commitOffchainConfig)
-    //   // Set the DON on the commit store
-    //   _, err := c.Dest.CommitStore.SetOCR2Config(
-    //     c.Dest.User,
-    //     c.commitOCRConfig.Signers,
-    //     c.commitOCRConfig.Transmitters,
-    //     c.commitOCRConfig.F,
-    //     c.commitOCRConfig.OnchainConfig,
-    //     c.commitOCRConfig.OffchainConfigVersion,
-    //     c.commitOCRConfig.OffchainConfig,
-    //   )
-    //   require.NoError(t, err)
-    //   c.Dest.Chain.Commit()
-    // }
+    const oracles = commitJobs.map((job) => {
+      const { ocrKeyBundle, peerId, transmitterId } = job;
+      // Example: "ocr2on_evm_895678a3d21cab4282ed30a1bcd9ddaa1661117e"
+      // Example: "ocr2off_evm_5b6f3dffe3bf03bb8740ef2baed82046fa788a26d1c01c398487578ed648ee9e"
+      const { offChainPublicKey, onChainPublicKey } = ocrKeyBundle;
+      // Example: "ocr2cfg_evm_44b690e2a47421468e5d58c6139adf1c54e19b19210aeedac37f860147e0cc45"
+      const { configPublicKey } = ocrKeyBundle;
 
-    // func (c *CCIPContracts) SetupExecOCR2Config(t *testing.T, execOnchainConfig, execOffchainConfig []byte) {
-    //   c.execOCRConfig = c.DeriveOCR2Config(t, c.Oracles, execOnchainConfig, execOffchainConfig)
-    //   // Same DON on the offramp
-    //   _, err := c.Dest.OffRamp.SetOCR2Config(
-    //     c.Dest.User,
-    //     c.execOCRConfig.Signers,
-    //     c.execOCRConfig.Transmitters,
-    //     c.execOCRConfig.F,
-    //     c.execOCRConfig.OnchainConfig,
-    //     c.execOCRConfig.OffchainConfigVersion,
-    //     c.execOCRConfig.OffchainConfig,
-    //   )
-    //   require.NoError(t, err)
-    //   c.Dest.Chain.Commit()
-    // }
+      const offChainPublicKeyHex = offChainPublicKey.substring(12);
+      const offchainPublicKeyBuffer = Buffer.from(offChainPublicKeyHex, "hex");
+      const offchainPublicKeyBytes = Uint8Array.from(offchainPublicKeyBuffer);
+
+      const onChainPublicKeyHex = onChainPublicKey.substring(11);
+      const onchainPublicKeyBuffer = Buffer.from(onChainPublicKeyHex, "hex");
+      const onchainPublicKeyBytes = Uint8Array.from(onchainPublicKeyBuffer);
+
+      const configPublicKeyHex = configPublicKey.substring(12);
+      const configPublicKeyBuffer = Buffer.from(configPublicKeyHex, "hex");
+      const configPublicKeyBytes = Uint8Array.from(configPublicKeyBuffer);
+
+      const oracle: IOracleIdentityExtra = {
+        offchainPublicKey: offchainPublicKeyBytes,
+        onchainPublicKey: onchainPublicKeyBytes,
+        peerID: peerId,
+        transmitAccount: transmitterId,
+        configEncryptionPublicKey: configPublicKeyBytes,
+      };
+      return oracle;
+    });
+
+    const commitOffchainConfig = await createDefaultCommitOffchainConfig();
+    const commitOnchainConfig = await createDefaultCommitOnchainConfig(
+      infra.dstPriceRegistryAddr,
+    );
+
+    const execOffchainConfig = await createDefaultExecOffchainConfig();
+    const execOnchainConfig = await createDefaultExecOnchainConfig({
+      dstPriceRegistryAddr: infra.dstPriceRegistryAddr,
+      dstRouterAddr: infra.dstRouterAddr,
+      logLevel,
+    });
+
+    await setupOnchainConfig({
+      logLevel,
+      commitOffchainConfig,
+      commitOnchainConfig,
+      execOffchainConfig,
+      execOnchainConfig,
+      dstOffRamp,
+      contracts: infra,
+      dstCommitStoreHelper,
+      oracles,
+      srcWeb3,
+      dstWeb3,
+      srcWeb3SigningCredential,
+      dstWeb3SigningCredential,
+    });
   });
 
   it("Can observe on/off ramp events", async () => {

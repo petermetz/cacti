@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 
 import { WebSocketServer, WebSocket } from "ws";
-import hre from "hardhat";
 import safeStringify from "fast-safe-stringify";
 
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 type Subscription = {
   id: string;
@@ -30,6 +30,8 @@ export async function startEvmProxy(opts: {
   const { mnemonic = randomUUID(), chainId = 1337n } = opts;
   const isPassphraseAString = typeof opts.passphrase === "string";
   const passphrase = isPassphraseAString ? opts.passphrase : randomUUID();
+
+  const hre = await import("hardhat");
 
   hre.config.networks.evmproxy = {
     ...hre.config.networks.hardhat,
@@ -57,7 +59,7 @@ export async function startEvmProxy(opts: {
   const wsServer = new WebSocketServer({ port: 8546 });
 
   wsServer.on("connection", (ws) => {
-    handleConnection(ws, opts);
+    handleConnection(hre, ws, opts);
   });
 
   log.info("WebSocket server is running on ws://localhost:8546");
@@ -67,6 +69,7 @@ export async function startEvmProxy(opts: {
 }
 
 function handleConnection(
+  hre: HardhatRuntimeEnvironment,
   ws: WebSocket,
   opts: { readonly logLevel: Readonly<LogLevelDesc> },
 ) {
@@ -78,7 +81,7 @@ function handleConnection(
   log.info("New WebSocket connection established");
 
   ws.on("message", (data) => {
-    handleMessage(ws, data, opts);
+    handleMessage(hre, ws, data, opts);
   });
 
   ws.on("close", () => {
@@ -93,6 +96,7 @@ function handleConnection(
 }
 
 function handleMessage(
+  hre: HardhatRuntimeEnvironment,
   ws: WebSocket,
   data: any,
   opts: { readonly logLevel: Readonly<LogLevelDesc> },
@@ -118,7 +122,7 @@ function handleMessage(
           break;
 
         default:
-          forwardRequest(ws, request, opts);
+          forwardRequest(hre, ws, request, opts);
       }
     } else {
       ws.send(
@@ -197,6 +201,7 @@ function handleEthUnsubscribe(
 }
 
 function forwardRequest(
+  hre: HardhatRuntimeEnvironment,
   ws: WebSocket,
   request: any,
   opts: { readonly logLevel: Readonly<LogLevelDesc> },

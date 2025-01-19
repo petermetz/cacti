@@ -5,7 +5,7 @@ import {
   aesEncryptBlock,
   encryptSharedSecretDeterministic,
   encryptSharedSecret,
-  x25519,
+  x25519SharedSecret,
   CURVE25519_POINT_SIZE,
 } from "../../../../../main/typescript/ccip/ocr2-config/shared-secret-encrypt.go";
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
@@ -37,7 +37,7 @@ describe("encryptSharedSecret Functions", () => {
       const basepoint = new Uint8Array(32);
       basepoint[0] = 9;
 
-      const ephemeralPk = await x25519(ephemeralSk, basepoint);
+      const ephemeralPk = await x25519SharedSecret(ephemeralSk, basepoint);
 
       expect(ephemeralPk).toEqual(expectedEphemeralPk);
     });

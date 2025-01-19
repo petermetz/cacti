@@ -81,6 +81,10 @@ export { EVM_V1_TAG_HEX } from "./ccip/common/get-evm-extra-args-v1";
 
 export { getEvmExtraArgsV2 } from "./ccip/common/get-evm-extra-args-v2";
 export { EVM_V2_TAG_HEX } from "./ccip/common/get-evm-extra-args-v2";
+export { createDefaultCommitOnchainConfig } from "./ccip/common/create-default-commit-onchain-config";
+export { createDefaultCommitOffchainConfig } from "./ccip/common/create-default-commit-offchain-config";
+export { createDefaultExecOnchainConfig } from "./ccip/common/create-default-exec-onchain-config";
+export { createDefaultExecOffchainConfig } from "./ccip/common/create-default-exec-offchain-config";
 
 export { mustEncodeAddress } from "./ccip/common/must-encode-address";
 
@@ -109,5 +113,27 @@ export { IP2pKeysDto } from "./node/ocr2/p2p-keys-dto";
 
 export { OffchainConfigProto } from "./generated/proto/ts-proto/ccip/offchainreporting2_monitoring_offchain_config";
 export { SharedSecretEncryptionsProto } from "./generated/proto/ts-proto/ccip/offchainreporting2_monitoring_offchain_config";
+
+export { contractSetConfigArgsForTests as contractSetConfigArgsForTestsAlias } from "./ccip/ocr2-config/alias.go";
+
+export { IAuxiliaryArgs } from "./ccip/ocr2-config/confighelper.go";
+export { IOracleIdentityExtra } from "./ccip/ocr2-config/confighelper.go";
+export { contractSetConfigArgsForTests } from "./ccip/ocr2-config/confighelper.go";
+export { contractSetConfigArgsForTestsWithAuxiliaryArgs } from "./ccip/ocr2-config/confighelper.go";
+
+export { ConfigDigestPrefix } from "./ccip/ocr2-config/shared-config.go";
+export { IOracleIdentity } from "./ccip/ocr2-config/shared-config.go";
+export { IPublicConfig } from "./ccip/ocr2-config/shared-config.go";
+export { ISharedConfig } from "./ccip/ocr2-config/shared-config.go";
+export { OffchainConfigVersion } from "./ccip/ocr2-config/shared-config.go";
+
+export { CURVE25519_POINT_SIZE } from "./ccip/ocr2-config/shared-secret-encrypt.go";
+export { aesEncryptBlock } from "./ccip/ocr2-config/shared-secret-encrypt.go";
+export { encryptSharedSecret } from "./ccip/ocr2-config/shared-secret-encrypt.go";
+export { encryptSharedSecretDeterministic } from "./ccip/ocr2-config/shared-secret-encrypt.go";
+export { x25519SharedSecret as x25519 } from "./ccip/ocr2-config/shared-secret-encrypt.go";
+
+export { E_MSG_DSS_WRONG_HASH } from "./ccip/ocr2-config/shared-secret.go";
+export { SharedSecretEncryptions } from "./ccip/ocr2-config/shared-secret.go";
 
 export { startEvmProxy } from "./evm-proxy/start-evm-proxy";

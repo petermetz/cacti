@@ -22,8 +22,6 @@ import {
   PluginLedgerConnectorChainlink,
 } from "../../../main/typescript/public-api";
 
-import { SubscriptionManager } from "@chainlink/functions-toolkit";
-
 describe("PluginLedgerConnectorChainlink", () => {
   const logLevel: LogLevelDesc = "INFO";
 
@@ -31,14 +29,6 @@ describe("PluginLedgerConnectorChainlink", () => {
     label: __filename,
     level: logLevel,
   });
-
-  const subM = new SubscriptionManager({
-    functionsRouterAddress: "FIXME",
-    linkTokenAddress: "FIXME",
-    signer: "FIXME" as any,
-  });
-
-  log.debug("subscriptionManager created OK: ", subM);
 
   const expressApp = express();
   expressApp.use(bodyParser.json({ limit: "250mb" }));
