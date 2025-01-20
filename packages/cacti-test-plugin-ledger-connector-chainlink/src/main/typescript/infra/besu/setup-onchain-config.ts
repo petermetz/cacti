@@ -115,20 +115,11 @@ async function setupCommitOcr2Config(opts: {
     level: logLevel,
   });
 
-  const {
-    f,
-    offchainConfig,
-    offchainConfigVersion,
-    onchainConfig,
-    signers,
-    transmitters,
-  } = commitOCRConfig;
+  const { f, offchainConfigVersion, signers, transmitters } = commitOCRConfig;
 
   const inputCtx = safeStringify({
     f,
-    offchainConfig,
     offchainConfigVersion,
-    onchainConfig,
     signers,
     transmitters,
   });

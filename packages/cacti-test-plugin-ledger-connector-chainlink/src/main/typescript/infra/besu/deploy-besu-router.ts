@@ -23,7 +23,7 @@ export async function deployBesuRouter(opts: {
   const { Bin: bytecode, ABI: contractAbi, contractName, gas } = RouterContract;
 
   const constructorArgs = [opts.weth9Addr, opts.armProxyAddr];
-  log.info("Deploying Router with args: %s", safeStringify(constructorArgs));
+  log.debug("Deploying Router with args: %s", safeStringify(constructorArgs));
 
   const res = await apiClient.deployContractSolBytecodeNoKeychainV1({
     bytecode,

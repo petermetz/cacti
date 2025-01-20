@@ -102,7 +102,7 @@ export async function setUpNodesAndJobs(opts: {
 
     contractID: opts.contracts.dstCommitStoreHelperAddr,
     relay: "evm",
-    chainID: opts.sourceChainId,
+    chainID: opts.destChainId,
     p2pv2Bootstrappers: [],
     ocrKeyBundleID: "",
     monitoringEndpoint: "",
@@ -115,7 +115,7 @@ export async function setUpNodesAndJobs(opts: {
     captureAutomationCustomTelemetry: false,
 
     relayConfig: {
-      chainID: opts.sourceChainId,
+      chainID: opts.destChainId,
     },
   };
 
@@ -127,7 +127,21 @@ export async function setUpNodesAndJobs(opts: {
   //
   // Chainlink Node #1 - bootstrap job
   //
-  log.debug("Creating Bootstrap job with TOML spec:\n%s", bootstrapJobSpecToml);
+  const {
+    ocrKeyBundleID,
+    pluginType,
+    p2pv2Bootstrappers,
+    transmitterID,
+    chainID,
+  } = bootstrapJobSpec;
+  const ctxBootstrapJob = {
+    ocrKeyBundleID,
+    pluginType,
+    p2pv2Bootstrappers,
+    transmitterID,
+    chainID,
+  };
+  log.debug("Creating Bootstrap job: %s", safeStringify(ctxBootstrapJob));
   await opts.node1.clApiClient.createJob({ jobSpecToml: bootstrapJobSpecToml });
   log.debug("Created bootstrap job OK");
 
@@ -289,6 +303,26 @@ async function createCommitOcr2Job(opts: {
 
   const p2pv2Bootstrappers = [opts.bootstrapNodeP2pId];
 
+  const priceGetterConfig = {
+    aggregatorPrices: {
+      [opts.contracts.srcWeth9Addr]: {
+        chainID: opts.sourceChainId,
+        contractAddress: opts.contracts.srcMockV3AggregatorAddr,
+      },
+      [opts.contracts.dstLinkTokenAddr]: {
+        chainID: opts.destChainId,
+        contractAddress: opts.contracts.dstMockV3AggregatorAddr,
+      },
+      [opts.contracts.dstWeth9Addr]: {
+        chainID: opts.destChainId,
+        contractAddress: opts.contracts.dstMockV3AggregatorAddr,
+      },
+    },
+    staticPrices: {},
+  };
+
+  const priceGetterConfigJson = safeStringify(priceGetterConfig, undefined, 2);
+
   const jobSpec = {
     name: "ccip-commit-SimulatedSource-SimulatedDest",
     type: "offchainreporting2",
@@ -311,21 +345,7 @@ async function createCommitOcr2Job(opts: {
       sourceStartBlock: 0,
       destStartBlock: 0,
       offRamp: opts.contracts.dstOffRampAddr,
-      tokenPricesUSDPipeline:
-        '\n        // Price 1\n        link [type=http method=GET url="http://127.0.0.1:34335"];\n        link_parse [type=jsonparse path="UsdPerLink"];\n        link->link_parse;\n        eth [type=http method=GET url="http://127.0.0.1:33895"];\n        eth_parse [type=jsonparse path="UsdPerETH"];\n        eth->eth_parse;\n      ',
-      // FIXME add this back later once we fixed the syntax
-      // tokenPricesUSDPipeline: `"""
-
-      // // Price 1
-      // link [type=http method=GET url="http://127.0.0.1:39485"];
-      // link_parse [type=jsonparse path="UsdPerLink"];
-      // link->link_parse;
-      // eth [type=http method=GET url="http://127.0.0.1:34519"];
-      // eth_parse [type=jsonparse path="UsdPerETH"];
-      // eth->eth_parse;
-      // merge [type=merge left="{}" right="{\\\"0x2744fc83c9172c4A009e2eA89C88F2d512e4CCB1\\\":$(link_parse), \\\"0x2598CFC480c2e4E0080A271173dA19dDcc327272\\\":$(eth_parse), \\\"0xCd88E2a770606934F91E37736B9537FCFFe73a08\\\":$(eth_parse)}"];
-      // """
-      //       `,
+      priceGetterConfig: priceGetterConfigJson,
     },
   };
 
@@ -333,7 +353,17 @@ async function createCommitOcr2Job(opts: {
     indent: 2,
     newlineAfterSection: true,
   });
-  log.debug("Creating CCIP-commit job with spec:\n%s", jobSpecToml);
+  const { externalJobID, type, pluginType, transmitterID, contractID } =
+    jobSpec;
+  const ctxIn = safeStringify({
+    externalJobID,
+    type,
+    pluginType,
+    p2pKeyID,
+    transmitterID,
+    contractID,
+  });
+  log.debug("Creating Job %s with details: %s", ctxIn);
 
   const { response: createJobResponse } = await opts.node.clApiClient.createJob(
     {
@@ -341,8 +371,8 @@ async function createCommitOcr2Job(opts: {
     },
   );
 
-  const ctx = safeStringify(createJobResponse.data);
-  log.debug("Created CCIP-commit job OK %s", ctx);
+  const ctxOut = safeStringify(createJobResponse.data);
+  log.debug("Created CCIP-commit job OK %s", ctxOut);
   return {
     ocrKeyBundle,
     externalJobId,
@@ -428,6 +458,7 @@ async function createExecOcr2Job(opts: {
   const jobSpec = {
     type: "offchainreporting2",
     name: "ccip-exec-SimulatedSource-SimulatedDest",
+    externalJobID: externalJobId,
     forwardingAllowed: false,
     pluginType: "ccip-execution",
     relay: "evm",
@@ -449,7 +480,17 @@ async function createExecOcr2Job(opts: {
     indent: 2,
     newlineAfterSection: true,
   });
-  log.debug("Creating CCIP-exec job with spec:\n%s", jobSpecToml);
+
+  const { externalJobID, type, pluginType, transmitterID, contractID } =
+    jobSpec;
+  const ctxIn = safeStringify({
+    externalJobID,
+    type,
+    pluginType,
+    transmitterID,
+    contractID,
+  });
+  log.debug("Creating Job %s with details: %s", ctxIn);
 
   const { response: createJobResponse } = await opts.node.clApiClient.createJob(
     {

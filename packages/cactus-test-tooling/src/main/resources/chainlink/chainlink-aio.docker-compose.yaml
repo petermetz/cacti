@@ -17,6 +17,16 @@ services:
     ports:
       - "5432:5432"
 
+    # log_statement possible options: none, ddl, mod, all
+    command: ["postgres", "-c", "log_statement=none"]
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chainlink_user -d chainlink_db"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
   postgres2:
     image: postgres:16.4-alpine3.20
     container_name: postgres2
@@ -31,6 +41,13 @@ services:
 
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chainlink_user -d chainlink_db"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
 
   postgres3:
     image: postgres:16.4-alpine3.20
@@ -47,6 +64,13 @@ services:
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chainlink_user -d chainlink_db"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
   postgres4:
     image: postgres:16.4-alpine3.20
     container_name: postgres4
@@ -62,6 +86,13 @@ services:
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chainlink_user -d chainlink_db"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
   postgres5:
     image: postgres:16.4-alpine3.20
     container_name: postgres5
@@ -71,18 +102,36 @@ services:
       POSTGRES_USER: chainlink_user
       POSTGRES_PASSWORD: 3kcixh_xgm3_yJs_uV9q
       POSTGRES_HOST_AUTH_METHOD: trust
+
     ports:
       - "9432:5432"
 
     # log_statement possible options: none, ddl, mod, all
     command: ["postgres", "-c", "log_statement=none"]
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chainlink_user -d chainlink_db"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
   chainlink1:
-    image: chainlink-ccip:local3
+    image: chainlink-ccip:local4
     # image: smartcontract/chainlink:2.19.0
     container_name: chainlink1
+
     depends_on:
-      - postgres1
+      postgres1:
+          condition: service_healthy
+          restart: false
+      besu:
+          condition: service_healthy
+          restart: false
+      proxychain:
+          condition: service_healthy
+          restart: false
+
     restart: on-failure:10
     volumes:
       - ./chainlink1/config:/chainlink/config
@@ -101,11 +150,18 @@ services:
       ]
 
   chainlink2:
-    image: chainlink-ccip:local3
+    image: chainlink-ccip:local4
     # image: smartcontract/chainlink:2.19.0
     container_name: chainlink2
+
     depends_on:
-      - postgres2
+      postgres2:
+          condition: service_healthy
+          restart: false
+      chainlink1:
+          condition: service_healthy
+          restart: true
+
     restart: on-failure:10
     volumes:
       - ./chainlink2/config:/chainlink/config
@@ -123,11 +179,18 @@ services:
       ]
 
   chainlink3:
-    image: chainlink-ccip:local3
+    image: chainlink-ccip:local4
     # image: smartcontract/chainlink:2.19.0
     container_name: chainlink3
+
     depends_on:
-      - postgres3
+      postgres3:
+          condition: service_healthy
+          restart: false
+      chainlink1:
+          condition: service_healthy
+          restart: true
+
     restart: on-failure:10
     volumes:
       - ./chainlink3/config:/chainlink/config
@@ -145,11 +208,18 @@ services:
       ]
 
   chainlink4:
-    image: chainlink-ccip:local3
+    image: chainlink-ccip:local4
     # image: smartcontract/chainlink:2.19.0
     container_name: chainlink4
+    
     depends_on:
-      - postgres4
+      postgres4:
+          condition: service_healthy
+          restart: false
+      chainlink1:
+          condition: service_healthy
+          restart: true
+
     restart: on-failure:10
     volumes:
       - ./chainlink4/config:/chainlink/config
@@ -167,11 +237,18 @@ services:
       ]
 
   chainlink5:
-    image: chainlink-ccip:local3
+    image: chainlink-ccip:local4
     # image: smartcontract/chainlink:2.19.0
     container_name: chainlink5
+    
     depends_on:
-      - postgres5
+      postgres5:
+          condition: service_healthy
+          restart: false
+      chainlink1:
+          condition: service_healthy
+          restart: true
+
     restart: on-failure:10
     volumes:
       - ./chainlink5/config:/chainlink/config

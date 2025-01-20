@@ -306,12 +306,14 @@ class ChainlinkApiClient implements IChainlinkApiClient {
     const { errors } = response.data;
     if (Array.isArray(errors) && errors.length > 0) {
       this.log.debug("CreateJob fail1:", safeStringify(errors));
+      this.log.debug("Offending JobSpec TOML:\n%s", opts.jobSpecToml);
       throw new Error("CreateJob GraphQL action failed: ", { cause: errors });
     }
 
     const { errors: errors2 } = response.data.data?.createJob;
     if (Array.isArray(errors) && errors.length > 0) {
       this.log.debug("CreateJob fail2:", safeStringify(errors));
+      this.log.debug("Offending JobSpec TOML:\n%s", opts.jobSpecToml);
       throw new Error("CreateJob GraphQL action failed: ", { cause: errors2 });
     }
 

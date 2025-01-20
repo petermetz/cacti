@@ -37,6 +37,24 @@ MigrateOnStartup = true # Default
 [[EVM]]
 ChainID = '90000001' # Required
 
+[EVM.GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '0 gwei'
+PriceMax = '1 tether'
+PriceMin = '0 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+EstimateLimit = false
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 3
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
 [[EVM.Nodes]]
 Name = 'besu' # Required
 WSURL = 'ws://besu:8546'
@@ -44,6 +62,24 @@ HTTPURL = 'http://besu:8545' # Required
 
 [[EVM]]
 ChainID = '90000002' # Required
+
+[EVM.GasEstimator]
+Mode = 'BlockHistory'
+PriceDefault = '0 gwei'
+PriceMax = '1 tether'
+PriceMin = '0 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+EstimateLimit = false
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 3
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
 
 [[EVM.Nodes]]
 Name = 'proxychain' # Required
@@ -126,8 +162,8 @@ ListenAddresses = ['0.0.0.0:6690']
 DefaultBootstrappers = ['12D3KooWSPPcj5FKg9fmQ3jBRB27bdLD1QbLBKwLCZDmpgnzNRzf@chainlink1:6690']
 
 # DeltaDial controls how far apart Dial attempts are
-DeltaDial = '0.5s' # Default
+DeltaDial = '5s' # Default is 0.5s
 # DeltaReconcile controls how often a Reconcile message is sent to every peer.
-DeltaReconcile = '5s' # Default
+DeltaReconcile = '25s' # Default is 5s
 # ListenAddresses is the addresses the peer will listen to on the network in `host:port` form as accepted by `net.Listen()`, 
 # but the host and port must be fully specified and cannot be empty. You can specify `0.0.0.0` (IPv4) or `::` (IPv6) to listen on all interfaces, but that is not recommended.

@@ -187,6 +187,7 @@ describe("PluginLedgerConnectorChainlink", () => {
     };
   });
 
+  // FIXME and TODO
   // beforeAll(async () => {
   //   await startEvmProxy({
   //     logLevel,
@@ -602,7 +603,7 @@ describe("PluginLedgerConnectorChainlink", () => {
 
     const commitJobs = [commitJob2, commitJob3, commitJob4, commitJob5];
 
-    const oracles = commitJobs.map((job) => {
+    const oracles = commitJobs.map((job, i) => {
       const { ocrKeyBundle, peerId, transmitterId } = job;
       // Example: "ocr2on_evm_895678a3d21cab4282ed30a1bcd9ddaa1661117e"
       // Example: "ocr2off_evm_5b6f3dffe3bf03bb8740ef2baed82046fa788a26d1c01c398487578ed648ee9e"
@@ -622,10 +623,21 @@ describe("PluginLedgerConnectorChainlink", () => {
       const configPublicKeyBuffer = Buffer.from(configPublicKeyHex, "hex");
       const configPublicKeyBytes = Uint8Array.from(configPublicKeyBuffer);
 
+      // Example: p2p_12D3KooWMD8a8tXGmJ2YPP1d67sfJ8eYQNyuAifdnKeNGx1HRCpM
+      // Becomes: 12D3KooWMD8a8tXGmJ2YPP1d67sfJ8eYQNyuAifdnKeNGx1HRCpM
+      // If we don't do this the OCR2 job in the Chainlink peer node crashes with
+      //
+      // ERROR] runWithContractConfig: function exited with non-retriable error. not retrying managed/run_with_contract_config.go:189
+      // configDigest=000164936443061b8d662239cc458715520d805915860f2186e21f04cbe5f03f contractID=0xCdf60a682681e0e628bE6cAAF737F223b51c005e
+      // error=OnchainPublicKey 723985842f54715be8bfa492d2f5f2ecb665a507 in publicConfig matches mine,
+      // but PeerID does not: p2p_12D3KooWMD8a8tXGmJ2YPP1d67sfJ8eYQNyuAifdnKeNGx1HRCpM (config) vs 12D3KooWMD8a8tXGmJ2YPP1d67sfJ8eYQNyuAifdnKeNGx1HRCpM (mine)
+      const peerIdR = peerId.substring(4);
+      log.debug("Oracle%d peer=%s, transmitter=%s", i, peerIdR, transmitterId);
+
       const oracle: IOracleIdentityExtra = {
         offchainPublicKey: offchainPublicKeyBytes,
         onchainPublicKey: onchainPublicKeyBytes,
-        peerID: peerId,
+        peerID: peerIdR,
         transmitAccount: transmitterId,
         configEncryptionPublicKey: configPublicKeyBytes,
       };
@@ -742,24 +754,31 @@ describe("PluginLedgerConnectorChainlink", () => {
       throw ex;
     }
 
-    setInterval(async () => {
-      try {
-        //Works now
-        const web3Res = await srcRouter.methods
-          .ccipSend(destChainSelector, clientEVM2AnyMessage)
-          .send({
-            from: srcWeb3SigningCredential.ethAccount,
-            gas: 10_000_000n.toString(10),
-          });
-        const { blockNumber, cumulativeGasUsed, transactionHash } = web3Res;
-        const ctx = { blockNumber, cumulativeGasUsed, transactionHash };
-        log.debug("ccipSend() called on router OK: ", safeStringify(ctx));
-        expect(web3Res).toBeTruthy();
-      } catch (ex: unknown) {
-        log.error("Web3 ccipSend failed:", ex);
-        throw ex;
-      }
-    }, 5000);
+    let ccipSendCount = 0;
+    await new Promise<void>((resolve) => {
+      setInterval(async () => {
+        if (ccipSendCount > 100) {
+          resolve();
+        }
+        try {
+          ccipSendCount++;
+          //Works now
+          const web3Res = await srcRouter.methods
+            .ccipSend(destChainSelector, clientEVM2AnyMessage)
+            .send({
+              from: srcWeb3SigningCredential.ethAccount,
+              gas: 10_000_000n.toString(10),
+            });
+          const { blockNumber, cumulativeGasUsed, transactionHash } = web3Res;
+          const ctx = { blockNumber, cumulativeGasUsed, transactionHash };
+          log.debug("ccipSend() called on router OK: ", safeStringify(ctx));
+          expect(web3Res).toBeTruthy();
+        } catch (ex: unknown) {
+          log.error("Web3 ccipSend failed:", ex);
+          throw ex;
+        }
+      }, 5000);
+    });
   });
 });
 
@@ -778,7 +797,7 @@ async function logAllEventsOfContract(opts: {
     opts.contractLogSubscriptions.push(subscription);
     subscription.on("data", (anEvent) => {
       const { event: eventName } = anEvent;
-      log.info("%s Event Fired => %s", opts.contractName, eventName);
+      log.debug("%s Event Fired => %s", opts.contractName, eventName);
     });
   } catch (ex: unknown) {
     const { contractName } = opts;
