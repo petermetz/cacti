@@ -1,8 +1,8 @@
 import { EventEmitter } from "events";
-
 import compareVersions from "compare-versions";
 import temp from "temp";
 
+import safeStringify from "fast-safe-stringify";
 import Docker, {
   Container,
   ContainerCreateOptions,
@@ -1264,9 +1264,14 @@ export class FabricTestLedgerV1 implements ITestLedger {
         containerNameAndTag,
         ", state: running",
       );
-      const containerInfo = await Containers.getByPredicate(
-        (ci) => ci.Image === containerNameAndTag && ci.State === "running",
-      );
+      const containerInfo = await Containers.getByPredicate((ci) => {
+        this.log.warn("ci.Image: %s", ci.Image);
+        this.log.warn("ci.State: %s", ci.State);
+        return ci.Image === containerNameAndTag && ci.State === "running";
+      });
+      if (!containerInfo) {
+        throw new Error(`No existing container for "${containerNameAndTag}"`);
+      }
       const docker = new Docker();
       this.containerId = containerInfo.Id;
       this.container = docker.getContainer(this.containerId);
@@ -1485,6 +1490,9 @@ export class FabricTestLedgerV1 implements ITestLedger {
     const docker = new Docker();
     const image = this.getContainerImageName();
     const containerInfos = await docker.listContainers({});
+    const ctxPojo = { containerInfos, image, containerId: this.containerId };
+    const ctxJson = safeStringify(ctxPojo);
+    this.log.debug("%s containerInfos=%s", fnTag, ctxJson);
 
     let aContainerInfo;
     if (this.containerId !== undefined) {

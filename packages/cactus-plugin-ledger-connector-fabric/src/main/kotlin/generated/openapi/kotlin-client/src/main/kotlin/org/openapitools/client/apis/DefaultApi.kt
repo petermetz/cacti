@@ -33,6 +33,9 @@ import org.openapitools.client.models.GetTransactionReceiptResponse
 import org.openapitools.client.models.RunDelegatedSignTransactionRequest
 import org.openapitools.client.models.RunTransactionRequest
 import org.openapitools.client.models.RunTransactionResponse
+import org.openapitools.client.models.SetConnectionProfileBase64RequestV1
+import org.openapitools.client.models.SetConnectionProfileBase64V1200Response
+import org.openapitools.client.models.SetSshConfigBase64RequestV1
 
 import com.squareup.moshi.Json
 
@@ -625,6 +628,150 @@ class DefaultApi(basePath: kotlin.String = defaultBasePath, client: OkHttpClient
             query = localVariableQuery,
             headers = localVariableHeaders,
             requiresAuthentication = false,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.
+     * 
+     * @param setConnectionProfileBase64RequestV1  (optional)
+     * @return SetConnectionProfileBase64V1200Response
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun setConnectionProfileBase64V1(setConnectionProfileBase64RequestV1: SetConnectionProfileBase64RequestV1? = null) : SetConnectionProfileBase64V1200Response {
+        val localVarResponse = setConnectionProfileBase64V1WithHttpInfo(setConnectionProfileBase64RequestV1 = setConnectionProfileBase64RequestV1)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as SetConnectionProfileBase64V1200Response
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.
+     * 
+     * @param setConnectionProfileBase64RequestV1  (optional)
+     * @return ApiResponse<SetConnectionProfileBase64V1200Response?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun setConnectionProfileBase64V1WithHttpInfo(setConnectionProfileBase64RequestV1: SetConnectionProfileBase64RequestV1?) : ApiResponse<SetConnectionProfileBase64V1200Response?> {
+        val localVariableConfig = setConnectionProfileBase64V1RequestConfig(setConnectionProfileBase64RequestV1 = setConnectionProfileBase64RequestV1)
+
+        return request<SetConnectionProfileBase64RequestV1, SetConnectionProfileBase64V1200Response>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation setConnectionProfileBase64V1
+     *
+     * @param setConnectionProfileBase64RequestV1  (optional)
+     * @return RequestConfig
+     */
+    fun setConnectionProfileBase64V1RequestConfig(setConnectionProfileBase64RequestV1: SetConnectionProfileBase64RequestV1?) : RequestConfig<SetConnectionProfileBase64RequestV1> {
+        val localVariableBody = setConnectionProfileBase64RequestV1
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-connection-profile-base-64",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
+            body = localVariableBody
+        )
+    }
+
+    /**
+     * Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.
+     * 
+     * @param setSshConfigBase64RequestV1  (optional)
+     * @return SetConnectionProfileBase64V1200Response
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class, UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun setSshConfigBase64V1(setSshConfigBase64RequestV1: SetSshConfigBase64RequestV1? = null) : SetConnectionProfileBase64V1200Response {
+        val localVarResponse = setSshConfigBase64V1WithHttpInfo(setSshConfigBase64RequestV1 = setSshConfigBase64RequestV1)
+
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as SetConnectionProfileBase64V1200Response
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> {
+                val localVarError = localVarResponse as ClientError<*>
+                throw ClientException("Client error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+            ResponseType.ServerError -> {
+                val localVarError = localVarResponse as ServerError<*>
+                throw ServerException("Server error : ${localVarError.statusCode} ${localVarError.message.orEmpty()}", localVarError.statusCode, localVarResponse)
+            }
+        }
+    }
+
+    /**
+     * Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.
+     * 
+     * @param setSshConfigBase64RequestV1  (optional)
+     * @return ApiResponse<SetConnectionProfileBase64V1200Response?>
+     * @throws IllegalStateException If the request is not correctly configured
+     * @throws IOException Rethrows the OkHttp execute method exception
+     */
+    @Suppress("UNCHECKED_CAST")
+    @Throws(IllegalStateException::class, IOException::class)
+    fun setSshConfigBase64V1WithHttpInfo(setSshConfigBase64RequestV1: SetSshConfigBase64RequestV1?) : ApiResponse<SetConnectionProfileBase64V1200Response?> {
+        val localVariableConfig = setSshConfigBase64V1RequestConfig(setSshConfigBase64RequestV1 = setSshConfigBase64RequestV1)
+
+        return request<SetSshConfigBase64RequestV1, SetConnectionProfileBase64V1200Response>(
+            localVariableConfig
+        )
+    }
+
+    /**
+     * To obtain the request config of the operation setSshConfigBase64V1
+     *
+     * @param setSshConfigBase64RequestV1  (optional)
+     * @return RequestConfig
+     */
+    fun setSshConfigBase64V1RequestConfig(setSshConfigBase64RequestV1: SetSshConfigBase64RequestV1?) : RequestConfig<SetSshConfigBase64RequestV1> {
+        val localVariableBody = setSshConfigBase64RequestV1
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
+        localVariableHeaders["Content-Type"] = "application/json"
+        localVariableHeaders["Accept"] = "application/json"
+
+        return RequestConfig(
+            method = RequestMethod.POST,
+            path = "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-ssh-config-base-64",
+            query = localVariableQuery,
+            headers = localVariableHeaders,
+            requiresAuthentication = true,
             body = localVariableBody
         )
     }

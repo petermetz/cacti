@@ -1409,10 +1409,10 @@ export interface RunTransactionRequest {
     'methodName': string;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<any>}
      * @memberof RunTransactionRequest
      */
-    'params': Array<string>;
+    'params': Array<any>;
     /**
      * 
      * @type {RunTransactionResponseType}
@@ -1485,6 +1485,51 @@ export interface SSHExecCommandResponse {
      * @memberof SSHExecCommandResponse
      */
     'signal': string | null;
+}
+/**
+ * 
+ * @export
+ * @interface SetConnectionProfileBase64RequestV1
+ */
+export interface SetConnectionProfileBase64RequestV1 {
+    /**
+     * The Base64 encoded connection profile object to be used by the Cacti Fabric Connector for subsequent ledger interactions. Maximum length is 512KB
+     * @type {string}
+     * @memberof SetConnectionProfileBase64RequestV1
+     */
+    'connectionProfileB64': string;
+}
+/**
+ * 
+ * @export
+ * @interface SetConnectionProfileBase64V1200Response
+ */
+export interface SetConnectionProfileBase64V1200Response {
+    /**
+     * 
+     * @type {string}
+     * @memberof SetConnectionProfileBase64V1200Response
+     */
+    'status'?: string;
+    /**
+     * 
+     * @type {Array<object>}
+     * @memberof SetConnectionProfileBase64V1200Response
+     */
+    'errors'?: Array<object>;
+}
+/**
+ * 
+ * @export
+ * @interface SetSshConfigBase64RequestV1
+ */
+export interface SetSshConfigBase64RequestV1 {
+    /**
+     * The Base64 encoded SSH configuration object to be used by the Cacti Fabric Connector for subsequent contract deployments.
+     * @type {string}
+     * @memberof SetSshConfigBase64RequestV1
+     */
+    'sshConfigB64': string;
 }
 /**
  * 
@@ -2052,6 +2097,82 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 
+         * @summary Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.
+         * @param {SetConnectionProfileBase64RequestV1} [setConnectionProfileBase64RequestV1] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setConnectionProfileBase64V1: async (setConnectionProfileBase64RequestV1?: SetConnectionProfileBase64RequestV1, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-connection-profile-base-64`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerTokenAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(setConnectionProfileBase64RequestV1, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.
+         * @param {SetSshConfigBase64RequestV1} [setSshConfigBase64RequestV1] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setSshConfigBase64V1: async (setSshConfigBase64RequestV1?: SetSshConfigBase64RequestV1, options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-ssh-config-base-64`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerTokenAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(setSshConfigBase64RequestV1, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -2149,6 +2270,28 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.runTransactionV1(runTransactionRequest, options);
             return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
         },
+        /**
+         * 
+         * @summary Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.
+         * @param {SetConnectionProfileBase64RequestV1} [setConnectionProfileBase64RequestV1] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async setConnectionProfileBase64V1(setConnectionProfileBase64RequestV1?: SetConnectionProfileBase64RequestV1, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SetConnectionProfileBase64V1200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.setConnectionProfileBase64V1(setConnectionProfileBase64RequestV1, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
+        /**
+         * 
+         * @summary Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.
+         * @param {SetSshConfigBase64RequestV1} [setSshConfigBase64RequestV1] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async setSshConfigBase64V1(setSshConfigBase64RequestV1?: SetSshConfigBase64RequestV1, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SetConnectionProfileBase64V1200Response>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.setSshConfigBase64V1(setSshConfigBase64RequestV1, options);
+            return createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration);
+        },
     }
 };
 
@@ -2237,6 +2380,26 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          */
         runTransactionV1(runTransactionRequest: RunTransactionRequest, options?: any): AxiosPromise<RunTransactionResponse> {
             return localVarFp.runTransactionV1(runTransactionRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.
+         * @param {SetConnectionProfileBase64RequestV1} [setConnectionProfileBase64RequestV1] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setConnectionProfileBase64V1(setConnectionProfileBase64RequestV1?: SetConnectionProfileBase64RequestV1, options?: any): AxiosPromise<SetConnectionProfileBase64V1200Response> {
+            return localVarFp.setConnectionProfileBase64V1(setConnectionProfileBase64RequestV1, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.
+         * @param {SetSshConfigBase64RequestV1} [setSshConfigBase64RequestV1] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setSshConfigBase64V1(setSshConfigBase64RequestV1?: SetSshConfigBase64RequestV1, options?: any): AxiosPromise<SetConnectionProfileBase64V1200Response> {
+            return localVarFp.setSshConfigBase64V1(setSshConfigBase64RequestV1, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2341,6 +2504,30 @@ export class DefaultApi extends BaseAPI {
      */
     public runTransactionV1(runTransactionRequest: RunTransactionRequest, options?: AxiosRequestConfig) {
         return DefaultApiFp(this.configuration).runTransactionV1(runTransactionRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.
+     * @param {SetConnectionProfileBase64RequestV1} [setConnectionProfileBase64RequestV1] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public setConnectionProfileBase64V1(setConnectionProfileBase64RequestV1?: SetConnectionProfileBase64RequestV1, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).setConnectionProfileBase64V1(setConnectionProfileBase64RequestV1, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.
+     * @param {SetSshConfigBase64RequestV1} [setSshConfigBase64RequestV1] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public setSshConfigBase64V1(setSshConfigBase64RequestV1?: SetSshConfigBase64RequestV1, options?: AxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).setSshConfigBase64V1(setSshConfigBase64RequestV1, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

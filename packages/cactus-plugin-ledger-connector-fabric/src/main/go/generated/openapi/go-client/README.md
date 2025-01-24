@@ -85,6 +85,8 @@ Class | Method | HTTP request | Description
 *DefaultApi* | [**GetTransactionReceiptByTxIDV1**](docs/DefaultApi.md#gettransactionreceiptbytxidv1) | **Post** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/get-transaction-receipt-by-txid | get a transaction receipt by tx id on a Fabric ledger.
 *DefaultApi* | [**RunDelegatedSignTransactionV1**](docs/DefaultApi.md#rundelegatedsigntransactionv1) | **Post** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/run-delegated-sign-transaction | Runs a transaction on a Fabric ledger using user-provided signing callback.
 *DefaultApi* | [**RunTransactionV1**](docs/DefaultApi.md#runtransactionv1) | **Post** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/run-transaction | Runs a transaction on a Fabric ledger.
+*DefaultApi* | [**SetConnectionProfileBase64V1**](docs/DefaultApi.md#setconnectionprofilebase64v1) | **Post** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-connection-profile-base-64 | Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.
+*DefaultApi* | [**SetSshConfigBase64V1**](docs/DefaultApi.md#setsshconfigbase64v1) | **Post** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-ssh-config-base-64 | Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.
 
 
 ## Documentation For Models
@@ -136,6 +138,9 @@ Class | Method | HTTP request | Description
  - [RunTransactionResponse](docs/RunTransactionResponse.md)
  - [RunTransactionResponseType](docs/RunTransactionResponseType.md)
  - [SSHExecCommandResponse](docs/SSHExecCommandResponse.md)
+ - [SetConnectionProfileBase64RequestV1](docs/SetConnectionProfileBase64RequestV1.md)
+ - [SetConnectionProfileBase64V1200Response](docs/SetConnectionProfileBase64V1200Response.md)
+ - [SetSshConfigBase64RequestV1](docs/SetSshConfigBase64RequestV1.md)
  - [TransactReceiptBlockMetaData](docs/TransactReceiptBlockMetaData.md)
  - [TransactReceiptTransactionCreator](docs/TransactReceiptTransactionCreator.md)
  - [TransactReceiptTransactionEndorsement](docs/TransactReceiptTransactionEndorsement.md)
@@ -154,7 +159,18 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Authorization
 
-Endpoints do not require authorization.
+
+Authentication schemes defined for the API:
+### bearerTokenAuth
+
+- **Type**: HTTP Bearer token authentication
+
+Example
+
+```golang
+auth := context.WithValue(context.Background(), sw.ContextAccessToken, "BEARER_TOKEN_STRING")
+r, err := client.Service.Operation(auth, args)
+```
 
 
 ## Documentation for Utility Methods

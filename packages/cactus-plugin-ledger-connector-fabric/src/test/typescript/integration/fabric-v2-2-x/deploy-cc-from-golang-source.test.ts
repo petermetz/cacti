@@ -6,6 +6,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import express from "express";
 import bodyParser from "body-parser";
+import safeStringify from "fast-safe-stringify";
 
 import {
   FABRIC_25_LTS_AIO_FABRIC_VERSION,
@@ -98,6 +99,12 @@ describe("Deploy CC from Golang Source Test", () => {
       enabled: true,
       asLocalhost: true,
     };
+
+    const sshConfigJson = safeStringify(sshConfig);
+    const sshConfigB64 = Buffer.from(sshConfigJson, "utf-8").toString("base64");
+    log.info("SSHConfigJson: %s", sshConfigJson);
+    log.info("SSHConfigBase64: %s", sshConfigB64);
+
     const pluginOptions: IPluginLedgerConnectorFabricOptions = {
       instanceId: uuidv4(),
       dockerBinary: "/usr/local/bin/docker",
@@ -105,7 +112,7 @@ describe("Deploy CC from Golang Source Test", () => {
       goBinary: "/usr/local/go/bin/go",
       pluginRegistry,
       cliContainerEnv: FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
-      sshConfig,
+      sshConfigB64,
       logLevel,
       connectionProfile,
       discoveryOptions,
@@ -114,6 +121,21 @@ describe("Deploy CC from Golang Source Test", () => {
         commitTimeout: 300,
       },
     };
+
+    const fabricConnectorCfgJson = safeStringify(pluginOptions);
+    log.info("Fabric Connector Options JSON:\n%s", fabricConnectorCfgJson);
+    await fs.writeFile("/tmp/fabric-connector.json", fabricConnectorCfgJson, {
+      encoding: "utf-8",
+    });
+
+    await fs.writeFile(
+      "/tmp/fabric-connector-ssh-config.base64.txt",
+      sshConfigB64,
+      {
+        encoding: "utf-8",
+      },
+    );
+
     const plugin = new PluginLedgerConnectorFabric(pluginOptions);
     const expressApp = express();
     expressApp.use(bodyParser.json({ limit: "250mb" }));

@@ -12,7 +12,7 @@ CMD ["node", "index.js"]
 
 HEALTHCHECK --interval=5s --timeout=1s --start-period=1s --retries=60 CMD [ "node", "./cmd-api-server.Dockerfile.healthcheck.mjs", "http", "localhost", "4000" ]
 
-# FIXME: Stop hardcoding the less secure defaults once we've migrated to yarts
+# FIXME(petermetz): Stop hardcoding the less secure defaults once we've migrated to the yargs library for configuration parsing
 # for CMD/ENV configuration file parsing.
 ENV COCKPIT_TLS_ENABLED=false
 ENV COCKPIT_CORS_DOMAIN_CSV=\*

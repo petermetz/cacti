@@ -1,29 +1,54 @@
+import { randomUUID } from "node:crypto";
+
+import "jest-extended";
 import safeStringify from "fast-safe-stringify";
 import { Contract, Web3, WebSocketProvider } from "web3";
 
+import {
+  authorizeSshKey,
+  FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
+  FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
+  FabricTestLedgerV1,
+} from "@hyperledger/cactus-test-tooling";
 import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
 import { PluginImportType } from "@hyperledger/cactus-core-api";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import {
-  createApiClient,
-  createDefaultCommitOffchainConfig,
-  createDefaultCommitOnchainConfig,
-  createDefaultExecOffchainConfig,
-  createDefaultExecOnchainConfig,
-  IAuthArgs,
-  IChainlinkApiClient,
-  IConnectionArgs,
-  PluginFactoryLedgerConnector as PluginFactoryLedgerConnectorChainlink,
-} from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+  DefaultApi as KeychainApi,
+  PluginKeychainMemory,
+} from "@hyperledger/cactus-plugin-keychain-memory";
+import { Configuration as KeychainApiConfig } from "@hyperledger/cactus-plugin-keychain-memory";
+import { PluginFactoryLedgerConnector as PluginFactoryLedgerConnectorChainlink } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { createApiClient } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { createDefaultCommitOffchainConfig } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { createDefaultCommitOnchainConfig } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { createDefaultExecOffchainConfig } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { createDefaultExecOnchainConfig } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { createFileGoDotMod } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { createFileGoDotSum } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { createFileRouterDotGo } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { IAuthArgs } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { IChainlinkApiClient } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
+import { IConnectionArgs } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { mustEncodeAddress } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { getEvmExtraArgsV2 } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
 import { IOracleIdentityExtra } from "@hyperledger/cacti-plugin-ledger-connector-chainlink";
-import {
-  BesuApiClient,
-  Web3SigningCredential,
-  Web3SigningCredentialType,
-} from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { BesuApiClient } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { Web3SigningCredential } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { Web3SigningCredentialType } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { BesuApiClientOptions } from "@hyperledger/cactus-plugin-ledger-connector-besu";
+import { DEFAULT_FABRIC_2_AIO_IMAGE_NAME } from "@hyperledger/cactus-test-tooling";
+import { FABRIC_25_LTS_AIO_IMAGE_VERSION } from "@hyperledger/cactus-test-tooling";
+import {
+  ChainCodeProgrammingLanguage,
+  ConnectionProfile,
+  DefaultEventHandlerStrategy,
+  FabricContractInvocationType,
+  IPluginLedgerConnectorFabricOptions,
+  PluginLedgerConnectorFabric,
+} from "@hyperledger/cactus-plugin-ledger-connector-fabric";
+import { FabricApiClientOptions } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
+import { FabricApiClient } from "@hyperledger/cactus-plugin-ledger-connector-fabric";
 
 import { deployBesuCcipContracts } from "../../../main/typescript/infra/besu/deploy-besu-ccip-contracts";
 import { IDeployBesuCcipContractsOutput } from "../../../main/typescript/infra/besu/deploy-besu-ccip-contracts";
@@ -49,6 +74,45 @@ describe("PluginLedgerConnectorChainlink", () => {
     label: "chainlink-fabric-relay.test.ts",
     level: logLevel,
   });
+
+  const fabricKeychainEntryKey = "user2";
+
+  const ledgerFabric = new FabricTestLedgerV1({
+    publishAllPorts: true,
+    useRunningLedger: true,
+    imageName: "chainlink-fabric",
+    imageVersion: "latest",
+    // imageName: DEFAULT_FABRIC_2_AIO_IMAGE_NAME,
+    // imageVersion: FABRIC_25_LTS_AIO_IMAGE_VERSION,
+  });
+
+  const cacti3ApiHost = "http://127.0.0.1:6000";
+  const fabricKeychainId = "keychain_id_2";
+  const fabricKeychainInstanceId = "plugin-keychain-memory-2";
+
+  const fabricKeychainPlugin = new PluginKeychainMemory({
+    instanceId: fabricKeychainInstanceId,
+    keychainId: fabricKeychainId,
+    logLevel,
+    backend: new Map([["some-other-entry-key", "some-other-entry-value"]]),
+  });
+  const fabricPluginRegistry = new PluginRegistry({
+    plugins: [fabricKeychainPlugin],
+  });
+
+  const fabricKeychainClient = new KeychainApi(
+    new KeychainApiConfig({ basePath: cacti3ApiHost }),
+  );
+
+  let fabricConnector: PluginLedgerConnectorFabric;
+  let connectionProfile: ConnectionProfile;
+
+  const fabricChannelId = "mychannel";
+  const fabricChannelName = fabricChannelId;
+  const fabricContractName = "router";
+  const fabricSshPublicKey =
+    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDMoCzWglI2aZZo60/rLBSYkbJo33JWkd9seuQ4267oPSSh/lGo3Kg6V8jQJwy7RxA0ydsKJEG2kny5X0H4QCcP876I+jdx2NjbAQMATFxn/F+Ee8Cu46aeX2COC6cvX5AntMkckL/pxk64U4TtWv7ghzrHiBnu8PTdL7qN0QwsRJGy9IUBMr4OCVLoIkywbXyReFELC5JxZl+gVFPOWOtCumHIjrQIeMGy/bCIGl3Gmkl2lU8wCzDPMeN8ifn0Mt5KgBAF5KxxiRxAUEDxqmgn8WsFq20PoZZCHAP/cH35PNsS1Kc3lI00LDMVBBjkNkUgfwNDOV/AfnHqpHfIxK1uixQwUFdGUN/hBJTk69mIqA+Dkl94x4Lr3BSgmxhJFVmTlaniZ+iQmiIOX0z65uvLHIdIeVcfKAoKgOkPpeAW6YstrJO5uUmlwUMv5sVWE7WgIvKwIV102qnXgqblSslbxL5ObXmBsoLXP0Ut01uphBhYqcv/1mD2SqdN6BEGqDk= root@buildkitsandbox";
+  const fabricContainerName = "fabric";
 
   const chainlinkNodeDemoEmailAndPw = "cacti-dev@cacti.example.com";
 
@@ -107,6 +171,13 @@ describe("PluginLedgerConnectorChainlink", () => {
     await srcWeb3WsProvider.safeDisconnect();
     log.debug("Disconnected Web3 WS Providers OK");
   });
+
+  const apiFabric = new FabricApiClient(
+    new FabricApiClientOptions({
+      basePath: "http://127.0.0.1:6000",
+      accessToken: "FIXME(petermetz)",
+    }),
+  );
 
   const helloBuffer = Buffer.from("hello", "utf-8");
 
@@ -185,6 +256,394 @@ describe("PluginLedgerConnectorChainlink", () => {
     (BigInt.prototype as any).toJSON = function () {
       return this.toString();
     };
+  });
+
+  beforeAll(async () => {
+    log.debug("Starting Fabric Test Ledger...");
+    let error: unknown = null;
+    try {
+      await ledgerFabric.start();
+      log.debug("Started Fabric Test Ledger OK");
+    } catch (cause: unknown) {
+      const msg = "Starting of Fabric Test Ledger crashed.";
+      log.error(msg, cause);
+      error = cause;
+    }
+    expect(error).toBeFalsy();
+  });
+
+  beforeAll(async () => {
+    const cp = await ledgerFabric.getConnectionProfileOrg1();
+    const cp2 = JSON.parse(safeStringify(cp));
+
+    const peer0Org1UrlNew = "grpcs://peer0.org1.example.com:7051";
+    const peer0Org1UrlOld = cp.peers["peer0.org1.example.com"].url;
+    log.debug("Peer0_Org1: Old: %s, new: %s", peer0Org1UrlOld, peer0Org1UrlNew);
+    cp.peers["peer0.org1.example.com"].url = peer0Org1UrlNew;
+
+    if (typeof cp.peers["peer0.org2.example.com"] === "object") {
+      const peer0Org2UrlNew = "grpcs://peer0.org2.example.com:9051";
+      const peer0Org2UrlOld = cp.peers["peer0.org2.example.com"].url;
+      log.debug("Peer0_Org2: %s => %s", peer0Org2UrlOld, peer0Org2UrlNew);
+      cp.peers["peer0.org2.example.com"].url = peer0Org2UrlNew;
+    }
+
+    const ordererUrlNew = "grpcs://orderer.example.com:7050";
+    const ordererUrlOld = cp.orderers["orderer.example.com"].url;
+    log.debug("Orderer URL: %s => %s", ordererUrlOld, ordererUrlNew);
+
+    cp.orderers["orderer.example.com"].url = ordererUrlNew;
+
+    const caUrlOld = cp.certificateAuthorities["ca.org1.example.com"].url;
+    const caUrlNew = "https://ca.org1.example.com:7054";
+    log.debug("CA URL: %s => %s", caUrlOld, caUrlNew);
+
+    cp.certificateAuthorities["ca.org1.example.com"].url = caUrlNew;
+
+    log.debug("Overriding Fabric Connection Profile...");
+    log.debug(safeStringify(cp, undefined, 2));
+    connectionProfile = cp;
+
+    let error: unknown = null;
+    try {
+      const cpB64 = Buffer.from(safeStringify(cp)).toString("base64");
+      await apiFabric.setConnectionProfileBase64V1({
+        connectionProfileB64: cpB64,
+      });
+      log.debug("Overriding Fabric Connection Profile OK");
+    } catch (cause: unknown) {
+      const msg = "Overriding Fabric Connection Profile crashed.";
+      log.error(msg, cause);
+      error = cause;
+    }
+    expect(error).toBeFalsy();
+
+    // port and host for SSH config are different compared to the compose file because
+    // this code runs on the host machine's network while the compose-file's code runs
+    // on the docker subnet
+    const fabricConnectorOpts: IPluginLedgerConnectorFabricOptions = {
+      pluginRegistry: fabricPluginRegistry,
+      instanceId: "plugin-connector-fabric-2",
+      dockerBinary: "/usr/local/bin/docker",
+      peerBinary: "/fabric-samples/bin/peer",
+      goBinary: "/usr/local/go/bin/go",
+      cliContainerEnv: FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
+      sshConfig: {
+        host: "localhost",
+        privateKey:
+          "-----BEGIN OPENSSH PRIVATE KEY-----\n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\n-----END OPENSSH PRIVATE KEY-----\n",
+        username: "root",
+        port: 30022,
+      },
+      connectionProfile: cp2,
+      discoveryOptions: { enabled: true, asLocalhost: false },
+      eventHandlerOptions: {
+        strategy: DefaultEventHandlerStrategy.NetworkScopeAllfortx,
+        commitTimeout: 300,
+      },
+    };
+    fabricConnector = new PluginLedgerConnectorFabric(fabricConnectorOpts);
+  });
+
+  beforeAll(async () => {
+    log.debug("Configuring Fabric Keychain A...");
+    let error: unknown = null;
+    try {
+      const enrollAdminOut = await ledgerFabric.enrollAdmin();
+      const adminWallet = enrollAdminOut[1];
+      const [userIdentity] = await ledgerFabric.enrollUser(adminWallet);
+      const fabricKeychainValue = safeStringify(userIdentity);
+      await fabricKeychainPlugin.set(
+        fabricKeychainEntryKey,
+        fabricKeychainValue,
+      );
+      await fabricKeychainClient.setKeychainEntryV1({
+        key: fabricKeychainEntryKey,
+        value: fabricKeychainValue,
+      });
+      log.debug("Configuring Fabric Keychain A OK");
+    } catch (cause: unknown) {
+      const msg = "Configuring Fabric Keychain A crashed.";
+      log.error(msg, cause);
+      error = cause;
+    }
+    expect(error).toBeFalsy();
+  });
+
+  beforeAll(async () => {
+    log.debug("Initializing Fabric Connector Plugin...");
+    let error: unknown = null;
+    try {
+      await fabricConnector.onPluginInit();
+      log.debug("Initialized Fabric Connector Plugin OK");
+    } catch (cause: unknown) {
+      const msg = "Plugin Initialization of Fabric Connector crashed.";
+      log.error(msg, cause);
+      error = cause;
+    }
+    expect(error).toBeFalsy();
+    log.debug("Obtaining Fabric transaction stream...");
+    const stream = await fabricConnector.getTxSubjectObservable();
+    log.debug("Obtained Fabric transaction stream OK");
+
+    stream.subscribe((tx) => {
+      log.debug("Fabric Tx: %s", safeStringify(tx));
+    });
+
+    const channelName = fabricChannelName;
+    const contractName = fabricContractName;
+    log.debug("Creating Fabric gateway within the test case itself...");
+
+    const gateway = await fabricConnector.createGateway({
+      contractName: fabricContractName,
+      channelName: fabricChannelName,
+      params: [],
+      methodName: "CcipSend",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId: fabricKeychainId,
+        keychainRef: fabricKeychainEntryKey,
+      },
+    });
+    log.debug("Created Fabric gateway within the test case OK.");
+
+    log.debug("Obtaining Fabric gateway network instance...");
+    const network = await gateway.getNetwork(channelName);
+
+    log.debug("Obtaining Fabric contract instance...");
+    const contract = network.getContract(contractName);
+
+    // const channel = network.getChannel();
+
+    // interface ListenerOptions {
+    //   startBlock?: number | string | bigint;
+    //   type?: EventType;
+    //   checkpointer?: Checkpointer;
+    // }
+    const listenerOptions = { startBlock: 0 };
+
+    /**
+     * @param {String} listenerName the name of the event listener
+     * @param {String} eventName the name of the event being listened to
+     * @param {Function} callback the callback function with signature (error, event, blockNumber, transactionId, status)
+     * @param {module:fabric-network.Network~EventListenerOptions} options
+     **/
+    const listener = await contract.addContractListener(
+      async (event: unknown): Promise<void> => {
+        /**
+         * ```json
+         * {
+         *   "chaincodeId": "router",
+         *   "eventName": "CCIPMessageSent",
+         *   "payload": {
+         *     "type": "Buffer",
+         *     "data": [
+         *       123, 34, 114, 101, 99, 101, 105, 118, 101, 114, 34, 58, 34, 97, 34, 44,
+         *       34, 100, 97, 116, 97, 34, 58, 34, 98, 34, 44, 34, 116, 111, 107, 101, 110,
+         *       65, 109, 111, 117, 110, 116, 115, 34, 58, 91, 123, 34, 116, 111, 107, 101,
+         *       110, 34, 58, 34, 116, 111, 107, 101, 110, 65, 34, 44, 34, 97, 109, 111,
+         *       117, 110, 116, 34, 58, 34, 49, 48, 48, 34, 125, 44, 123, 34, 116, 111,
+         *       107, 101, 110, 34, 58, 34, 116, 111, 107, 101, 110, 66, 34, 44, 34, 97,
+         *       109, 111, 117, 110, 116, 34, 58, 34, 50, 48, 48, 34, 125, 93, 44, 34, 102,
+         *       101, 101, 84, 111, 107, 101, 110, 34, 58, 34, 99, 34, 44, 34, 101, 120,
+         *       116, 114, 97, 65, 114, 103, 115, 34, 58, 34, 100, 34, 125
+         *     ]
+         *   }
+         * }
+         *```
+         *
+         * If you then deserialize the payload.data bytes into a JSON string then you get the folowing structure:
+         * ```json
+         * {
+         *   receiver: 'a',
+         *   data: 'b',
+         *   tokenAmounts: [
+         *     { token: 'tokenA', amount: '100' },
+         *     { token: 'tokenB', amount: '200' }
+         *   ],
+         *   feeToken: 'c',
+         *   extraArgs: 'd'
+         * }
+         * ```
+         */
+        const ctx = safeStringify(event);
+        log.debug("Fabric Event Fired: router.CCIPMessageSent: %s", ctx);
+      },
+      listenerOptions,
+    );
+
+    afterAll(async () => {
+      log.debug("Removing Fabric CCIP Router Contract Listener...");
+      contract.removeContractListener(listener);
+      log.debug("Fabric CCIP Router Contract Listener removed OK.");
+    });
+
+    log.debug("Fabric CCIP Router Contract Listener registered OK.");
+  });
+
+  beforeAll(async () => {
+    const publicKey = fabricSshPublicKey;
+    const containerName = fabricContainerName;
+    await authorizeSshKey({ containerName, logLevel, publicKey });
+    log.info("Fabric Connector's SSH key is now authorized in AIO container");
+  });
+
+  beforeAll(async () => {
+    log.debug("Deploying Fabric CCIP Router contract...");
+    let error: unknown = null;
+    try {
+      // const channelName = fabricChannelName;
+      const channelId = fabricChannelName;
+      const contractName = fabricContractName;
+
+      // packages/cacti-plugin-ledger-connector-chainlink/src/main/go/ccip/fabric/router/router.go
+      // packages/cacti-plugin-ledger-connector-chainlink/src/main/go/ccip/fabric/router/go.mod
+      // packages/cacti-plugin-ledger-connector-chainlink/src/main/go/ccip/fabric/router/go.sum
+      const routerDotGo = await createFileRouterDotGo();
+      const goDotMod = await createFileGoDotMod();
+      const goDotSum = await createFileGoDotSum();
+      const sourceFiles = [routerDotGo, goDotSum, goDotMod];
+
+      const res = await apiFabric.deployContractV1({
+        channelId,
+        ccVersion: "1.0.0",
+        // constructorArgs: { Args: ["john", "99"] },
+        sourceFiles,
+        ccName: contractName,
+        targetOrganizations: [
+          FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1,
+          FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
+        ],
+        caFile:
+          FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_1.ORDERER_TLS_ROOTCERT_FILE,
+        ccLabel: "router",
+        ccLang: ChainCodeProgrammingLanguage.Golang,
+        ccSequence: 1,
+        orderer: "orderer.example.com:7050",
+        ordererTLSHostnameOverride: "orderer.example.com",
+        connTimeout: 60,
+      });
+      const { packageIds, lifecycle, success } = res.data;
+      expect(res.status).toBe(200);
+      expect(success).toBeTruthy();
+      const {
+        approveForMyOrgList,
+        installList,
+        queryInstalledList,
+        commit,
+        packaging,
+        queryCommitted,
+      } = lifecycle;
+      expect(packageIds).toBeTruthy();
+      expect(Array.isArray(packageIds)).toBe(true);
+      expect(approveForMyOrgList).toBeTruthy();
+      expect(Array.isArray(approveForMyOrgList)).toBe(true);
+      expect(installList).toBeTruthy();
+      expect(Array.isArray(installList)).toBe(true);
+      expect(queryInstalledList).toBeTruthy();
+      expect(Array.isArray(queryInstalledList)).toBe(true);
+      expect(commit).toBeTruthy();
+      expect(packaging).toBeTruthy();
+      expect(queryCommitted).toBeTruthy();
+      const ctx = safeStringify({ packageIds, lifecycle, success });
+      log.debug("Fabric CCIP Router deployed OK: %s", ctx);
+    } catch (cause: unknown) {
+      const msg = "Deployment of Fabric CCIP Router crashed.";
+      log.error(msg, cause);
+      error = cause;
+    }
+    expect(error).toBeFalsy();
+  });
+
+  // FIXME(petermetz) delete this later once it's actually working
+  beforeAll(async () => {
+    let error: unknown = null;
+    const op = "Invoking Fabric Basic.CreateAsset() method";
+    try {
+      log.debug("%s...", op);
+
+      const contractName = "basic";
+      const channelId = "mychannel";
+      const channelName = channelId;
+
+      const assetId = randomUUID();
+      const assetOwner = randomUUID();
+      const createRes = await apiFabric.runTransactionV1({
+        // gatewayOptions: {
+        //   connectionProfile,
+        // },
+        contractName,
+        channelName,
+        params: [assetId, "Green", "19", assetOwner, "9999"],
+        methodName: "CreateAsset",
+        invocationType: FabricContractInvocationType.Send,
+        signingCredential: {
+          keychainId: fabricKeychainId,
+          keychainRef: fabricKeychainEntryKey,
+        },
+      });
+      expect(createRes).toBeTruthy();
+      expect(createRes.status).toBeGreaterThan(199);
+      expect(createRes.status).toBeLessThan(300);
+
+      log.debug(`%s OK: %s`, op, safeStringify(createRes.data));
+    } catch (cause: unknown) {
+      const msg = `${op} crashed.`;
+      log.error(msg, cause);
+      error = cause;
+    }
+    expect(error).toBeFalsy();
+  });
+
+  // FIXME(petermetz) delete this later once it's actually working
+  beforeAll(async () => {
+    let error: unknown = null;
+    try {
+      const tokenAmountsJson = safeStringify([
+        { token: "tokenA", amount: 100n },
+        { token: "tokenB", amount: 200n },
+      ]);
+      log.debug(
+        "tokenAmountsJson for CCIP Fabric Router: %s",
+        tokenAmountsJson,
+      );
+
+      log.debug("Invoking Fabric CCIP Router's CcipSend() method...");
+      const ccipSendOut = await apiFabric.runTransactionV1({
+        contractName: fabricContractName,
+        channelName: fabricChannelName,
+        // FIXME(petermetz)
+        params: ["a", "b", "c", "d", tokenAmountsJson],
+        methodName: "CcipSend",
+        invocationType: FabricContractInvocationType.Send,
+        signingCredential: {
+          keychainId: fabricKeychainId,
+          keychainRef: fabricKeychainEntryKey,
+        },
+      });
+      // ccipSendOut.data
+      // {
+      //   "contractName": "router",
+      //   "channelName": "mychannel",
+      //   "params": [
+      //     "a",
+      //     "b",
+      //     "c",
+      //     "d",
+      //     "[{\"token\":\"tokenA\",\"amount\":\"100\"},{\"token\":\"tokenB\",\"amount\":\"200\"}]"
+      //   ],
+      //   "methodName": "CcipSend",
+      //   "invocationType": "FabricContractInvocationType.SEND",
+      //   "signingCredential": { "keychainId": "keychain_id_2", "keychainRef": "user2" }
+      // }
+      expect(ccipSendOut).toBeTruthy();
+      log.debug(`CCIP Router.ccipSend() OK: %s`, safeStringify(ccipSendOut));
+    } catch (cause: unknown) {
+      const msg = "Invoking Fabric CCIP Router's CcipSend() crashed.";
+      log.error(msg, cause);
+      error = cause;
+    }
+    expect(error).toBeFalsy();
   });
 
   // FIXME and TODO
@@ -753,6 +1212,31 @@ describe("PluginLedgerConnectorChainlink", () => {
       log.error("Failed to get ccipSendFee1: ", ex);
       throw ex;
     }
+
+    log.debug("Invoking Fabric CCIP Router's CcipSend() method...");
+    const receiverHex = Buffer.from(receiver).toString("hex");
+    const dataHex = Buffer.from(data).toString("hex");
+    const extraArgsHex = Buffer.from(extraArgs).toString("hex");
+    // receiver, data, feeToken, extraArgs, tokenAmountsJson string)
+    const ccipSendOut = await apiFabric.runTransactionV1({
+      contractName: fabricContractName,
+      channelName: fabricChannelName,
+      params: [
+        receiverHex,
+        dataHex,
+        infra.srcLinkTokenAddr,
+        extraArgsHex,
+        "[]",
+      ],
+      methodName: "CcipSend",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId: fabricKeychainId,
+        keychainRef: fabricKeychainEntryKey,
+      },
+    });
+    expect(ccipSendOut).toBeTruthy();
+    log.debug(`CCIP Router.ccipSend() OK: %s`, safeStringify(ccipSendOut));
 
     let ccipSendCount = 0;
     await new Promise<void>((resolve) => {

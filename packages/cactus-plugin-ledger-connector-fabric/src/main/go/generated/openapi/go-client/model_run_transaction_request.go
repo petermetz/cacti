@@ -30,7 +30,7 @@ type RunTransactionRequest struct {
 	ContractName string `json:"contractName"`
 	InvocationType FabricContractInvocationType `json:"invocationType"`
 	MethodName string `json:"methodName"`
-	Params []*string `json:"params"`
+	Params []interface{} `json:"params"`
 	ResponseType *RunTransactionResponseType `json:"responseType,omitempty"`
 }
 
@@ -38,7 +38,7 @@ type RunTransactionRequest struct {
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewRunTransactionRequest(signingCredential FabricSigningCredential, channelName string, contractName string, invocationType FabricContractInvocationType, methodName string, params []*string) *RunTransactionRequest {
+func NewRunTransactionRequest(signingCredential FabricSigningCredential, channelName string, contractName string, invocationType FabricContractInvocationType, methodName string, params []interface{}) *RunTransactionRequest {
 	this := RunTransactionRequest{}
 	this.SigningCredential = signingCredential
 	this.ChannelName = channelName
@@ -307,9 +307,9 @@ func (o *RunTransactionRequest) SetMethodName(v string) {
 }
 
 // GetParams returns the Params field value
-func (o *RunTransactionRequest) GetParams() []*string {
+func (o *RunTransactionRequest) GetParams() []interface{} {
 	if o == nil {
-		var ret []*string
+		var ret []interface{}
 		return ret
 	}
 
@@ -318,7 +318,7 @@ func (o *RunTransactionRequest) GetParams() []*string {
 
 // GetParamsOk returns a tuple with the Params field value
 // and a boolean to check if the value has been set.
-func (o *RunTransactionRequest) GetParamsOk() ([]*string, bool) {
+func (o *RunTransactionRequest) GetParamsOk() ([]interface{}, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -326,7 +326,7 @@ func (o *RunTransactionRequest) GetParamsOk() ([]*string, bool) {
 }
 
 // SetParams sets field value
-func (o *RunTransactionRequest) SetParams(v []*string) {
+func (o *RunTransactionRequest) SetParams(v []interface{}) {
 	o.Params = v
 }
 

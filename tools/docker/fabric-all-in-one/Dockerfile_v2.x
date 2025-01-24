@@ -75,6 +75,7 @@ RUN augtool 'set /files/etc/ssh/sshd_config/PermitRootLogin yes'
 RUN augtool 'set /files/etc/ssh/sshd_config/PasswordAuthentication no'
 RUN augtool 'set /files/etc/ssh/sshd_config/PermitEmptyPasswords no'
 RUN augtool 'set /files/etc/ssh/sshd_config/Port 22'
+RUN augtool 'set /files/etc/ssh/sshd_config/ListenAddress 0.0.0.0'
 RUN augtool 'set /files/etc/ssh/sshd_config/LogLevel DEBUG2'
 RUN augtool 'set /files/etc/ssh/sshd_config/LoginGraceTime 10'
 # Create the server's key - without this sshd will refuse to start
@@ -130,7 +131,7 @@ RUN apk add --no-cache jq
 
 # Get the utility script that can pre-fetch the Fabric docker images without
 # a functioning Docker daemon available which we do not have at image build
-# time so have to resort to manually get the Fabric images insteadd of just saying
+# time so have to resort to manually get the Fabric images instead of just saying
 # "docker pull hyperledger/fabric..." etc.
 # The reason to jump trough these hoops is to speed up the boot time of the
 # container which won't have to download the images at container startup since
@@ -158,12 +159,18 @@ RUN /download-frozen-image-v2.sh /etc/hyperledger/fabric/fabric-ca/ hyperledger/
 RUN /download-frozen-image-v2.sh /etc/hyperledger/fabric/fabric-couchdb/ hyperledger/fabric-couchdb:${COUCH_VERSION_FABRIC}
 RUN /download-frozen-image-v2.sh /etc/couchdb/ couchdb:${COUCH_VERSION}
 
+RUN git clone -b main https://github.com/hyperledger/fabric-samples.git && cd /fabric-samples/
+
 # Download and execute the Fabric installation script, but instruct it with the -d
 # flag to avoid pulling docker images because during the build phase of this image
 # there is no docker daemon running yet
 RUN curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh > /install-fabric.sh
-RUN chmod +x install-fabric.sh
+WORKDIR /fabric-samples/
+RUN chmod +x /install-fabric.sh
 RUN /install-fabric.sh --fabric-version ${FABRIC_VERSION} --ca-version ${CA_VERSION} binary samples
+
+RUN cd /fabric-samples/ && \
+    git checkout -q db86460086c0bf2786377aae936309718252c76d
 
 # Update the image version used by the Fabric peers when installing chaincodes.
 # This is necessary because the older (default) image uses NodeJS v12 and npm v6
@@ -174,9 +181,16 @@ RUN yq '.chaincode.logging.level = "debug"' \
     --inplace /fabric-samples/test-network/compose/docker/peercfg/core.yaml
 
 # Set the log level of the peers and other containers to DEBUG instead of the default INFO
-RUN sed -i "s/FABRIC_LOGGING_SPEC=INFO/FABRIC_LOGGING_SPEC=DEBUG/g" /fabric-samples/test-network/compose/docker/docker-compose-test-net.yaml
+# This used to work but somehow is now broken - 2025-01-23
+# RUN sed -i "s/FABRIC_LOGGING_SPEC=INFO/FABRIC_LOGGING_SPEC=DEBUG/g" /fabric-samples/test-network/compose/docker/docker-compose-test-net.yaml
 
-# For now this cannot be used because it mangles the outupt of the "peer lifecycle chaincode queryinstalled" commands.
+RUN yq '.services."peer0.org1.example.com".environment += "FABRIC_LOGGING_SPEC=DEBUG"' \
+    --inplace /fabric-samples/test-network/compose/docker/docker-compose-test-net.yaml
+
+RUN yq '.services."peer0.org2.example.com".environment += "FABRIC_LOGGING_SPEC=DEBUG"' \
+    --inplace /fabric-samples/test-network/compose/docker/docker-compose-test-net.yaml
+
+# For now this cannot be used because it mangles the output of the "peer lifecycle chaincode queryinstalled" commands.
 # We need to refactor those commands in the deployment endpoints so that they are immune to this logging setting.
 # RUN sed -i "s/FABRIC_LOGGING_SPEC=INFO/FABRIC_LOGGING_SPEC=DEBUG/g" /fabric-samples/test-network/compose/compose-test-net.yaml
 
@@ -224,4 +238,4 @@ CMD ["--configuration", "/etc/supervisord.conf", "--nodaemon"]
 
 # We consider the container healthy once the default example asset-transfer contract has been deployed
 # and is responsive to queries as well
-HEALTHCHECK --interval=1s --timeout=5s --start-period=60s --retries=300 CMD ./healthcheck.sh
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=300 CMD /healthcheck.sh

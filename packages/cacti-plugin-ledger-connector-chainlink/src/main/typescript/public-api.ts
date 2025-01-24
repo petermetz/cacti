@@ -137,3 +137,8 @@ export { E_MSG_DSS_WRONG_HASH } from "./ccip/ocr2-config/shared-secret.go";
 export { SharedSecretEncryptions } from "./ccip/ocr2-config/shared-secret.go";
 
 export { startEvmProxy } from "./evm-proxy/start-evm-proxy";
+
+export { GO_DOT_MOD, createFileGoDotMod } from "./ccip/fabric/router/go.mod";
+export { GO_DOT_SUM, createFileGoDotSum } from "./ccip/fabric/router/go.sum";
+export { ROUTER_DOT_GO_BASE64 as ROUTER_DOT_GO } from "./ccip/fabric/router/router.go";
+export { createFileRouterDotGo } from "./ccip/fabric/router/router.go";

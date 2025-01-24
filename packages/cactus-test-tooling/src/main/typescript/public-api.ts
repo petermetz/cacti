@@ -237,3 +237,8 @@ export {
   IBuildImageBesuAllInOneLatestResponse,
   buildImageBesuAllInOneLatest,
 } from "./corda/build-image-besu-all-in-one-latest";
+
+export { authorizeSshKey } from "./common/authorize-ssh-key";
+export { IAuthorizeSshKeyOptions } from "./common/authorize-ssh-key";
+
+export { setFabricPeerLogLevel } from "./fabric/set-fabric-peer-log-level";

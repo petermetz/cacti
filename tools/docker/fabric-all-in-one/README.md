@@ -25,6 +25,22 @@ docker cp IMG_NAME:/etc/hyperledger/cactus/fabric-aio-image.key ./fabric-aio-ima
 ssh root@localhost -p IMG_SSH_PORT -i fabric-aio-image.key
 ```
 
+### Remote Image Builds
+
+```sh
+docker run \
+  --privileged \
+  --publish 30022:22 \
+  --publish 7050:7050 \
+  --publish 7051:7051 \
+  --publish 9051:9051 \
+  --publish 7054:7054 \
+  --publish 8054:8054 \
+  --publish 9054:9054 \
+  --name fabric \
+  ghcr.io/hyperledger/cactus-fabric2-all-in-one:2024-03-03--issue-2945-fabric-v2-5-6
+```
+
 ### Visual Studio Code
 
 Example `.vscode/tasks.json` file for building/running the image:

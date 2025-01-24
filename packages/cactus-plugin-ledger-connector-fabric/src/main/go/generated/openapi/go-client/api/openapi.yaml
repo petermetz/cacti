@@ -219,8 +219,99 @@ paths:
         http:
           verbLowerCase: get
           path: /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/get-prometheus-exporter-metrics
+  /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-connection-profile-base-64:
+    post:
+      operationId: setConnectionProfileBase64V1
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetConnectionProfileBase64RequestV1'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/setConnectionProfileBase64V1_200_response'
+          description: OK
+        "401":
+          description: Unauthorized.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorExceptionResponseV1'
+          description: Internal Server Error
+      security:
+      - bearerTokenAuth:
+        - write:connectionprofile
+      summary: Sets or overwrites the currently stored connection profile of the Fabric
+        Connector Plugin.
+      x-hyperledger-cacti:
+        http:
+          verbLowerCase: post
+          path: /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-connection-profile-base-64
+  /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-ssh-config-base-64:
+    post:
+      operationId: setSshConfigBase64V1
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetSshConfigBase64RequestV1'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/setConnectionProfileBase64V1_200_response'
+          description: OK
+        "401":
+          description: Unauthorized.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorExceptionResponseV1'
+          description: Internal Server Error
+      security:
+      - bearerTokenAuth:
+        - write:sshconfig
+      summary: Sets or overwrites the currently stored SSH config of the Fabric Connector
+        Plugin.
+      x-hyperledger-cacti:
+        http:
+          verbLowerCase: post
+          path: /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-ssh-config-base-64
 components:
   schemas:
+    SetSshConfigBase64RequestV1:
+      example:
+        sshConfigB64: sshConfigB64
+      properties:
+        sshConfigB64:
+          description: The Base64 encoded SSH configuration object to be used by the
+            Cacti Fabric Connector for subsequent contract deployments.
+          type: string
+      required:
+      - sshConfigB64
+      type: object
+    SetConnectionProfileBase64RequestV1:
+      example:
+        connectionProfileB64: connectionProfileB64
+      properties:
+        connectionProfileB64:
+          description: The Base64 encoded connection profile object to be used by
+            the Cacti Fabric Connector for subsequent ledger interactions. Maximum
+            length is 512KB
+          maxLength: 524288
+          minLength: 1
+          type: string
+      required:
+      - connectionProfileB64
+      type: object
     TransactReceiptTransactionEndorsement:
       example:
         mspid: mspid
@@ -718,8 +809,8 @@ components:
         channelName: channelName
         contractName: contractName
         params:
-        - params
-        - params
+        - ""
+        - ""
         signingCredential:
           vaultTransitKey:
             keyName: keyName
@@ -774,9 +865,7 @@ components:
           type: string
         params:
           default: []
-          items:
-            nullable: true
-            type: string
+          items: {}
           nullable: false
           type: array
         responseType:
@@ -2002,6 +2091,19 @@ components:
           nullable: false
           type: string
       type: object
+    setConnectionProfileBase64V1_200_response:
+      example:
+        errors:
+        - "{}"
+        - "{}"
+        status: status
+      properties:
+        status:
+          type: string
+        errors:
+          items:
+            type: object
+          type: array
     ConnectionProfile_client:
       example:
         organization: Org1
@@ -2088,3 +2190,8 @@ components:
           nullable: false
           type: string
       type: object
+  securitySchemes:
+    bearerTokenAuth:
+      bearerFormat: JSON Web Tokens
+      scheme: bearer
+      type: http

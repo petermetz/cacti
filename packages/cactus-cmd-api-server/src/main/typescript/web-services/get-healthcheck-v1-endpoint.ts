@@ -52,7 +52,7 @@ export class GetHealthcheckV1Endpoint implements IWebServiceEndpoint {
   public getAuthorizationOptionsProvider(): IAsyncProvider<IEndpointAuthzOptions> {
     return {
       get: async () => ({
-        isProtected: true,
+        isProtected: false, // FIXME(petermetz)
         requiredRoles: this.oasPath.get.security[0].bearerTokenAuth,
       }),
     };

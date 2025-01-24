@@ -627,7 +627,22 @@ export class ConfigService {
       const configFilePath = ConfigService.config.get("configFile");
       ConfigService.config.loadFile(configFilePath);
     }
-    ConfigService.config.validate();
+    try {
+      ConfigService.config.validate();
+    } catch (cause: unknown) {
+      const errMsg = `API server configuration data did not pass the convict library's validation logic. `;
+      console.error(errMsg + "Dumping the configuration data for reference:");
+      try {
+        const cfg = ConfigService.config.getProperties();
+        console.error(JSON.stringify(cfg, null, 2));
+      } catch (ex) {
+        const errMsg =
+          "While trying to dump the invalid config, the ConfigService.config.getProperties() call crashed as well, cannot dump config.";
+        console.error(errMsg, ex);
+      }
+      // FIXME(petermetz)
+      // throw new Error(errMsg, { cause });
+    }
     // this validation fails with supply-chain default configuration
     // and it will be removed
     // this.validateKeyPairMatch();

@@ -52,6 +52,8 @@ Class | Method | HTTP request | Description
 *DefaultApi* | [**getTransactionReceiptByTxIDV1**](docs/DefaultApi.md#gettransactionreceiptbytxidv1) | **POST** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/get-transaction-receipt-by-txid | get a transaction receipt by tx id on a Fabric ledger.
 *DefaultApi* | [**runDelegatedSignTransactionV1**](docs/DefaultApi.md#rundelegatedsigntransactionv1) | **POST** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/run-delegated-sign-transaction | Runs a transaction on a Fabric ledger using user-provided signing callback.
 *DefaultApi* | [**runTransactionV1**](docs/DefaultApi.md#runtransactionv1) | **POST** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/run-transaction | Runs a transaction on a Fabric ledger.
+*DefaultApi* | [**setConnectionProfileBase64V1**](docs/DefaultApi.md#setconnectionprofilebase64v1) | **POST** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-connection-profile-base-64 | Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.
+*DefaultApi* | [**setSshConfigBase64V1**](docs/DefaultApi.md#setsshconfigbase64v1) | **POST** /api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-ssh-config-base-64 | Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.
 
 
 <a id="documentation-for-models"></a>
@@ -104,6 +106,9 @@ Class | Method | HTTP request | Description
  - [org.openapitools.client.models.RunTransactionResponse](docs/RunTransactionResponse.md)
  - [org.openapitools.client.models.RunTransactionResponseType](docs/RunTransactionResponseType.md)
  - [org.openapitools.client.models.SSHExecCommandResponse](docs/SSHExecCommandResponse.md)
+ - [org.openapitools.client.models.SetConnectionProfileBase64RequestV1](docs/SetConnectionProfileBase64RequestV1.md)
+ - [org.openapitools.client.models.SetConnectionProfileBase64V1200Response](docs/SetConnectionProfileBase64V1200Response.md)
+ - [org.openapitools.client.models.SetSshConfigBase64RequestV1](docs/SetSshConfigBase64RequestV1.md)
  - [org.openapitools.client.models.TransactReceiptBlockMetaData](docs/TransactReceiptBlockMetaData.md)
  - [org.openapitools.client.models.TransactReceiptTransactionCreator](docs/TransactReceiptTransactionCreator.md)
  - [org.openapitools.client.models.TransactReceiptTransactionEndorsement](docs/TransactReceiptTransactionEndorsement.md)
@@ -123,5 +128,10 @@ Class | Method | HTTP request | Description
 <a id="documentation-for-authorization"></a>
 ## Documentation for Authorization
 
-Endpoints do not require authorization.
+
+Authentication schemes defined for the API:
+<a id="bearerTokenAuth"></a>
+### bearerTokenAuth
+
+- **Type**: HTTP basic authentication
 

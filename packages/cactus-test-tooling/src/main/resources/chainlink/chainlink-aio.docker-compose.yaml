@@ -351,6 +351,13 @@ services:
     container_name: cacti
     # image: ghcr.io/hyperledger-cacti/cactus-cmd-api-server:2024-11-15t04-48-04-dev-c4e28fd06
     restart: on-failure
+    depends_on:
+      besu:
+          condition: service_healthy
+          restart: false
+      proxychain:
+          condition: service_healthy
+          restart: false
     build:
       context: ../../../../../../packages/cactus-cmd-api-server/
       dockerfile: cmd-api-server.Dockerfile
@@ -415,6 +422,13 @@ services:
     container_name: cacti2
     # image: ghcr.io/hyperledger-cacti/cactus-cmd-api-server:2024-11-15t04-48-04-dev-c4e28fd06
     restart: on-failure
+    depends_on:
+      besu:
+          condition: service_healthy
+          restart: false
+      proxychain:
+          condition: service_healthy
+          restart: false
     build:
       context: ../../../../../../packages/cactus-cmd-api-server/
       dockerfile: cmd-api-server.Dockerfile
@@ -456,6 +470,206 @@ services:
               }
           }
         ]
+
+  cacti3:
+    container_name: cacti3
+    # image: ghcr.io/hyperledger-cacti/cactus-cmd-api-server:2024-11-15t04-48-04-dev-c4e28fd06
+    restart: on-failure
+    build:
+      context: ../../../../../../packages/cactus-cmd-api-server/
+      dockerfile: cmd-api-server.Dockerfile
+
+    depends_on:
+      fabric:
+          condition: service_healthy
+          restart: false
+
+    volumes:
+      - cactisrc:/usr/src/cacti
+
+    ports:
+      - 6000:4000
+
+    # extra_hosts:
+    #     - "host.docker.internal:10.0.0.41"
+    #     - "peer0.org1.example.com:10.0.0.41"
+    #     - "peer1.org1.example.com:10.0.0.41"
+    #     - "peer0.org2.example.com:10.0.0.41"
+    #     - "peer1.org2.example.com:10.0.0.41"
+    #     - "orderer.example.com:10.0.0.41"
+    #     - "ca.org1.example.com:10.0.0.41"
+
+    environment:
+      FABRIC_LOGGING_SPEC: DEBUG
+      HFC_LOGGING: '{"debug": "console"}'
+      AUTHORIZATION_PROTOCOL: NONE
+      AUTHORIZATION_CONFIG_JSON: "{}"
+      API_MTLS_ENABLED: "false"
+      API_TLS_ENABLED: "false"
+      API_CORS_DOMAIN_CSV: \*
+      API_TLS_CERT_PEM: "-"
+      API_TLS_CLIENT_CA_PEM: "-"
+      API_TLS_KEY_PEM: "-"
+      API_HOST: 0.0.0.0
+      API_PORT: 4000
+      CRPC_HOST: 0.0.0.0
+      GRPC_TLS_ENABLED: false
+      LOG_LEVEL: DEBUG
+      PLUGINS: >-
+        [
+          {
+              "packageName": "@hyperledger/cactus-plugin-keychain-memory",
+              "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", 
+              "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",
+              "options": {
+                  "packageSrc": "/usr/src/cacti/packages/cactus-plugin-keychain-memory/",
+                  "keychainId": "keychain_id_2",
+                  "instanceId": "plugin-keychain-memory-2"
+              }
+          },
+          {
+              "packageName": "@hyperledger/cactus-plugin-ledger-connector-fabric",
+              "type": "org.hyperledger.cactus.plugin_import_type.LOCAL", 
+              "action": "org.hyperledger.cactus.plugin_import_action.INSTALL",
+              "options": {
+                "packageSrc": "/usr/src/cacti/packages/cactus-plugin-ledger-connector-fabric/", 
+                "instanceId": "plugin-connector-fabric-1",
+                "dockerBinary": "/usr/local/bin/docker",
+                "peerBinary": "/fabric-samples/bin/peer",
+                "goBinary": "/usr/local/go/bin/go",
+                "cliContainerEnv": {
+                  "CORE_PEER_TLS_ENABLED": "true",
+                  "CORE_PEER_LOCALMSPID": "Org1MSP",
+                  "CORE_PEER_TLS_CERT_FILE": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt",
+                  "CORE_PEER_TLS_KEY_FILE": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key",
+                  "CORE_PEER_ADDRESS": "peer0.org1.example.com:7051",
+                  "CORE_PEER_MSPCONFIGPATH": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp",
+                  "CORE_PEER_TLS_ROOTCERT_FILE": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt",
+                  "ORDERER_TLS_ROOTCERT_FILE": "/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem"
+                },
+                "sshConfig": {
+                  "host": "fabric",
+                  "privateKey": "-----BEGIN OPENSSH PRIVATE KEY-----\n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\n-----END OPENSSH PRIVATE KEY-----\n",
+                  "username": "root",
+                  "port": 22
+                },
+                "connectionProfile": {
+                  "name": "test-network-org1",
+                  "version": "1.0.0",
+                  "client": {
+                    "organization": "Org1",
+                    "connection": { "timeout": { "peer": { "endorser": "300" } } }
+                  },
+                  "organizations": {
+                    "Org1": {
+                      "mspid": "Org1MSP",
+                      "peers": ["peer0.org1.example.com"],
+                      "certificateAuthorities": ["ca.org1.example.com"]
+                    }
+                  },
+                  "peers": {
+                    "peer0.org1.example.com": {
+                      "url": "grpcs://localhost:7051",
+                      "tlsCACerts": {
+                        "pem": "-----BEGIN CERTIFICATE-----\nMIICJjCCAc2gAwIBAgIUB7c9psBLiRoTqLiYcNucL2tKd4owCgYIKoZIzj0EAwIw\ncDELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMQ8wDQYDVQQH\nEwZEdXJoYW0xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2Nh\nLm9yZzEuZXhhbXBsZS5jb20wHhcNMjUwMTIxMjMzMzAwWhcNNDAwMTE4MjMzMzAw\nWjBwMQswCQYDVQQGEwJVUzEXMBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExDzANBgNV\nBAcTBkR1cmhhbTEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEcMBoGA1UEAxMT\nY2Eub3JnMS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABKMv\n2XehzDGO+N1RJGlrcyBxvRWClRJWltyOw2mWna1Yt0qqtJVk2WRycQSQmBTSR29O\nYG6NamY1KX9JdT8ptoejRTBDMA4GA1UdDwEB/wQEAwIBBjASBgNVHRMBAf8ECDAG\nAQH/AgEBMB0GA1UdDgQWBBTZ0q6i4E/AC819Lg56Dho7Mu7X3DAKBggqhkjOPQQD\nAgNHADBEAiBCgl9t5lXrdhft14MfZ82PJMvabUt+M0jh7DWxn+VubwIgM1Gi+2aT\nmd0PGr4yR2Fg3KZIKZo/qVa7pecdiNDkO90=\n-----END CERTIFICATE-----\n"
+                      },
+                      "grpcOptions": {
+                        "ssl-target-name-override": "peer0.org1.example.com",
+                        "hostnameOverride": "peer0.org1.example.com"
+                      }
+                    }
+                  },
+                  "certificateAuthorities": {
+                    "ca.org1.example.com": {
+                      "url": "https://localhost:7054",
+                      "caName": "ca-org1",
+                      "tlsCACerts": {
+                        "pem": [
+                          "-----BEGIN CERTIFICATE-----\nMIICJjCCAc2gAwIBAgIUB7c9psBLiRoTqLiYcNucL2tKd4owCgYIKoZIzj0EAwIw\ncDELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMQ8wDQYDVQQH\nEwZEdXJoYW0xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHDAaBgNVBAMTE2Nh\nLm9yZzEuZXhhbXBsZS5jb20wHhcNMjUwMTIxMjMzMzAwWhcNNDAwMTE4MjMzMzAw\nWjBwMQswCQYDVQQGEwJVUzEXMBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExDzANBgNV\nBAcTBkR1cmhhbTEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEcMBoGA1UEAxMT\nY2Eub3JnMS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABKMv\n2XehzDGO+N1RJGlrcyBxvRWClRJWltyOw2mWna1Yt0qqtJVk2WRycQSQmBTSR29O\nYG6NamY1KX9JdT8ptoejRTBDMA4GA1UdDwEB/wQEAwIBBjASBgNVHRMBAf8ECDAG\nAQH/AgEBMB0GA1UdDgQWBBTZ0q6i4E/AC819Lg56Dho7Mu7X3DAKBggqhkjOPQQD\nAgNHADBEAiBCgl9t5lXrdhft14MfZ82PJMvabUt+M0jh7DWxn+VubwIgM1Gi+2aT\nmd0PGr4yR2Fg3KZIKZo/qVa7pecdiNDkO90=\n-----END CERTIFICATE-----\n"
+                        ]
+                      },
+                      "httpOptions": { "verify": false }
+                    }
+                  },
+                  "orderers": {
+                    "orderer.example.com": {
+                      "url": "grpcs://localhost:7050",
+                      "grpcOptions": { "ssl-target-name-override": "orderer.example.com" },
+                      "tlsCACerts": {
+                        "pem": "-----BEGIN CERTIFICATE-----\nMIICCjCCAbGgAwIBAgIUNqeIG4WE8tniY/NlqtcvKDm+0rowCgYIKoZIzj0EAwIw\nYjELMAkGA1UEBhMCVVMxETAPBgNVBAgTCE5ldyBZb3JrMREwDwYDVQQHEwhOZXcg\nWW9yazEUMBIGA1UEChMLZXhhbXBsZS5jb20xFzAVBgNVBAMTDmNhLmV4YW1wbGUu\nY29tMB4XDTI1MDEyMTIzMzMwMFoXDTQwMDExODIzMzMwMFowYjELMAkGA1UEBhMC\nVVMxETAPBgNVBAgTCE5ldyBZb3JrMREwDwYDVQQHEwhOZXcgWW9yazEUMBIGA1UE\nChMLZXhhbXBsZS5jb20xFzAVBgNVBAMTDmNhLmV4YW1wbGUuY29tMFkwEwYHKoZI\nzj0CAQYIKoZIzj0DAQcDQgAEHjpr3FzVCK4kyuho7Zw0qBBFqSZdRNOATmJcYEzw\nGGoAqvnA7s8K31RfUxODQRZ9xo4CG3axJibpl3cPdKtAiKNFMEMwDgYDVR0PAQH/\nBAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQEwHQYDVR0OBBYEFJBUT9krumdYWY6e\nXdx0txd9hls8MAoGCCqGSM49BAMCA0cAMEQCIDo9EbPzLZMRQMZC1VAONOK0mtbd\nRbByvbdidw8V8FuKAiAkc/kBipDNmf5sXEIHbHmgSnL1ibsUdiAq6ii+kv55Kg==\n-----END CERTIFICATE-----\n"
+                      }
+                    }
+                  },
+                  "channels": {
+                    "mychannel": {
+                      "orderers": ["orderer.example.com"],
+                      "peers": {
+                        "peer0.org1.example.com": {
+                          "endorsingPeer": true,
+                          "chaincodeQuery": true,
+                          "ledgerQuery": true,
+                          "eventSource": true,
+                          "discover": true
+                        }
+                      }
+                    }
+                  }
+                },
+                "discoveryOptions": { "enabled": true, "asLocalhost": false },
+                "eventHandlerOptions": {
+                  "strategy": "NETWORK_SCOPE_ALLFORTX",
+                  "commitTimeout": 300
+                }
+              }
+          }
+        ]
+
+  # Works for contract deployment but not for sending transactions to said contract...
+  #
+  fabric:
+
+    container_name: fabric
+    # image: ghcr.io/hyperledger/cactus-fabric2-all-in-one:2024-03-03--issue-2945-fabric-v2-5-6
+    image: chainlink-fabric:latest
+    privileged: true
+    build:
+      context: ../../../../../../tools/docker/fabric-all-in-one/
+      dockerfile: ./Dockerfile_v2.x
+    networks:
+      default:
+        aliases:
+        - "peer0.org1.example.com"
+        - "peer1.org1.example.com"
+        - "peer0.org2.example.com"
+        - "peer1.org2.example.com"
+        - "orderer.example.com"
+        - "ca.org1.example.com"
+
+    # extra_hosts:
+    #     - "host.docker.internal:10.0.0.41"
+    #     - "peer0.org1.example.com:10.0.0.41"
+    #     - "peer1.org1.example.com:10.0.0.41"
+    #     - "peer0.org2.example.com:10.0.0.41"
+    #     - "peer1.org2.example.com:10.0.0.41"
+    #     - "orderer.example.com:10.0.0.41"
+    #     - "ca.org1.example.com:10.0.0.41"
+
+    ports:
+      - "30022:22" # SSH
+      - "7050:7050" # orderer.example.com
+      - "7051:7051" # peer0.org1.example.com
+      - "9051:9051" # peer0.org2.example.com
+      - "7054:7054" # ca_org1
+      - "8054:8054" # ca_org2
+      - "9054:9054" # ca_orderer
+    environment:
+      - FABRIC_VERSION=${CACTUS_FABRIC_ALL_IN_ONE_VERSION:-2.5.6}
+      - FABRIC_NODEENV_VERSION=${CACTUS_FABRIC_ALL_IN_ONE_NODEENV_VERSION:-2.5.4}
+      - CA_VERSION=${CACTUS_FABRIC_ALL_IN_ONE_CA_VERSION:-1.5.3}
+      - COUCH_VERSION_FABRIC=${CACTUS_FABRIC_ALL_IN_ONE_COUCH_VERSION_FABRIC:-0.4}
+      - COUCH_VERSION=${CACTUS_FABRIC_ALL_IN_ONE_COUCH_VERSION:-3.2.2}
+      - CACTUS_FABRIC_TEST_LOOSE_MEMBERSHIP=1
+  
 
 volumes:
   cactisrc:

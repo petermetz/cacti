@@ -58,7 +58,7 @@ data class RunTransactionRequest (
     val methodName: kotlin.String,
 
     @Json(name = "params")
-    val params: kotlin.collections.List<kotlin.String> = arrayListOf(),
+    val params: kotlin.collections.List<kotlin.Any> = arrayListOf(),
 
     /* An array of endorsing peers (name or url) for the transaction. */
     @Json(name = "endorsingPeers")

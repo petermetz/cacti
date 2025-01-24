@@ -11,6 +11,28 @@
   },
   "components": {
     "schemas": {
+      "SetSshConfigBase64RequestV1": {
+        "type": "object",
+        "required": ["sshConfigB64"],
+        "properties": {
+          "sshConfigB64": {
+            "description": "The Base64 encoded SSH configuration object to be used by the Cacti Fabric Connector for subsequent contract deployments.",
+            "type": "string"
+          }
+        }
+      },
+      "SetConnectionProfileBase64RequestV1": {
+        "type": "object",
+        "required": ["connectionProfileB64"],
+        "properties": {
+          "connectionProfileB64": {
+            "description": "The Base64 encoded connection profile object to be used by the Cacti Fabric Connector for subsequent ledger interactions. Maximum length is 512KB",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 524288
+          }
+        }
+      },
       "TransactReceiptTransactionEndorsement": {
         "type": "object",
         "properties": {
@@ -453,10 +475,7 @@
             "type": "array",
             "nullable": false,
             "default": [],
-            "items": {
-              "type": "string",
-              "nullable": true
-            }
+            "items": {}
           },
           "responseType": {
             "$ref": "#/components/schemas/RunTransactionResponseType"
@@ -1622,6 +1641,13 @@
           }
         ]
       }
+    },
+    "securitySchemes": {
+      "bearerTokenAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JSON Web Tokens"
+      }
     }
   },
   "paths": {
@@ -1966,6 +1992,130 @@
               "text/plain": {
                 "schema": {
                   "$ref": "#/components/schemas/PrometheusExporterMetricsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-connection-profile-base-64": {
+      "post": {
+        "operationId": "setConnectionProfileBase64V1",
+        "summary": "Sets or overwrites the currently stored connection profile of the Fabric Connector Plugin.",
+        "x-hyperledger-cacti": {
+          "http": {
+            "verbLowerCase": "post",
+            "path": "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-connection-profile-base-64"
+          }
+        },
+        "security": [
+          {
+            "bearerTokenAuth": ["write:connectionprofile"]
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetConnectionProfileBase64RequestV1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorExceptionResponseV1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-ssh-config-base-64": {
+      "post": {
+        "operationId": "setSshConfigBase64V1",
+        "summary": "Sets or overwrites the currently stored SSH config of the Fabric Connector Plugin.",
+        "x-hyperledger-cacti": {
+          "http": {
+            "verbLowerCase": "post",
+            "path": "/api/v1/plugins/@hyperledger/cactus-plugin-ledger-connector-fabric/set-ssh-config-base-64"
+          }
+        },
+        "security": [
+          {
+            "bearerTokenAuth": ["write:sshconfig"]
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSshConfigBase64RequestV1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorExceptionResponseV1"
                 }
               }
             }

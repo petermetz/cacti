@@ -64,6 +64,7 @@
     "@hyperledger/cactus-common": "2.1.0",
     "@hyperledger/cactus-core": "2.1.0",
     "@hyperledger/cactus-core-api": "2.1.0",
+    "@hyperledger/cactus-plugin-ledger-connector-fabric": "2.1.0",
     "@noble/curves": "1.8.1",
     "@nomicfoundation/hardhat-network-helpers": "1.0.12",
     "@nomicfoundation/hardhat-toolbox": "5.0.0",

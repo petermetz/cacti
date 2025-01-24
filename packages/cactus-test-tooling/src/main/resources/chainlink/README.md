@@ -20,6 +20,11 @@ docker compose \
 yarn run vitest run packages/cacti-test-plugin-ledger-connector-chainlink/src/test/typescript/integration/chainlink-fabric-relay.test.ts --hookTimeout=9999999 --testTimeout=9999999
 ```
 
+```sh
+
+docker logs peer0.org1.example.com &> /peer1.log && docker logs peer0.org2.example.com &> /peer2.log
+```
+
 If you prefer to observe the logs from a text file then redirect it like this:
 
 ```sh

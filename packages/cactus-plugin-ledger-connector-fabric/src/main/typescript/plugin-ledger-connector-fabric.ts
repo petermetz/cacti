@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { v4 as uuidv4 } from "uuid";
 import { Certificate } from "@fidm/x509";
 import { Express } from "express";
@@ -26,6 +26,7 @@ import {
   TransientMap,
   Wallet,
 } from "fabric-network";
+import safeStringify from "fast-safe-stringify";
 import {
   BuildProposalRequest,
   Channel,
@@ -107,6 +108,8 @@ import {
   GetBlockResponseV1,
   GetChainInfoRequestV1,
   GetChainInfoResponseV1,
+  SetSshConfigBase64RequestV1,
+  SetConnectionProfileBase64RequestV1,
 } from "./generated/openapi/typescript-axios/index";
 
 import {
@@ -160,6 +163,14 @@ import {
 import { findAndReplaceFabricLoggingSpec } from "./common/find-and-replace-fabric-logging-spec";
 import { deployContractGoSourceImplFabricV256 } from "./deploy-contract-go-source/deploy-contract-go-source-impl-fabric-v2-5-6";
 import { Observable, ReplaySubject } from "rxjs";
+import {
+  ISetSshConfigBase64EndpointV1Options,
+  SetSshConfigBase64EndpointV1,
+} from "./set-ssh-config-base64/set-ssh-config-base64-endpoint-v1";
+import {
+  ISetConnectionProfileBase64EndpointV1Options,
+  SetConnectionProfileBase64EndpointV1,
+} from "./set-connection-profile-base64 /set-connection-profile-base64-endpoint-v1";
 
 const { loadFromConfig } = require("fabric-network/lib/impl/ccp/networkconfig");
 assertFabricFunctionIsAvailable(loadFromConfig, "loadFromConfig");
@@ -209,6 +220,20 @@ export interface IPluginLedgerConnectorFabricOptions
   vaultConfig?: IVaultConfig;
   webSocketConfig?: IWebSocketConfig;
   signCallback?: SignPayloadCallback;
+}
+
+/**
+ * Do not export this interface.
+ * It is meant to be used by endpoints that are for development only, such as the
+ * contract deployment and SSH config override endpoints.
+ * If you export this type it increases the probability of it being accidentally
+ * misused by someone in production code (where it should not be used at all).
+ */
+interface IMutableSshConfig {
+  sshConfig: SshConfig;
+}
+interface IMutableConnectionProfile {
+  connectionProfile: ConnectionProfile;
 }
 
 export class PluginLedgerConnectorFabric
@@ -317,6 +342,9 @@ export class PluginLedgerConnectorFabric
     if (this.sshDebugOn) {
       this.sshConfig = this.enableSshDebugLogs(this.sshConfig);
     }
+
+    const discoveryOptionsJson = safeStringify(this.opts.discoveryOptions);
+    this.log.debug("ctor: this.opts.discoveryOptions %s", discoveryOptionsJson);
 
     this.signCallback = opts.signCallback;
   }
@@ -840,6 +868,24 @@ export class PluginLedgerConnectorFabric
     const endpoints: IWebServiceEndpoint[] = [];
 
     {
+      const opts: ISetConnectionProfileBase64EndpointV1Options = {
+        connector: this,
+        logLevel: this.opts.logLevel || "INFO",
+      };
+      const endpoint = new SetConnectionProfileBase64EndpointV1(opts);
+      endpoints.push(endpoint);
+    }
+
+    {
+      const opts: ISetSshConfigBase64EndpointV1Options = {
+        connector: this,
+        logLevel: this.opts.logLevel || "INFO",
+      };
+      const endpoint = new SetSshConfigBase64EndpointV1(opts);
+      endpoints.push(endpoint);
+    }
+
+    {
       const opts: IDeployContractGoSourceEndpointV1Options = {
         connector: this,
         logLevel: this.opts.logLevel,
@@ -916,6 +962,44 @@ export class PluginLedgerConnectorFabric
   }
 
   /**
+   * This method is intended to use only for test case development purposes.
+   *
+   * DO NOT USE IN PRODUCTION.
+   */
+  public async setSshConfigBase64(
+    req: SetSshConfigBase64RequestV1,
+  ): Promise<{ status: "OK"; errors: Array<Error> }> {
+    const sshConfigBuffer = Buffer.from(req.sshConfigB64, "base64");
+    const sshConfigJson = sshConfigBuffer.toString("utf-8");
+    const newSshConfig = JSON.parse(sshConfigJson);
+
+    const readonlyMutationWarningMsg = `Overriding readonly property "sshConfig". This is a development only feature. Do NOT use in production.`;
+    this.log.warn(readonlyMutationWarningMsg);
+    const that = this as unknown as IMutableSshConfig;
+    that.sshConfig = newSshConfig;
+    return { status: "OK", errors: [] };
+  }
+
+  /**
+   * This method is intended to use only for test case development purposes.
+   *
+   * DO NOT USE IN PRODUCTION.
+   */
+  public async setConnectionProfileBase64(
+    req: SetConnectionProfileBase64RequestV1,
+  ): Promise<{ status: "OK"; errors: Array<Error> }> {
+    const sshConfigBuffer = Buffer.from(req.connectionProfileB64, "base64");
+    const sshConfigJson = sshConfigBuffer.toString("utf-8");
+    const newConnectionProfile = JSON.parse(sshConfigJson);
+
+    const readonlyMutationWarningMsg = `Overriding readonly property "connectionProfile". This is a development only feature. Do NOT use in production.`;
+    this.log.warn(readonlyMutationWarningMsg);
+    const that = this as unknown as IMutableConnectionProfile;
+    that.connectionProfile = newConnectionProfile;
+    return { status: "OK", errors: [] };
+  }
+
+  /**
    * Create gateway from request (will choose logic based on request)
    *
    * @node It seems that Gateway is not supposed to be created and destroyed rapidly, but
@@ -929,7 +1013,7 @@ export class PluginLedgerConnectorFabric
    * @param req must contain either gatewayOptions or signingCredential.
    * @returns Fabric SDK Gateway
    */
-  protected async createGateway(req: RunTransactionRequest): Promise<Gateway> {
+  public async createGateway(req: RunTransactionRequest): Promise<Gateway> {
     if (req.gatewayOptions) {
       return this.createGatewayWithOptions(req.gatewayOptions);
     } else if (req.signingCredential) {
@@ -976,8 +1060,12 @@ export class PluginLedgerConnectorFabric
   protected async createGatewayLegacy(
     signingCredential: FabricSigningCredential,
   ): Promise<Gateway> {
+    const fn = "createGatewayLegacy()";
     const { eventHandlerOptions: eho } = this.opts;
     const connectionProfile = this.connectionProfile;
+    this.log.debug("ENTER %s", fn);
+    const discoveryOptionsJson = safeStringify(this.opts.discoveryOptions);
+    this.log.debug("this.opts.discoveryOptions %s", discoveryOptionsJson);
 
     const iType = signingCredential.type || FabricSigningCredentialType.X509;
 
@@ -1045,6 +1133,7 @@ export class PluginLedgerConnectorFabric
 
     this.log.debug(`discovery=%o`, gatewayOptions.discovery);
     this.log.debug(`eventHandlerOptions=%o`, eventHandlerOptions);
+    this.log.debug(`connectionProfile=%s`, safeStringify(connectionProfile));
 
     const gateway = new Gateway();
 
@@ -1210,13 +1299,17 @@ export class PluginLedgerConnectorFabric
       this.log.debug("%s Obtaining Fabric contract instance...", fnTag);
       const contract = network.getContract(contractName);
       const channel = network.getChannel();
+      const endorsers = channel.getEndorsers();
+
       const endorsingTargets = this.filterEndorsers(
-        channel.getEndorsers(),
+        endorsers,
         req.endorsingPeers,
         req.endorsingOrgs,
       );
 
-      const endorsers = channel.getEndorsers();
+      endorsingTargets.forEach((e, i) =>
+        this.log.debug("Targeted endorser[%d]: %s", i, safeStringify(e)),
+      );
 
       const endorsersMetadata = endorsers.map((x) => ({
         mspid: x.mspid,
@@ -1226,7 +1319,10 @@ export class PluginLedgerConnectorFabric
         hasChaincode: x.hasChaincode(contractName),
         isTLS: x.isTLS(),
       }));
-      this.log.debug("%s Endorsers metadata: %o", fnTag, endorsersMetadata);
+
+      endorsersMetadata.forEach((e, i) =>
+        this.log.debug("endorser[%d] metadata: %s", i, safeStringify(e)),
+      );
 
       let out: Buffer;
       let transactionId = "";
