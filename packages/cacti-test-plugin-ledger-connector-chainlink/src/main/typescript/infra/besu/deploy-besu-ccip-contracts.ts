@@ -1,4 +1,6 @@
+import type { Web3 } from "web3";
 import { ethers } from "ethers";
+import { Contract } from "web3";
 
 import { LoggerProvider, type LogLevelDesc } from "@hyperledger/cactus-common";
 import {
@@ -32,6 +34,7 @@ import { configureTokenPool } from "./configure-token-pool";
 import { updateRegistryPrices } from "./update-registry-prices";
 import { applyPriceUpdatersUpdates } from "./apply-price-updaters-updates";
 import { deployMockV3Aggregator } from "./mock-v3-aggregator-factory";
+import { ABI as OffRampAbi } from "./off-ramp-factory";
 
 export interface IDeployBesuCcipContractsOutput {
   readonly srcMockRmnAddr: Readonly<string>;
@@ -61,6 +64,7 @@ export interface IDeployBesuCcipContractsOutput {
   readonly dstMaybeRevertMessageReceiver1Addr: Readonly<string>;
   readonly dstMaybeRevertMessageReceiver2Addr: Readonly<string>;
   readonly dstMockV3AggregatorAddr: Readonly<string>;
+  readonly dstOffRamp: Contract<typeof OffRampAbi>;
 }
 
 /**
@@ -79,6 +83,8 @@ export async function deployBesuCcipContracts(opts: {
   readonly logLevel: Readonly<LogLevelDesc>;
   readonly srcWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
   readonly dstWeb3SigningCredential: Readonly<Web3SigningCredentialPrivateKeyHex>;
+  readonly srcWeb3: Readonly<Web3>;
+  readonly dstWeb3: Readonly<Web3>;
   readonly destChainSelector: Readonly<bigint>;
   readonly sourceChainSelector: Readonly<bigint>;
   readonly destChainId: Readonly<bigint>;
@@ -583,6 +589,8 @@ export async function deployBesuCcipContracts(opts: {
     logLevel,
   });
 
+  const dstOffRamp = new Contract(OffRampAbi, dstOffRampAddr, opts.dstWeb3);
+
   await applyPriceUpdatersUpdates({
     logLevel,
     apiClient: dstApiClient,
@@ -640,7 +648,7 @@ export async function deployBesuCcipContracts(opts: {
       logLevel,
     });
 
-  const out = {
+  const addresses = {
     srcMockRmnAddr,
     srcRmnProxyAddr,
     srcTokenAdminRegistryAddr,
@@ -669,8 +677,12 @@ export async function deployBesuCcipContracts(opts: {
     dstMaybeRevertMessageReceiver2Addr,
     dstMockV3AggregatorAddr,
   };
+  const out = {
+    ...addresses,
+    dstOffRamp,
+  };
 
-  log.info("CCIP Solidity contracts to Besu ledger deployed OK: %o", out);
+  log.info("CCIP Solidity contracts to Besu ledger deployed OK: %o", addresses);
 
   return out;
 }

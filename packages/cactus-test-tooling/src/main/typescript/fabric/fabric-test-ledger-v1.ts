@@ -1265,8 +1265,6 @@ export class FabricTestLedgerV1 implements ITestLedger {
         ", state: running",
       );
       const containerInfo = await Containers.getByPredicate((ci) => {
-        this.log.warn("ci.Image: %s", ci.Image);
-        this.log.warn("ci.State: %s", ci.State);
         return ci.Image === containerNameAndTag && ci.State === "running";
       });
       if (!containerInfo) {

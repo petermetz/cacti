@@ -1,8 +1,6 @@
-import { randomUUID } from "node:crypto";
-
 import "jest-extended";
 import safeStringify from "fast-safe-stringify";
-import { Contract, Web3, WebSocketProvider } from "web3";
+import { Contract, EventLog, Web3, WebSocketProvider } from "web3";
 
 import {
   authorizeSshKey,
@@ -10,7 +8,11 @@ import {
   FABRIC_25_LTS_FABRIC_SAMPLES_ENV_INFO_ORG_2,
   FabricTestLedgerV1,
 } from "@hyperledger/cactus-test-tooling";
-import { LoggerProvider, LogLevelDesc } from "@hyperledger/cactus-common";
+import {
+  hasKey,
+  LoggerProvider,
+  LogLevelDesc,
+} from "@hyperledger/cactus-common";
 import { PluginImportType } from "@hyperledger/cactus-core-api";
 import { PluginRegistry } from "@hyperledger/cactus-core";
 import {
@@ -37,8 +39,6 @@ import { BesuApiClient } from "@hyperledger/cactus-plugin-ledger-connector-besu"
 import { Web3SigningCredential } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { Web3SigningCredentialType } from "@hyperledger/cactus-plugin-ledger-connector-besu";
 import { BesuApiClientOptions } from "@hyperledger/cactus-plugin-ledger-connector-besu";
-import { DEFAULT_FABRIC_2_AIO_IMAGE_NAME } from "@hyperledger/cactus-test-tooling";
-import { FABRIC_25_LTS_AIO_IMAGE_VERSION } from "@hyperledger/cactus-test-tooling";
 import {
   ChainCodeProgrammingLanguage,
   ConnectionProfile,
@@ -75,6 +75,8 @@ describe("PluginLedgerConnectorChainlink", () => {
     level: logLevel,
   });
 
+  const evmEvents: Array<EventLog> = [];
+
   const fabricKeychainEntryKey = "user2";
 
   const ledgerFabric = new FabricTestLedgerV1({
@@ -106,6 +108,7 @@ describe("PluginLedgerConnectorChainlink", () => {
 
   let fabricConnector: PluginLedgerConnectorFabric;
   let connectionProfile: ConnectionProfile;
+  let contractEventListenerFabric: any; // FIXME(petermetz) - do not use any
 
   const fabricChannelId = "mychannel";
   const fabricChannelName = fabricChannelId;
@@ -172,6 +175,12 @@ describe("PluginLedgerConnectorChainlink", () => {
     log.debug("Disconnected Web3 WS Providers OK");
   });
 
+  afterAll(async () => {
+    log.debug("Removing Fabric CCIP Router Contract Listener...");
+    routerContractFabric.removeContractListener(contractEventListenerFabric);
+    log.debug("Fabric CCIP Router Contract Listener removed OK.");
+  });
+
   const apiFabric = new FabricApiClient(
     new FabricApiClientOptions({
       basePath: "http://127.0.0.1:6000",
@@ -179,7 +188,7 @@ describe("PluginLedgerConnectorChainlink", () => {
     }),
   );
 
-  const helloBuffer = Buffer.from("hello", "utf-8");
+  const helloBuffer = Buffer.from("hello_cacti_ccip", "utf-8");
 
   const srcCactiHost = "http://127.0.0.1:4000";
   const besuApiClientOptions = new BesuApiClientOptions({
@@ -244,11 +253,15 @@ describe("PluginLedgerConnectorChainlink", () => {
     type: Web3SigningCredentialType.PrivateKeyHex,
   };
 
-  log.debug("SrcWeb3 Accounts: %s", safeStringify(srcAccount));
-  log.debug("DstWeb3 Accounts: %s", safeStringify(dstAccount));
+  const srcAddresses = srcAccount.map((x) => x.address);
+  const dstAddresses = dstAccount.map((x) => x.address);
+  log.debug("SrcWeb3 Accounts: %s", safeStringify(srcAddresses));
+  log.debug("DstWeb3 Accounts: %s", safeStringify(dstAddresses));
 
   let infra: IDeployBesuCcipContractsOutput;
   let srcRouter: Contract<typeof RouterAbi>;
+  let dstRouter: Contract<typeof RouterAbi>;
+  let routerContractFabric: any; // FIXME(petermetz)
 
   beforeAll(() => {
     log.warn("Note: Overriding BigInt.prototype.toJSON() to call .toString()");
@@ -301,7 +314,6 @@ describe("PluginLedgerConnectorChainlink", () => {
     cp.certificateAuthorities["ca.org1.example.com"].url = caUrlNew;
 
     log.debug("Overriding Fabric Connection Profile...");
-    log.debug(safeStringify(cp, undefined, 2));
     connectionProfile = cp;
 
     let error: unknown = null;
@@ -411,74 +423,7 @@ describe("PluginLedgerConnectorChainlink", () => {
     const network = await gateway.getNetwork(channelName);
 
     log.debug("Obtaining Fabric contract instance...");
-    const contract = network.getContract(contractName);
-
-    // const channel = network.getChannel();
-
-    // interface ListenerOptions {
-    //   startBlock?: number | string | bigint;
-    //   type?: EventType;
-    //   checkpointer?: Checkpointer;
-    // }
-    const listenerOptions = { startBlock: 0 };
-
-    /**
-     * @param {String} listenerName the name of the event listener
-     * @param {String} eventName the name of the event being listened to
-     * @param {Function} callback the callback function with signature (error, event, blockNumber, transactionId, status)
-     * @param {module:fabric-network.Network~EventListenerOptions} options
-     **/
-    const listener = await contract.addContractListener(
-      async (event: unknown): Promise<void> => {
-        /**
-         * ```json
-         * {
-         *   "chaincodeId": "router",
-         *   "eventName": "CCIPMessageSent",
-         *   "payload": {
-         *     "type": "Buffer",
-         *     "data": [
-         *       123, 34, 114, 101, 99, 101, 105, 118, 101, 114, 34, 58, 34, 97, 34, 44,
-         *       34, 100, 97, 116, 97, 34, 58, 34, 98, 34, 44, 34, 116, 111, 107, 101, 110,
-         *       65, 109, 111, 117, 110, 116, 115, 34, 58, 91, 123, 34, 116, 111, 107, 101,
-         *       110, 34, 58, 34, 116, 111, 107, 101, 110, 65, 34, 44, 34, 97, 109, 111,
-         *       117, 110, 116, 34, 58, 34, 49, 48, 48, 34, 125, 44, 123, 34, 116, 111,
-         *       107, 101, 110, 34, 58, 34, 116, 111, 107, 101, 110, 66, 34, 44, 34, 97,
-         *       109, 111, 117, 110, 116, 34, 58, 34, 50, 48, 48, 34, 125, 93, 44, 34, 102,
-         *       101, 101, 84, 111, 107, 101, 110, 34, 58, 34, 99, 34, 44, 34, 101, 120,
-         *       116, 114, 97, 65, 114, 103, 115, 34, 58, 34, 100, 34, 125
-         *     ]
-         *   }
-         * }
-         *```
-         *
-         * If you then deserialize the payload.data bytes into a JSON string then you get the folowing structure:
-         * ```json
-         * {
-         *   receiver: 'a',
-         *   data: 'b',
-         *   tokenAmounts: [
-         *     { token: 'tokenA', amount: '100' },
-         *     { token: 'tokenB', amount: '200' }
-         *   ],
-         *   feeToken: 'c',
-         *   extraArgs: 'd'
-         * }
-         * ```
-         */
-        const ctx = safeStringify(event);
-        log.debug("Fabric Event Fired: router.CCIPMessageSent: %s", ctx);
-      },
-      listenerOptions,
-    );
-
-    afterAll(async () => {
-      log.debug("Removing Fabric CCIP Router Contract Listener...");
-      contract.removeContractListener(listener);
-      log.debug("Fabric CCIP Router Contract Listener removed OK.");
-    });
-
-    log.debug("Fabric CCIP Router Contract Listener registered OK.");
+    routerContractFabric = network.getContract(contractName);
   });
 
   beforeAll(async () => {
@@ -545,101 +490,10 @@ describe("PluginLedgerConnectorChainlink", () => {
       expect(commit).toBeTruthy();
       expect(packaging).toBeTruthy();
       expect(queryCommitted).toBeTruthy();
-      const ctx = safeStringify({ packageIds, lifecycle, success });
+      const ctx = safeStringify({ packageIds, success });
       log.debug("Fabric CCIP Router deployed OK: %s", ctx);
     } catch (cause: unknown) {
       const msg = "Deployment of Fabric CCIP Router crashed.";
-      log.error(msg, cause);
-      error = cause;
-    }
-    expect(error).toBeFalsy();
-  });
-
-  // FIXME(petermetz) delete this later once it's actually working
-  beforeAll(async () => {
-    let error: unknown = null;
-    const op = "Invoking Fabric Basic.CreateAsset() method";
-    try {
-      log.debug("%s...", op);
-
-      const contractName = "basic";
-      const channelId = "mychannel";
-      const channelName = channelId;
-
-      const assetId = randomUUID();
-      const assetOwner = randomUUID();
-      const createRes = await apiFabric.runTransactionV1({
-        // gatewayOptions: {
-        //   connectionProfile,
-        // },
-        contractName,
-        channelName,
-        params: [assetId, "Green", "19", assetOwner, "9999"],
-        methodName: "CreateAsset",
-        invocationType: FabricContractInvocationType.Send,
-        signingCredential: {
-          keychainId: fabricKeychainId,
-          keychainRef: fabricKeychainEntryKey,
-        },
-      });
-      expect(createRes).toBeTruthy();
-      expect(createRes.status).toBeGreaterThan(199);
-      expect(createRes.status).toBeLessThan(300);
-
-      log.debug(`%s OK: %s`, op, safeStringify(createRes.data));
-    } catch (cause: unknown) {
-      const msg = `${op} crashed.`;
-      log.error(msg, cause);
-      error = cause;
-    }
-    expect(error).toBeFalsy();
-  });
-
-  // FIXME(petermetz) delete this later once it's actually working
-  beforeAll(async () => {
-    let error: unknown = null;
-    try {
-      const tokenAmountsJson = safeStringify([
-        { token: "tokenA", amount: 100n },
-        { token: "tokenB", amount: 200n },
-      ]);
-      log.debug(
-        "tokenAmountsJson for CCIP Fabric Router: %s",
-        tokenAmountsJson,
-      );
-
-      log.debug("Invoking Fabric CCIP Router's CcipSend() method...");
-      const ccipSendOut = await apiFabric.runTransactionV1({
-        contractName: fabricContractName,
-        channelName: fabricChannelName,
-        // FIXME(petermetz)
-        params: ["a", "b", "c", "d", tokenAmountsJson],
-        methodName: "CcipSend",
-        invocationType: FabricContractInvocationType.Send,
-        signingCredential: {
-          keychainId: fabricKeychainId,
-          keychainRef: fabricKeychainEntryKey,
-        },
-      });
-      // ccipSendOut.data
-      // {
-      //   "contractName": "router",
-      //   "channelName": "mychannel",
-      //   "params": [
-      //     "a",
-      //     "b",
-      //     "c",
-      //     "d",
-      //     "[{\"token\":\"tokenA\",\"amount\":\"100\"},{\"token\":\"tokenB\",\"amount\":\"200\"}]"
-      //   ],
-      //   "methodName": "CcipSend",
-      //   "invocationType": "FabricContractInvocationType.SEND",
-      //   "signingCredential": { "keychainId": "keychain_id_2", "keychainRef": "user2" }
-      // }
-      expect(ccipSendOut).toBeTruthy();
-      log.debug(`CCIP Router.ccipSend() OK: %s`, safeStringify(ccipSendOut));
-    } catch (cause: unknown) {
-      const msg = "Invoking Fabric CCIP Router's CcipSend() crashed.";
       log.error(msg, cause);
       error = cause;
     }
@@ -709,6 +563,8 @@ describe("PluginLedgerConnectorChainlink", () => {
       srcWeb3SigningCredential,
       dstWeb3SigningCredential,
       logLevel,
+      dstWeb3,
+      srcWeb3,
     });
 
     srcWeb3.eth.defaultAccount = srcWeb3SigningCredential.ethAccount;
@@ -724,6 +580,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: dstCommitStoreHelper,
       contractLogSubscriptions,
       contractName: "dstCommitStoreHelper",
+      evmEvents,
     });
 
     const dstRmnProxy = new Contract(
@@ -736,6 +593,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: dstRmnProxy,
       contractLogSubscriptions,
       contractName: "dstRmnProxy",
+      evmEvents,
     });
 
     const srcRmnProxy = new Contract(
@@ -748,6 +606,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: srcRmnProxy,
       contractLogSubscriptions,
       contractName: "srcRmnProxy",
+      evmEvents,
     });
 
     const dstMockRmn = new Contract(MockRmnAbi, infra.dstMockRmnAddr, dstWeb3);
@@ -756,6 +615,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: dstMockRmn,
       contractLogSubscriptions,
       contractName: "dstMockRmn",
+      evmEvents,
     });
 
     const srcMockRmn = new Contract(MockRmnAbi, infra.srcMockRmnAddr, srcWeb3);
@@ -764,6 +624,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: srcMockRmn,
       contractLogSubscriptions,
       contractName: "srcMockRmn",
+      evmEvents,
     });
 
     srcRouter = new Contract(RouterAbi, infra.srcRouterAddr, srcWeb3);
@@ -772,6 +633,16 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: srcRouter,
       contractLogSubscriptions,
       contractName: "srcRouter",
+      evmEvents,
+    });
+
+    dstRouter = new Contract(RouterAbi, infra.dstRouterAddr, dstWeb3);
+    await logAllEventsOfContract({
+      logLevel,
+      contract: dstRouter,
+      contractLogSubscriptions,
+      contractName: "dstRouter",
+      evmEvents,
     });
 
     const srcLinkToken = new Contract(
@@ -783,7 +654,8 @@ describe("PluginLedgerConnectorChainlink", () => {
       logLevel,
       contract: srcLinkToken,
       contractLogSubscriptions,
-      contractName: "srcOnRamp",
+      contractName: "srcLinkToken",
+      evmEvents,
     });
 
     const srcOnRamp = new Contract(OnRampAbi, infra.srcOnRampAddr, srcWeb3);
@@ -792,6 +664,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: srcOnRamp,
       contractLogSubscriptions,
       contractName: "srcOnRamp",
+      evmEvents,
     });
 
     const dstOffRamp = new Contract(OffRampAbi, infra.dstOffRampAddr, dstWeb3);
@@ -800,6 +673,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: dstOffRamp,
       contractLogSubscriptions,
       contractName: "dstOffRamp",
+      evmEvents,
     });
 
     const srcMockV3Aggregator = new Contract(
@@ -812,6 +686,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: srcMockV3Aggregator,
       contractLogSubscriptions,
       contractName: "srcMockV3Aggregator",
+      evmEvents,
     });
 
     const dstMockV3Aggregator = new Contract(
@@ -824,6 +699,7 @@ describe("PluginLedgerConnectorChainlink", () => {
       contract: dstMockV3Aggregator,
       contractLogSubscriptions,
       contractName: "dstMockV3Aggregator",
+      evmEvents,
     });
 
     try {
@@ -1149,6 +1025,164 @@ describe("PluginLedgerConnectorChainlink", () => {
 
     await plugin.onPluginInit();
 
+    // const channel = network.getChannel();
+
+    // interface ListenerOptions {
+    //   startBlock?: number | string | bigint;
+    //   type?: EventType;
+    //   checkpointer?: Checkpointer;
+    // }
+    const listenerOptions = { startBlock: 0 };
+
+    /**
+     * @param {String} listenerName the name of the event listener
+     * @param {String} eventName the name of the event being listened to
+     * @param {Function} callback the callback function with signature (error, event, blockNumber, transactionId, status)
+     * @param {module:fabric-network.Network~EventListenerOptions} options
+     **/
+    contractEventListenerFabric =
+      await routerContractFabric.addContractListener(
+        async (event: unknown): Promise<void> => {
+          /**
+           * ```json
+           * {
+           *   "chaincodeId": "router",
+           *   "eventName": "CCIPMessageSent",
+           *   "payload": {
+           *     "type": "Buffer",
+           *     "data": [
+           *       123, 34, 114, 101, 99, 101, 105, 118, 101, 114, 34, 58, 34, 97, 34, 44,
+           *       34, 100, 97, 116, 97, 34, 58, 34, 98, 34, 44, 34, 116, 111, 107, 101, 110,
+           *       65, 109, 111, 117, 110, 116, 115, 34, 58, 91, 123, 34, 116, 111, 107, 101,
+           *       110, 34, 58, 34, 116, 111, 107, 101, 110, 65, 34, 44, 34, 97, 109, 111,
+           *       117, 110, 116, 34, 58, 34, 49, 48, 48, 34, 125, 44, 123, 34, 116, 111,
+           *       107, 101, 110, 34, 58, 34, 116, 111, 107, 101, 110, 66, 34, 44, 34, 97,
+           *       109, 111, 117, 110, 116, 34, 58, 34, 50, 48, 48, 34, 125, 93, 44, 34, 102,
+           *       101, 101, 84, 111, 107, 101, 110, 34, 58, 34, 99, 34, 44, 34, 101, 120,
+           *       116, 114, 97, 65, 114, 103, 115, 34, 58, 34, 100, 34, 125
+           *     ]
+           *   }
+           * }
+           *```
+           *
+           * If you then deserialize the payload.data bytes into a JSON string then you get the folowing structure:
+           * ```json
+           * {
+           *   receiver: 'a',
+           *   data: 'b',
+           *   tokenAmounts: [
+           *     { token: 'tokenA', amount: '100' },
+           *     { token: 'tokenB', amount: '200' }
+           *   ],
+           *   feeToken: 'c',
+           *   extraArgs: 'd'
+           * }
+           * ```
+           */
+          const ctx = safeStringify(event);
+          log.debug("Fabric Event Fired: router.CCIPMessageSent: %s", ctx);
+
+          if (!hasKey(event, "payload")) {
+            throw new Error("Fabric CCIPMessageSent: No payload");
+          }
+          if (typeof event.payload !== "object") {
+            throw new Error("Fabric CCIPMessageSent: Non-object payload");
+          }
+
+          // if (!hasKey(event.payload, "data")) {
+          //   throw new Error("Fabric CCIPMessageSent: No payload.data");
+          // }
+          if (!Buffer.isBuffer(event.payload)) {
+            throw new Error("Fabric CCIPMessageSent: Non-buffer payload");
+          }
+
+          // FIXME(petermetz) - unchecked cast should not be needed here but it is...
+          const payloadJson = event.payload.toString("utf-8");
+          log.debug("PayloadJSON: %s", payloadJson);
+          const payload = JSON.parse(payloadJson);
+          log.debug(
+            "Fabric CCIPMessageSent Payload: %s",
+            safeStringify(payload),
+          );
+
+          if (!hasKey(payload, "feeToken")) {
+            throw new Error("Fabric CCIPMessageSent: No feeToken");
+          }
+          if (typeof payload.feeToken !== "string") {
+            throw new Error("Fabric CCIPMessageSent: Non-string feeToken");
+          }
+
+          if (!hasKey(payload, "receiver")) {
+            throw new Error("Fabric CCIPMessageSent: No receiver");
+          }
+          if (typeof payload.receiver !== "string") {
+            throw new Error("Fabric CCIPMessageSent: Non-string receiver");
+          }
+
+          if (!hasKey(payload, "tokenAmounts")) {
+            throw new Error("Fabric CCIPMessageSent: No tokenAmounts");
+          }
+          if (!Array.isArray(payload.tokenAmounts)) {
+            throw new Error("Fabric CCIPMessageSent: Non-array tokenAmounts");
+          }
+
+          if (!hasKey(payload, "data")) {
+            throw new Error("Fabric CCIPMessageSent: No data");
+          }
+          if (typeof payload.data !== "string") {
+            throw new Error("Fabric CCIPMessageSent: Non-string data");
+          }
+
+          if (!hasKey(payload, "extraArgs")) {
+            throw new Error("Fabric CCIPMessageSent: No extraArgs");
+          }
+          if (typeof payload.extraArgs !== "string") {
+            throw new Error("Fabric CCIPMessageSent: Non-string extraArgs");
+          }
+
+          const { feeToken, tokenAmounts, receiver, data, extraArgs } = payload;
+
+          const receiverBuffer = Buffer.from(receiver, "hex");
+          const receiverBytes = Uint8Array.from(receiverBuffer);
+
+          const extraArgsBuffer = Buffer.from(extraArgs, "hex");
+          const extraArgsBytes = Uint8Array.from(extraArgsBuffer);
+
+          const clientEVM2AnyMessage2 = {
+            receiver: receiverBytes,
+            data,
+            tokenAmounts,
+            feeToken,
+            extraArgs: extraArgsBytes,
+          };
+
+          log.debug(
+            "clientEVM2AnyMessage2=%s",
+            safeStringify(clientEVM2AnyMessage2),
+          );
+
+          try {
+            //Works now
+            const web3Res = await srcRouter.methods
+              .ccipSend(destChainSelector, clientEVM2AnyMessage2)
+              .send({
+                from: srcWeb3SigningCredential.ethAccount,
+                gas: 10_000_000n.toString(10),
+              });
+            const { blockNumber, cumulativeGasUsed, transactionHash } = web3Res;
+            const ctx = { blockNumber, cumulativeGasUsed, transactionHash };
+            log.debug("ccipSend() called on router OK: ", safeStringify(ctx));
+            expect(web3Res).toBeTruthy();
+          } catch (ex: unknown) {
+            log.error("Web3 ccipSend failed:", ex);
+            throw ex;
+          }
+        },
+        listenerOptions,
+      );
+
+    log.debug("Fabric CCIP Router Contract Listener registered OK.");
+
     log.debug("Waiting for Chainlink nodes and jobs to be ready.");
     await new Promise((resolve) => setTimeout(resolve, 10_000));
     log.debug("Waited for Chainlink nodes and jobs. Sending CCIP message...");
@@ -1156,10 +1190,12 @@ describe("PluginLedgerConnectorChainlink", () => {
     const receiverAddr = infra.dstMaybeRevertMessageReceiver1Addr;
     const receiver = mustEncodeAddress(receiverAddr);
     const data = "0x".concat(helloBuffer.toString("hex"));
+    log.debug("Sending CCIP Message with Data: %s", data);
     const extraArgs = getEvmExtraArgsV2({
       gasLimit: BigInt(200_003),
       allowOutOfOrder: true,
     });
+
     const clientEVM2AnyMessage = {
       receiver,
       data,
@@ -1172,6 +1208,138 @@ describe("PluginLedgerConnectorChainlink", () => {
       feeToken: infra.srcLinkTokenAddr,
       extraArgs,
     };
+    log.debug("clientEVM2AnyMessage=%s", safeStringify(clientEVM2AnyMessage));
+
+    try {
+      const ccipSendFee1 = await srcRouter.methods
+        .getFee(destChainSelector, clientEVM2AnyMessage)
+        .call();
+      log.debug("ccipSendFee1=%o", ccipSendFee1);
+    } catch (ex: unknown) {
+      log.error("Failed to get ccipSendFee1: ", ex);
+      throw ex;
+    }
+
+    log.debug("Invoking Fabric CCIP Router's CcipSend() method...");
+    const receiverHex = Buffer.from(receiver).toString("hex");
+    const extraArgsHex = Buffer.from(extraArgs).toString("hex");
+
+    // receiver, data, feeToken, extraArgs, tokenAmountsJson string)
+    const ccipSend = await apiFabric.runTransactionV1({
+      contractName: fabricContractName,
+      channelName: fabricChannelName,
+      params: [receiverHex, data, infra.srcLinkTokenAddr, extraArgsHex, "[]"],
+      methodName: "CcipSend",
+      invocationType: FabricContractInvocationType.Send,
+      signingCredential: {
+        keychainId: fabricKeychainId,
+        keychainRef: fabricKeychainEntryKey,
+      },
+    });
+    expect(ccipSend).toBeTruthy();
+    expect(ccipSend.data).toBeTruthy();
+    log.debug(`Fabric Router.ccipSend() OK: %s`, safeStringify(ccipSend.data));
+
+    // const startedAt = new Date();
+    // const transmissions = await new Promise((resolve, reject) => {
+    //   const task = "Polling for CCIP OffRamp.Transmitted Solidity Event";
+    //   const timer = setInterval(() => {
+    //     const now = new Date();
+    //     const timeSpentWaitingMs = now.getTime() - startedAt.getTime();
+    //     if (timeSpentWaitingMs > 600_000) {
+    //       clearInterval(timer);
+    //       reject(new Error(task.concat(" timed out after 600_000ms")));
+    //     }
+    //     const eventNames = safeStringify(evmEvents.map((x) => x.event));
+    //     log.debug("%s - %dms events: %s", task, timeSpentWaitingMs, eventNames);
+
+    //     // evmEvents.forEach(({ event, returnValues }, i) =>
+    //     //   log.debug("\t\t%d\t%s: %s", i, event, safeStringify(returnValues)),
+    //     // );
+
+    //     const transmissions = evmEvents.filter(
+    //       (e) => e.event === "ExecutionStateChanged",
+    //     );
+    //     if (transmissions.length > 0) {
+    //       log.debug("Found %d EVM CCIP Transmissions.", transmissions.length);
+    //       clearInterval(timer);
+    //       resolve(transmissions);
+    //     } else {
+    //       log.debug("No EVM CCIP Transmissions found so far.");
+    //     }
+    //   }, 5000);
+    // });
+
+    // const transmissionsJson = safeStringify(transmissions);
+    // log.debug("Got EVM CCIP transmission confirmations: %s", transmissionsJson);
+    // expect(transmissions).toBeArray();
+    // expect(transmissions).not.toBeEmpty();
+
+    const sub = infra.dstOffRamp.events.ExecutionStateChanged();
+
+    const eventLogWait = new Promise<EventLog>((resolve) => {
+      sub.on("data", (eventLog) => {
+        /**
+         * "returnValues": {
+         *   "0": "1",
+         *   "1": "0x6fa239667bacb64f00433418028215f4723e4386861963cddb383526afa51eab",
+         *   "2": "3",
+         *   "3": "0xd2316ede",
+         *   "__length__": 4,
+         *   "sequenceNumber": "1",
+         *   "messageId": "0x6fa239667bacb64f00433418028215f4723e4386861963cddb383526afa51eab",
+         *   "state": "3",
+         *   "returnData": "0xd2316ede"
+         * },
+         */
+        const ctx = safeStringify(eventLog.returnValues);
+        log.debug("infra.dstOffRamp.events.ExecutionStateChanged: %s", ctx);
+        resolve(eventLog);
+      });
+    });
+    expect(eventLogWait).toResolve();
+    const eventLog = await eventLogWait;
+    expect(eventLog).toBeObject();
+    expect(eventLog).not.toBeEmpty();
+
+    /**
+     * ```solidity
+     * /// @notice Enum listing the possible message execution states within the offRamp contract.
+     * /// 0: UNTOUCHED never executed.
+     * /// 1: IN_PROGRESS currently being executed, used a replay protection.
+     * /// 2: SUCCESS successfully executed. End state.
+     * /// 3: FAILURE unsuccessfully executed, manual execution is now enabled.
+     * /// @dev RMN depends on this enum, if changing, please notify the RMN maintainers.
+     * enum MessageExecutionState {
+     *   UNTOUCHED,
+     *   IN_PROGRESS,
+     *   SUCCESS,
+     *   FAILURE
+     * }
+     * ```
+     */
+    const newExecutionState = eventLog.returnValues.state;
+    expect(newExecutionState).toEqual(BigInt(2));
+
+    // const receiverAddr = infra.dstMaybeRevertMessageReceiver1Addr;
+    // const receiver = mustEncodeAddress(receiverAddr);
+    // const data = "0x".concat(helloBuffer.toString("hex"));
+    // const extraArgs = getEvmExtraArgsV2({
+    //   gasLimit: BigInt(200_003),
+    //   allowOutOfOrder: true,
+    // });
+    // const clientEVM2AnyMessage = {
+    //   receiver,
+    //   data,
+    //   tokenAmounts: [
+    //     // {
+    //     //   token: infra.srcLinkTokenAddr,
+    //     //   amount: BigInt(200_000),
+    //     // },
+    //   ],
+    //   feeToken: infra.srcLinkTokenAddr,
+    //   extraArgs,
+    // };
 
     // Mimic this line of the router's ccipSend method:
     // IERC20(message.feeToken).safeTransferFrom(msg.sender, onRamp, feeTokenAmount);
@@ -1203,66 +1371,35 @@ describe("PluginLedgerConnectorChainlink", () => {
     //   throw ex;
     // }
 
-    try {
-      const ccipSendFee1 = await srcRouter.methods
-        .getFee(destChainSelector, clientEVM2AnyMessage)
-        .call();
-      log.debug("ccipSendFee1=%o", ccipSendFee1);
-    } catch (ex: unknown) {
-      log.error("Failed to get ccipSendFee1: ", ex);
-      throw ex;
-    }
-
-    log.debug("Invoking Fabric CCIP Router's CcipSend() method...");
-    const receiverHex = Buffer.from(receiver).toString("hex");
-    const dataHex = Buffer.from(data).toString("hex");
-    const extraArgsHex = Buffer.from(extraArgs).toString("hex");
-    // receiver, data, feeToken, extraArgs, tokenAmountsJson string)
-    const ccipSendOut = await apiFabric.runTransactionV1({
-      contractName: fabricContractName,
-      channelName: fabricChannelName,
-      params: [
-        receiverHex,
-        dataHex,
-        infra.srcLinkTokenAddr,
-        extraArgsHex,
-        "[]",
-      ],
-      methodName: "CcipSend",
-      invocationType: FabricContractInvocationType.Send,
-      signingCredential: {
-        keychainId: fabricKeychainId,
-        keychainRef: fabricKeychainEntryKey,
-      },
-    });
-    expect(ccipSendOut).toBeTruthy();
-    log.debug(`CCIP Router.ccipSend() OK: %s`, safeStringify(ccipSendOut));
-
-    let ccipSendCount = 0;
-    await new Promise<void>((resolve) => {
-      setInterval(async () => {
-        if (ccipSendCount > 100) {
-          resolve();
-        }
-        try {
-          ccipSendCount++;
-          //Works now
-          const web3Res = await srcRouter.methods
-            .ccipSend(destChainSelector, clientEVM2AnyMessage)
-            .send({
-              from: srcWeb3SigningCredential.ethAccount,
-              gas: 10_000_000n.toString(10),
-            });
-          const { blockNumber, cumulativeGasUsed, transactionHash } = web3Res;
-          const ctx = { blockNumber, cumulativeGasUsed, transactionHash };
-          log.debug("ccipSend() called on router OK: ", safeStringify(ctx));
-          expect(web3Res).toBeTruthy();
-        } catch (ex: unknown) {
-          log.error("Web3 ccipSend failed:", ex);
-          throw ex;
-        }
-      }, 5000);
-    });
+    // let ccipSendCount = 0;
+    // await new Promise<void>((resolve, reject) => {
+    //   const timer = setInterval(async () => {
+    //     if (ccipSendCount > 10) {
+    //       resolve();
+    //       clearInterval(timer);
+    //       return;
+    //     }
+    //     try {
+    //       ccipSendCount++;
+    //       //Works now
+    //       const web3Res = await srcRouter.methods
+    //         .ccipSend(destChainSelector, clientEVM2AnyMessage)
+    //         .send({
+    //           from: srcWeb3SigningCredential.ethAccount,
+    //           gas: 10_000_000n.toString(10),
+    //         });
+    //       const { blockNumber, cumulativeGasUsed, transactionHash } = web3Res;
+    //       const ctx = { blockNumber, cumulativeGasUsed, transactionHash };
+    //       log.debug("ccipSend() called on router OK: ", safeStringify(ctx));
+    //       expect(web3Res).toBeTruthy();
+    //     } catch (ex: unknown) {
+    //       log.error("Web3 ccipSend failed:", ex);
+    //       clearInterval(timer);
+    //       reject(ex);
+    //       throw ex;
+    //     }
+    //   }, 1000);
+    // });
   });
 });
 
@@ -1271,6 +1408,7 @@ async function logAllEventsOfContract(opts: {
   readonly logLevel: Readonly<LogLevelDesc>;
   readonly contract: Readonly<Contract<never>>;
   readonly contractLogSubscriptions: Array<IUnsubscribeable>;
+  readonly evmEvents: Array<EventLog>;
 }): Promise<void> {
   const log = LoggerProvider.getOrCreate({
     level: opts.logLevel,
@@ -1280,6 +1418,7 @@ async function logAllEventsOfContract(opts: {
     const subscription = opts.contract.events.allEvents();
     opts.contractLogSubscriptions.push(subscription);
     subscription.on("data", (anEvent) => {
+      opts.evmEvents.push(anEvent);
       const { event: eventName } = anEvent;
       log.debug("%s Event Fired => %s", opts.contractName, eventName);
     });

@@ -1,4 +1,4 @@
-Log.Level = 'warn'
+Log.Level = 'info'
 
 [Insecure]
 DevWebServer = true # Default is false
@@ -163,7 +163,7 @@ ListenAddresses = ['0.0.0.0:6690']
 # DefaultBootstrappers = ['12D3KooWMHMRLQkgPbFSYHwD3NBuwtS1AmxhvKVUrcfyaGDASR4U@1.2.3.4:9999', '12D3KooWM55u5Swtpw9r8aFLQHEtw7HR4t44GdNs654ej5gRs2Dh@example.com:1234'] # Example
 
 # DeltaDial controls how far apart Dial attempts are
-DeltaDial = '5s' # Default is 0.5s
+DeltaDial = '0.5s' # Default is 0.5s
 # DeltaReconcile controls how often a Reconcile message is sent to every peer.
-DeltaReconcile = '25s' # Default is 5s
+DeltaReconcile = '5s' # Default is 5s
 
