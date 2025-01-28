@@ -39,7 +39,7 @@ type RouterContract struct {
 	contractapi.Contract
 }
 
-// CcipSend records and emits an outgoing message
+// CcipSend sends data and/or tokens from Hyperledger Fabric to an EVM-compatible blockchain via Chainlink CCIP.
 func (rc *RouterContract) CcipSend(ctx contractapi.TransactionContextInterface, receiverHex, data, feeToken, extraArgs, tokenAmountsJson string) (string, error) {
 	
 	// Deserialize tokenAmountsJson into a local variable

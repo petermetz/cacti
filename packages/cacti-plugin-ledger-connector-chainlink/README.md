@@ -207,6 +207,10 @@ The above should produce a response that looks similar to this:
 }
 ```
 
+## Fabric CCIP Router Chaincode
+
+
+
 ## Prometheus Exporter
 
 This class creates a prometheus exporter, which scrapes the transactions (total transaction count) for the use cases incorporating the use of Chainlink connector plugin.
@@ -234,17 +238,6 @@ Here the `host:port` is where the prometheus exporter metrics are exposed. The t
 
 Once edited, you can start the prometheus service by referencing the above edited prometheus.yml file.
 On the prometheus graphical interface (defaulted to http://localhost:9090), choose **Graph** from the menu bar, then select the **Console** tab. From the **Insert metric at cursor** drop down, select **cactus_chainlink_total_tx_count** and click **execute**
-
-### Helper code
-
-###### response.type.ts
-This file contains the various responses of the metrics.
-
-###### data-fetcher.ts
-This file contains functions encasing the logic to process the data points
-
-###### metrics.ts
-This file lists all the prometheus metrics and what they are used for.
 
 ## Running the tests
 
