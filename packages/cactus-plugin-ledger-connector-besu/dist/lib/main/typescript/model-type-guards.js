@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isWeb3SigningCredentialPrivateKeyHex = isWeb3SigningCredentialPrivateKeyHex;
+exports.isWeb3SigningCredentialNone = isWeb3SigningCredentialNone;
+const api_1 = require("./generated/openapi/typescript-axios/api");
+function isWeb3SigningCredentialPrivateKeyHex(x) {
+    return x?.type === api_1.Web3SigningCredentialType.PrivateKeyHex;
+}
+function isWeb3SigningCredentialNone(x) {
+    return x?.type === api_1.Web3SigningCredentialType.None;
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibW9kZWwtdHlwZS1ndWFyZHMuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi8uLi9zcmMvbWFpbi90eXBlc2NyaXB0L21vZGVsLXR5cGUtZ3VhcmRzLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBTUEsb0ZBSUM7QUFFRCxrRUFJQztBQWhCRCxrRUFJa0Q7QUFFbEQsU0FBZ0Isb0NBQW9DLENBQUMsQ0FFcEQ7SUFDQyxPQUFPLENBQUMsRUFBRSxJQUFJLEtBQUssK0JBQXlCLENBQUMsYUFBYSxDQUFDO0FBQzdELENBQUM7QUFFRCxTQUFnQiwyQkFBMkIsQ0FBQyxDQUUzQztJQUNDLE9BQU8sQ0FBQyxFQUFFLElBQUksS0FBSywrQkFBeUIsQ0FBQyxJQUFJLENBQUM7QUFDcEQsQ0FBQyJ9
