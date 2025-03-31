@@ -30,11 +30,13 @@ import {
   GethTestLedger,
   WHALE_ACCOUNT_ADDRESS,
 } from "@hyperledger/cactus-test-geth-ledger";
+import { installOpenapiValidationMiddleware } from "@hyperledger/cactus-core";
 
 import {
   PluginLedgerConnectorEthereum,
   Web3SigningCredentialType,
   DefaultApi as EthereumApi,
+  OpenApiJson,
 } from "../../../main/typescript/public-api";
 
 const containerImageName = "ghcr.io/hyperledger/cacti-geth-all-in-one";
@@ -63,6 +65,12 @@ describe("Running ethereum transactions with different gas configurations", () =
   //////////////////////////////////
 
   beforeAll(async () => {
+    await installOpenapiValidationMiddleware({
+      apiSpec: OpenApiJson,
+      logLevel: testLogLevel,
+      app: expressApp,
+    });
+
     const pruning = pruneDockerAllIfGithubAction({ logLevel: testLogLevel });
     await expect(pruning).resolves.toBeTruthy();
 

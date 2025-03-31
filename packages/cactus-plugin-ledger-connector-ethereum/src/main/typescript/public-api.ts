@@ -1,5 +1,8 @@
 export * from "./generated/openapi/typescript-axios";
 
+import * as OpenApiJson from "../json/openapi.json";
+export { OpenApiJson };
+
 export {
   PluginLedgerConnectorEthereum,
   IPluginLedgerConnectorEthereumOptions,
