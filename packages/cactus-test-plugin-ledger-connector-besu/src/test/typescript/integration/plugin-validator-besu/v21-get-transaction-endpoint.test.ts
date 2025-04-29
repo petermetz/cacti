@@ -46,11 +46,7 @@ describe("PluginLedgerBesu", () => {
     level: logLevel,
   });
 
-  const containerImageVersion = "2021-08-24--feat-1244";
-  const containerImageName =
-    "ghcr.io/hyperledger/cactus-besu-21-1-6-all-in-one";
-  const besuOptions = { containerImageName, containerImageVersion };
-  const besuTestLedger = new BesuTestLedger(besuOptions);
+  const besuTestLedger = new BesuTestLedger();
 
   let apiServer: ApiServer;
   let web3JsQuorum: IWeb3Quorum;

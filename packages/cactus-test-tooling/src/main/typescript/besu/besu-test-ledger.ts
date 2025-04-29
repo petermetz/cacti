@@ -27,8 +27,10 @@ export interface IBesuTestLedgerConstructorOptions {
 }
 
 export const BESU_TEST_LEDGER_DEFAULT_OPTIONS = Object.freeze({
-  containerImageVersion: "v2.2.0-rc.2",
-  containerImageName: "ghcr.io/hyperledger-cacti/besu-all-in-one",
+  // containerImageVersion: "v2.2.0-rc.2",
+  // containerImageName: "ghcr.io/hyperledger-cacti/besu-all-in-one",
+  containerImageVersion: "local",
+  containerImageName: "baio",
   rpcApiHttpPort: 8545,
   rpcApiWsPort: 8546,
   envVars: ["BESU_NETWORK=dev"],
@@ -249,11 +251,11 @@ export class BesuTestLedger implements ITestLedger {
     }
     const docker = new Docker();
 
-    if (!omitPull) {
-      this.log.debug(`Pulling container image ${imageFqn} ...`);
-      await this.pullContainerImage(imageFqn);
-      this.log.debug(`Pulled ${imageFqn} OK. Starting container...`);
-    }
+    // if (!omitPull) {
+    //   this.log.debug(`Pulling container image ${imageFqn} ...`);
+    //   await this.pullContainerImage(imageFqn);
+    //   this.log.debug(`Pulled ${imageFqn} OK. Starting container...`);
+    // }
 
     return new Promise<Container>((resolve, reject) => {
       const eventEmitter: EventEmitter = docker.run(
