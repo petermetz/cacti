@@ -7,11 +7,7 @@ import {
   WatchContractEventParameters,
 } from "viem";
 
-import {
-  Logger,
-  Checks,
-  bigIntToDecimalStringReplacer,
-} from "@hyperledger/cactus-common";
+import { Logger, Checks } from "@hyperledger/cactus-common";
 import { LogLevelDesc, LoggerProvider } from "@hyperledger/cactus-common";
 import {
   ViemV2242WatchEventsV1Progress,
@@ -20,6 +16,13 @@ import {
 import { WatchEventsV1 } from "../generated/openapi/typescript-axios";
 import { watchEventsV1Impl } from "../impl/watch-events-v1/watch-events-v1-impl";
 import { ensure0xPrefix } from "../common/ensure-0x-prefix";
+
+function bigIntToDecimalStringReplacer(_key: string, value: unknown) {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  return value;
+}
 
 export interface IWatchEventsV1EndpointOptions {
   readonly logLevel?: LogLevelDesc;

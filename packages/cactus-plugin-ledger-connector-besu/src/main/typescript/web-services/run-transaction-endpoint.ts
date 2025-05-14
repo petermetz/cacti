@@ -7,7 +7,6 @@ import {
   LogLevelDesc,
   LoggerProvider,
   IAsyncProvider,
-  HttpHeader,
 } from "@hyperledger/cactus-common";
 import {
   IEndpointAuthzOptions,
@@ -96,7 +95,7 @@ export class RunTransactionEndpoint implements IWebServiceEndpoint {
     );
 
     res
-      .header(HttpHeader.RetryAfter, "5")
+      .header("Retry-After", "5")
       .status(HttpStatusCode.ServiceUnavailable)
       .json({
         success: false,

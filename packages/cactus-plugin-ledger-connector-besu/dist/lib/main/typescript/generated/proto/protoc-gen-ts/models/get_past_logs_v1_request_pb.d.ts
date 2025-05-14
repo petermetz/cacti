@@ -29,7 +29,7 @@ export declare namespace org.hyperledger.cacti.plugin.ledger.connector.besu {
         get topics(): dependency_1.google.protobuf.Any[];
         set topics(value: dependency_1.google.protobuf.Any[]);
         get _toBlock(): "none" | "toBlock";
-        get _fromBlock(): "none" | "fromBlock";
+        get _fromBlock(): "fromBlock" | "none";
         get _address(): "address" | "none";
         static fromObject(data: {
             toBlock?: ReturnType<typeof dependency_1.google.protobuf.Any.prototype.toObject>;
